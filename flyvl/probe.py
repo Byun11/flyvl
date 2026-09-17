@@ -26,7 +26,7 @@ def standardize_pca(Xtr: np.ndarray, Xte: np.ndarray, Ks, device="cuda") -> dict
     evals, U = evals.flip(0).clamp(min=0), U.flip(1)
     out = {}
     for K in Ks:
-        k = min(K, tr.shape[0] - 1, int((evals > 1e-9 * evals[0]).sum()))
+        k = min(K, tr.shape[0] - 1, tr.shape[1], int((evals > 1e-6 * evals[0]).sum()))   # true rank only
         s = evals[:k].sqrt()
         V = tr.T @ (U[:, :k] / s).float()                               # (D, k) principal axes
         str_ = (U[:, :k] * s).float()

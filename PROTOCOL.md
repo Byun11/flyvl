@@ -130,3 +130,6 @@ Diagnostics (`results/p0_2_backend_audit.json`, gate 아님):
 - PCA score는 단일 전역 scale로만 나눔 (whitening 없음).
 - probe seed = CV fold 분할 seed {0, 1, 2}. bootstrap은 test 이미지별 정답 여부를 seed 평균한 값으로 paired resampling.
 - 참고: "pixels ≈ 39–41%"라는 이전 계획 문구는 RGB 전체 데이터 기준이라 5k grayscale mini의 sanity 기준으로는 쓰지 않음.
+- 구현 버그 수정 (P1-mini probe 첫 실행 중 발견, brain feature 결과 출력 전): PCA 성분 수가 feature 차원을
+  넘을 수 있었음 (pixels 1024-d에서 K=4096 → 수치 노이즈 성분 2,694개 사용). k ≤ min(K, n−1, D)와
+  고유값 > 1e-6·λ_max로 제한하고 probe를 처음부터 재실행함. 첫 실행 로그에는 pixels 결과 3줄만 있었음.
