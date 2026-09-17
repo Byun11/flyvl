@@ -178,3 +178,26 @@ paired bootstrap:
 해석: 뇌 상태를 입력의 **대체물**로 쓰면 어느 view도 눈 입력을 넘지 못하지만, **추가 채널**로 쓰면 real 중추(central_vnc)만
 +1.5%p를 주고 같은 구조의 shuffle은 0%p임. 즉 real 중추 표현에 눈 입력과 **상보적인** 성분이 있을 가능성.
 주의: 2,000장 / seed 3개 규모, eye only 대비 CI 하한이 0에 걸침(−0.03). 확인에는 seed 확대가 필요.
+
+### 결과 5 — 2026-09-18 05시: **결과 4의 정정** (seed 3 → 8)
+결과 4의 "eye+real central − eye+matched_shuffle central = +1.53 [+0.23, +2.77]"은 seed 3개 기준이었음.
+같은 조건을 seed 0–7 (8개)로 확장:
+
+| 조건 (8 seed) | zero-shot | val loss |
+|---|---|---|
+| eye only | 24.40 | 1.2585 |
+| eye + real central_vnc | 25.90 | 1.2464 |
+| eye + matched_shuffle central_vnc | 25.25 | 1.2534 |
+
+| 비교 | diff | CI95 | seed별 부호 |
+|---|---|---|---|
+| eye+real − eye only | **+1.50** | **[+0.49, +2.55]** | 8/8 양수 |
+| eye+real − eye+matched_shuffle | +0.65 | [−0.19, +1.41] | 4/8 양수 |
+| eye+matched_shuffle − eye only | +0.85 | [−0.21, +1.85] | 5/8 양수 |
+
+**정정:** block-matched 대조군을 통과한 real 우위라는 결과 4의 해석은 **철회**함 (seed 3개에서의 요동이었음).
+**남는 결과:** 뇌 상태를 추가 채널로 붙이면 8/8 seed에서 오르지만(+1.5%p), 그 이득은 real 배선 특이적이지 않음
+(섞은 뇌도 +0.85%p, real과의 차이는 CI에 0 포함). → 고차원 비선형 채널 추가 효과로 해석하는 것이 타당.
+
+**교훈(방법론):** 이 실험 규모에서 seed 3개는 ±1.5%p 수준의 요동을 만들며, 그 크기는 우리가 찾는 효과와 같은 크기임.
+이후 real vs 대조군 비교는 최소 8 seed로 본다.
