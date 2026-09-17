@@ -33,7 +33,23 @@ def rgb_patches(split):
     return x
 
 
+def to_grid4(t):
+    """(N, g*g, D) -> (N, 16, D) by nearest upsampling on the token grid (g in 1, 2, 4)."""
+    n = t.shape[1]
+    g = int(round(n ** 0.5))
+    if g == G:
+        return t
+    x = t.reshape(len(t), g, g, -1).repeat_interleave(G // g, 1).repeat_interleave(G // g, 2)
+    return x.reshape(len(t), G * G, -1)
+
+
 def load_rep(rep, split):
+    if rep.startswith("pixels-g"):                             # non-overlapping patch pixels for grid 2 / 1
+        grid = int(rep[len("pixels-g"):])
+        x = rgb_patches(split)
+        size = 32 // grid
+        p = x.unfold(2, size, size).unfold(3, size, size)
+        return to_grid4(p.permute(0, 2, 3, 1, 4, 5).reshape(len(x), grid * grid, -1) - 0.5)
     if "+" in rep:                                             # concatenation of per-token features
         return torch.cat([load_rep(r, split) for r in rep.split("+")], -1)
     if rep == "pixels":
@@ -43,7 +59,7 @@ def load_rep(rep, split):
     if rep in ("cnn", "mean"):
         return rgb_patches(split)
     graph, view = rep.split(":")
-    return torch.load(P4 / f"{split}_{graph}.pt")[view].float()
+    return to_grid4(torch.load(P4 / f"{split}_{graph}.pt")[view].float())
 
 
 class Aligner(nn.Module):
@@ -74,10 +90,16 @@ def main():
     ap.add_argument("reps", nargs="+")
     ap.add_argument("--seeds", default="0,1,2")
     ap.add_argument("--tag", default="main")
+    ap.add_argument("--ntrain", type=int, default=0, help="use only the first ntrain/10 train images per class")
     a = ap.parse_args()
     seeds = [int(s) for s in a.seeds.split(",")]
 
     T = {s: teacher.pool_tokens(torch.load(P4 / f"{s}_teacher256.pt"), G) for s in ("train", "val", "test")}
+    keep = None
+    if a.ntrain:
+        ytr = np.load(P4 / "train_labels.npy")
+        keep = torch.as_tensor(np.sort(np.concatenate([np.flatnonzero(ytr == k)[:a.ntrain // 10] for k in range(10)])))
+        T["train"] = T["train"][keep]
     mu, sd = T["train"].mean((0, 1)), T["train"].std((0, 1)) + 1e-6
     Z = {s: (t - mu) / sd for s, t in T.items()}
     y_test = np.load(P4 / "test_labels.npy")
@@ -99,6 +121,8 @@ def main():
 
     for rep in a.reps:
         X = {s: load_rep(rep, s) for s in ("train", "val", "test")}
+        if keep is not None:
+            X["train"] = X["train"][keep]
         for seed in seeds:
             out = RUNS / f"{a.tag}__{rep.replace(':', '-').replace('+', '__plus__')}__s{seed}.json"
             if out.exists():
@@ -106,6 +130,10 @@ def main():
                 continue
             torch.manual_seed(seed)
             t0 = time.time()
+            if keep is not None:
+                res_extra = {"ntrain": int(len(keep))}
+            else:
+                res_extra = {}
             if rep == "mean":
                 pred = mu.expand(len(y_test), G * G, -1).clone()
                 res = {"rep": rep, "seed": seed, "params": 0}
@@ -154,6 +182,7 @@ def main():
                 cos = float(F.cosine_similarity(pred, T["test"], dim=-1).mean())
                 zcos = float(F.cosine_similarity((pred - mu) / sd, Z["test"], dim=-1).mean())
             acc, preds = zero_shot(pred)
+            res.update(res_extra)
             res.update({"test_token_cos": cos, "test_centered_cos": zcos, "test_zeroshot_acc": acc,
                         "sec": time.time() - t0})
             np.save(out.with_suffix(".preds.npy"), preds)

@@ -37,14 +37,38 @@
    "centered_cos_mean": 0.4868,
    "val_loss_mean": 1.2734
   },
-  "global_shuffle_s0-v1:visual_projection": {
-   "n_seeds": 1,
+  "global_shuffle_s0-v1:central_vnc": {
+   "n_seeds": 3,
    "zeroshot": [
-    27.1
+    25.4,
+    23.7,
+    24.7
    ],
-   "zeroshot_mean": 27.1,
-   "centered_cos_mean": 0.4933,
-   "val_loss_mean": 1.2669
+   "zeroshot_mean": 24.6,
+   "centered_cos_mean": 0.4943,
+   "val_loss_mean": 1.2619
+  },
+  "global_shuffle_s0-v1:optic_lobe": {
+   "n_seeds": 3,
+   "zeroshot": [
+    23.5,
+    23.6,
+    25.4
+   ],
+   "zeroshot_mean": 24.17,
+   "centered_cos_mean": 0.5023,
+   "val_loss_mean": 1.2433
+  },
+  "global_shuffle_s0-v1:visual_projection": {
+   "n_seeds": 3,
+   "zeroshot": [
+    27.1,
+    22.6,
+    24.1
+   ],
+   "zeroshot_mean": 24.6,
+   "centered_cos_mean": 0.4929,
+   "val_loss_mean": 1.2618
   },
   "global_shuffle_s0:visual_projection": {
    "n_seeds": 3,
@@ -133,6 +157,37 @@
    "zeroshot_mean": 23.2,
    "centered_cos_mean": 0.4961,
    "val_loss_mean": 1.2552
+  },
+  "real:photoreceptor+global_shuffle_s0:visual_projection": {
+   "n_seeds": 3,
+   "zeroshot": [
+    25.0,
+    24.9,
+    26.0
+   ],
+   "zeroshot_mean": 25.3,
+   "centered_cos_mean": 0.4975,
+   "val_loss_mean": 1.2555
+  },
+  "real:photoreceptor+real:central_vnc": {
+   "n_seeds": 1,
+   "zeroshot": [
+    25.5
+   ],
+   "zeroshot_mean": 25.5,
+   "centered_cos_mean": 0.5,
+   "val_loss_mean": 1.2454
+  },
+  "real:photoreceptor+real:visual_projection": {
+   "n_seeds": 3,
+   "zeroshot": [
+    23.9,
+    25.9,
+    25.1
+   ],
+   "zeroshot_mean": 24.97,
+   "centered_cos_mean": 0.502,
+   "val_loss_mean": 1.2469
   },
   "real:photoreceptor": {
    "n_seeds": 3,
@@ -233,6 +288,27 @@
     0.93
    ]
   },
+  "real-v1:optic_lobe - global_shuffle_s0-v1:optic_lobe": {
+   "diff_pp": 0.57,
+   "ci95_pp": [
+    -0.97,
+    2.0
+   ]
+  },
+  "real-v1:visual_projection - global_shuffle_s0-v1:visual_projection": {
+   "diff_pp": -1.1,
+   "ci95_pp": [
+    -2.57,
+    0.3
+   ]
+  },
+  "real-v1:central_vnc - global_shuffle_s0-v1:central_vnc": {
+   "diff_pp": -1.57,
+   "ci95_pp": [
+    -3.07,
+    -0.2
+   ]
+  },
   "global_shuffle_s0:central_vnc - real:photoreceptor": {
    "diff_pp": -2.93,
    "ci95_pp": [
@@ -259,6 +335,48 @@
    "ci95_pp": [
     -7.77,
     -3.53
+   ]
+  },
+  "global_shuffle_s0-v1:central_vnc - real:photoreceptor": {
+   "diff_pp": 0.0,
+   "ci95_pp": [
+    -1.63,
+    1.67
+   ]
+  },
+  "global_shuffle_s0-v1:central_vnc - pixels": {
+   "diff_pp": -3.27,
+   "ci95_pp": [
+    -5.1,
+    -1.13
+   ]
+  },
+  "global_shuffle_s0-v1:optic_lobe - real:photoreceptor": {
+   "diff_pp": -0.43,
+   "ci95_pp": [
+    -2.0,
+    1.23
+   ]
+  },
+  "global_shuffle_s0-v1:optic_lobe - pixels": {
+   "diff_pp": -3.7,
+   "ci95_pp": [
+    -5.73,
+    -1.63
+   ]
+  },
+  "global_shuffle_s0-v1:visual_projection - real:photoreceptor": {
+   "diff_pp": 0.0,
+   "ci95_pp": [
+    -1.67,
+    1.73
+   ]
+  },
+  "global_shuffle_s0-v1:visual_projection - pixels": {
+   "diff_pp": -3.27,
+   "ci95_pp": [
+    -5.3,
+    -1.17
    ]
   },
   "global_shuffle_s0:visual_projection - real:photoreceptor": {
@@ -343,6 +461,34 @@
    "ci95_pp": [
     -6.63,
     -2.57
+   ]
+  },
+  "real:photoreceptor+global_shuffle_s0:visual_projection - real:photoreceptor": {
+   "diff_pp": 0.7,
+   "ci95_pp": [
+    -0.7,
+    2.1
+   ]
+  },
+  "real:photoreceptor+global_shuffle_s0:visual_projection - pixels": {
+   "diff_pp": -2.57,
+   "ci95_pp": [
+    -4.5,
+    -0.57
+   ]
+  },
+  "real:photoreceptor+real:visual_projection - real:photoreceptor": {
+   "diff_pp": 0.37,
+   "ci95_pp": [
+    -1.07,
+    1.8
+   ]
+  },
+  "real:photoreceptor+real:visual_projection - pixels": {
+   "diff_pp": -2.9,
+   "ci95_pp": [
+    -4.87,
+    -0.93
    ]
   },
   "real:photoreceptor - real:photoreceptor": {

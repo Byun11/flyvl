@@ -46,25 +46,30 @@ if __name__ == "__main__":
 
     from flyvl.extract import load_graph
     from flyvl.swarm import G, SwarmExtractor, patches
+    grid = G
+    args = sys.argv[1:]
+    if args[0].startswith("--grid="):
+        grid = int(args.pop(0).split("=")[1])
+    suffix = "" if grid == G else f"-g{grid}"
     c = connectome.load()
     cfg, _, _ = frozen.load()
-    for graph in sys.argv[1:]:
+    for graph in args:
         ex = SwarmExtractor(c, load_graph(c, graph, cfg))
         for name, (X, y, idx) in S.items():
-            path = OUT / f"{name}_{graph}.pt"
+            path = OUT / f"{name}_{graph}{suffix}.pt"
             if path.exists():
                 continue
             t0 = time.time()
-            P = patches(X)                                                  # (N*16, 1, 16, 16)
+            P = patches(X, grid)
             feats, stats = {}, []
             for s in range(0, len(P), 64):
                 o = ex.run(P[s:s + 64])
                 stats.append(o.pop("evoked_abs_mean"))
                 for k, v in o.items():
                     feats.setdefault(k, []).append(v)
-            feats = {k: torch.cat(v).reshape(len(X), G * G, -1).half() for k, v in feats.items()}
+            feats = {k: torch.cat(v).reshape(len(X), grid * grid, -1).half() for k, v in feats.items()}
             torch.save(feats, path)
             ev = {k: float(np.mean([s[k] for s in stats])) for k in stats[0]}
             print(graph, name, {k: tuple(v.shape) for k, v in feats.items()}, "evoked|mean|", ev,
                   f"{time.time() - t0:.0f}s", flush=True)
-            (OUT / f"{name}_{graph}_stats.json").write_text(json.dumps(ev))
+            (OUT / f"{name}_{graph}{suffix}_stats.json").write_text(json.dumps(ev))

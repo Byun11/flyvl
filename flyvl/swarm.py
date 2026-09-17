@@ -20,13 +20,20 @@ PROJ = 1024
 PATCH, STRIDE, PAD, G = 16, 8, 4, 4
 
 
-def patches(images_uint8: np.ndarray) -> torch.Tensor:
-    """(N, 32, 32, 3) -> (N * 16, 1, 16, 16) luminance patches, row-major over the 4x4 grid."""
+GRIDS = {4: (16, 8, 4), 2: (16, 16, 0), 1: (32, 32, 0)}                     # grid -> (patch, stride, pad)
+
+
+def patches(images_uint8: np.ndarray, grid: int = G) -> torch.Tensor:
+    """(N, 32, 32, 3) -> (N * grid^2, 1, P, P) luminance patches, row-major.
+    grid 4: 16px patches, stride 8, reflect pad 4 (default); grid 2: 16px non-overlapping; grid 1: whole image."""
+    patch, stride, pad = GRIDS[grid]
     x = torch.from_numpy(images_uint8).float().div(255) @ torch.tensor([0.299, 0.587, 0.114])
-    x = F.pad(x[:, None], (PAD, PAD, PAD, PAD), mode="reflect")
-    p = x.unfold(2, PATCH, STRIDE).unfold(3, PATCH, STRIDE)                  # (N, 1, 4, 4, 16, 16)
-    assert p.shape[2:4] == (G, G)
-    return p.permute(0, 2, 3, 1, 4, 5).reshape(-1, 1, PATCH, PATCH).contiguous()
+    x = x[:, None]
+    if pad:
+        x = F.pad(x, (pad, pad, pad, pad), mode="reflect")
+    p = x.unfold(2, patch, stride).unfold(3, patch, stride)
+    assert p.shape[2:4] == (grid, grid)
+    return p.permute(0, 2, 3, 1, 4, 5).reshape(-1, 1, patch, patch).contiguous()
 
 
 def view_indices(c: connectome.Connectome) -> dict:

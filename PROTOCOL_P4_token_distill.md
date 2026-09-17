@@ -52,7 +52,7 @@ train = CIFAR train 클래스당 첫 200장 (2,000) / val = 같은 클래스의 
 ## 변형 로그
 (결과를 보며 추가)
 
-### 결과 1 — 2026-09-18 03시 (`results/p4/summary_main.json`)
+### 결과 1 — 2026-09-18 02시 (`results/p4/summary_main.json`)
 천장: teacher 원본 256 토큰 83.3%, 4×4 pooled 73.5%. test 1,000장, 3 seed 평균 zero-shot %.
 
 | rep | zero-shot | centered cos |
@@ -78,4 +78,48 @@ paired bootstrap (seed 평균 정답 여부):
 4. 작은 CNN이 모든 초파리 조건보다 약 12%p 높음.
 
 ### 변형 로그
-- 03시: concat(photoreceptor + 뇌 view, real vs global shuffle), v1 global shuffle 정렬기 진행.
+- 02시: concat(photoreceptor + 뇌 view, real vs global shuffle), v1 global shuffle 정렬기 진행.
+
+### 결과 2 — 2026-09-18 04시
+**(a) dynamics 모델에 따라 real vs global shuffle 방향이 뒤집힘** (3 seed, paired bootstrap):
+
+| view | v2 (g=1) real − shuffle | v1 LIF real − shuffle |
+|---|---|---|
+| optic lobe | +1.0 [−0.1, +2.1] | +0.6 [−1.0, +2.0] |
+| visual projection | +1.6 [+0.2, +2.9] | −1.1 [−2.6, +0.3] |
+| central | +2.3 [+1.0, +3.5] | **−1.6 [−3.1, −0.2]** |
+
+v1 LIF 절대값: real optic/VPN/central 24.7 / 23.5 / 23.0, shuffle 24.2 / 24.6 / 24.6.
+→ block-matched shuffle에서 차이가 사라지는 것과 함께, real 배선 고유의 이점은 확인되지 않음.
+
+**(b) concat: 눈 입력 + 뇌 (뇌를 대체물이 아니라 추가 정보로 사용)**
+
+| rep | zero-shot | centered cos | val loss |
+|---|---|---|---|
+| real:photoreceptor | 24.60 | 0.4926 | 1.2569 |
+| + real:visual_projection | 24.97 | 0.5020 | 1.2469 |
+| + global_shuffle:visual_projection | 25.30 | 0.4975 | 1.2555 |
+| **+ real:central_vnc** | **26.07** | 0.5009 | 1.2484 |
+| + global_shuffle:central_vnc | 25.07 | 0.4990 | 1.2510 |
+
+- real central concat − shuffle central concat: **+1.00 [−0.17, +2.17]**
+- real central concat − photoreceptor only: **+1.47 [−0.03, +2.80]**
+- 토큰 정렬 지표(val loss, centered cos)는 real 뇌를 붙일 때 일관되게 개선.
+→ 뇌 상태를 입력의 **대체물**로 쓰면 손실이지만, **추가 채널**로 쓰면 약한 보완 효과가 있을 수 있음 (CI 경계).
+
+**(c) 데이터 규모 (train 500 vs 2,000, central view)**
+
+| rep | 500 | 2,000 |
+|---|---|---|
+| cnn | 29.10 | 36.27 |
+| pixels | 20.63 | 27.87 |
+| real:photoreceptor | 16.60 | 24.60 |
+| real:central_vnc | 15.40 | 23.93 |
+| matched_shuffle:central_vnc | 14.57 | 24.13 |
+| global_shuffle:central_vnc | 14.03 | 21.67 |
+
+순서(CNN > pixels > 눈 입력 ≥ real 뇌 > global shuffle)는 데이터 규모와 무관하게 유지.
+val loss는 500에서도 real(1.376) < matched(1.395) < global(1.405).
+
+### 변형 로그
+- 04시: 초파리 마리 수 비교 (1마리 전체 이미지 / 4마리 2×2 / 16마리 4×4, 토큰은 4×4로 맞춤), train 1,000 조건 진행.
