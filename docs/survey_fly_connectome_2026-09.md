@@ -64,3 +64,15 @@ held-out 99/100 코스 통과. 뇌 침묵 0/100, 랜덤 readout 0/100. **shuffle
 - FlyDoom, fly-craftax, FlyGM의 rewired/random 대조군 수치(README·초록에 없음).
 - BPU의 학습 epoch 수, shuffle/random graph 결과(본문 추출 범위에서 확인 못함).
 - Correig-Fraga et al. 논문 본문의 정확한 정확도 수치.
+
+## 추가 (2026-09-18): 대조군 관련 논문
+
+| 논문 | 설정 | 결과 |
+|---|---|---|
+| [Topological Sensitivity in Connectome-Constrained Neural Networks, arXiv 2604.04033](https://arxiv.org/html/2604.04033v1) | FlyVis 네트워크(45,669 노드, 1.5M edge, 파라미터 734), MovingEdge 방향 decoding. connectome vs self-loop 맞춘 naive random vs degree-preserving rewire | 체크포인트 init에서는 connectome이 naive random보다 loss 낮음(0.514 vs 0.698). **같은 random init을 쓰면 차이가 사라지고(0.513 vs 0.515), degree-preserving 대비 0.516 vs 0.516.** 결론: "apparent topology advantages ... do not robustly persist under degree-preserving controls" |
+| [FlyGM, arXiv 2602.17997](https://arxiv.org/html/2602.17997) | 성체 whole-brain connectome 위상·weight 고정, 뉴런별 descriptor + encoder/gate/decoder/공유 MLP 학습, imitation + RL로 보행·비행 | 가장 어려운 조건 각도 오차: FlyGM 8.29°, **degree-preserving rewire 13.55°**, ER random 125.36°, MLP 13.90°. 학습 수렴도 FlyGM이 빠름 → **제어 과제에서는 degree 보존 대조군 대비 real 우위 보고** |
+| [Reproducibility and model-selection stability in connectome-constrained circuit modeling, bioRxiv 2026.04.18](https://www.biorxiv.org/content/10.64898/2026.04.18.717873v1) | FlyVis 계열 모델 앙상블 재학습 | 실험 응답과의 대응이 재학습마다 얼마나 안정적인지 검토 (상세 미확인) |
+| [Connectome analysis reveals brainwide visual processing in Drosophila, bioRxiv 2026.02.02](https://www.biorxiv.org/content/10.64898/2026.02.02.700492v1) | whole-brain connectome, optic lobe ↔ central brain 장거리 투사 분석 | 구조 분석 (상세 미확인) |
+
+요약: 대조군을 엄격히 하면 **지각(분류·motion decoding)에서는 real 우위가 약하거나 사라지고**,
+**체현 제어(FlyGM)에서는 degree 보존 대조군 대비 우위가 보고됨**. 정적 이미지 분류에서의 FlyVL 결과와 방향이 맞음.
