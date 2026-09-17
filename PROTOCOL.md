@@ -100,3 +100,24 @@ KC→KC edge 생성 금지, self-loop 없음 (effective graph에는 101개, 무�
 - 조치: 모델·자극·gate는 그대로 두고 행렬곱 backend만 분리 (`cuda_fast` / `cpu_deterministic`),
   `cpu_deterministic`으로 P0-2를 재실행한다. CUDA 반복 변동성은 gate가 아닌 characterization으로만 측정.
 - 데이터 소스: toronto.edu tarball이 ~90 kB/s라 HuggingFace `uoft-cs/cifar10` parquet 미러 사용.
+
+### P0-2 run 2 — cpu_deterministic backend: **PASS** — 2026-09-17
+`results/p0_2_cpu_deterministic/report.json`. 모델·자극·gate 동일, 행렬곱 위치만 변경.
+
+|  | CUDA (run 1) | CPU deterministic (run 2) |
+|---|---|---|
+| G1 | FAIL (LIF 99.87% 동일) | PASS (bit-exact) |
+| G2 / G3 | PASS / PASS | PASS / PASS |
+| central_vnc PR | 4.672 | 4.671 |
+| central_vnc cos dist median | 0.2025 | 0.2025 |
+
+CPU backend는 반복·배치 순서·배치 크기·스레드 수에 대해 bit-exact (노이즈 이미지 16장 테스트).
+
+Diagnostics (`results/p0_2_backend_audit.json`, gate 아님):
+- CPU vs CUDA, central_vnc: 이미지별 cosine min 0.99956, 상대 L2 0.53%, PR 4.672 vs 4.671,
+  pairwise distance 상관 0.999999. LIF 원소 99.67% 동일.
+- CUDA 20장 × 10회 반복: 동일 이미지 반복 간 cos dist 중앙값 ~0 (최대 1.3e-4) vs
+  이미지 간 중앙값 0.203 (최소 0.0165). LIF 반복 불일치 0.032%, 한 번이라도 달라진 LIF 유닛 0.15%.
+
+결론: 최초 P0-2 failure는 모델 불안정이 아니라 CUDA sparse SpMM의 numerical nondeterminism에서
+발생했다. P1-mini는 `cpu_deterministic` backend로 진행한다.

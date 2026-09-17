@@ -1,0 +1,133 @@
+{
+ "cpu_vs_cuda": {
+  "all": {
+   "per_image_cosine_min": 0.999565,
+   "per_image_cosine_median": 1.0,
+   "per_image_centered_cosine_median": 0.999999,
+   "relative_L2": 0.005289754357546594,
+   "PR_cuda_cpu": [
+    4.694,
+    4.694
+   ],
+   "pairwise_dist_quantiles_cuda": [
+    0.0625,
+    0.1315,
+    0.2039,
+    0.2759,
+    0.3405
+   ],
+   "pairwise_dist_quantiles_cpu": [
+    0.0625,
+    0.1315,
+    0.2039,
+    0.2759,
+    0.3404
+   ],
+   "pairwise_dist_corr": 0.999999
+  },
+  "central_vnc": {
+   "per_image_cosine_min": 0.999563,
+   "per_image_cosine_median": 1.0,
+   "per_image_centered_cosine_median": 0.999999,
+   "relative_L2": 0.005290642490048876,
+   "PR_cuda_cpu": [
+    4.672,
+    4.671
+   ],
+   "pairwise_dist_quantiles_cuda": [
+    0.0616,
+    0.1302,
+    0.2025,
+    0.2738,
+    0.3385
+   ],
+   "pairwise_dist_quantiles_cpu": [
+    0.0616,
+    0.1303,
+    0.2025,
+    0.2739,
+    0.3384
+   ],
+   "pairwise_dist_corr": 0.999999
+  },
+  "visual_projection": {
+   "per_image_cosine_min": 0.999944,
+   "per_image_cosine_median": 1.0,
+   "per_image_centered_cosine_median": 1.0,
+   "relative_L2": 0.0017441642154109075,
+   "PR_cuda_cpu": [
+    4.802,
+    4.802
+   ],
+   "pairwise_dist_quantiles_cuda": [
+    0.0892,
+    0.1925,
+    0.2954,
+    0.3932,
+    0.4794
+   ],
+   "pairwise_dist_quantiles_cpu": [
+    0.0892,
+    0.1925,
+    0.2954,
+    0.3932,
+    0.4794
+   ],
+   "pairwise_dist_corr": 1.0
+  },
+  "descending": {
+   "per_image_cosine_min": 0.99906,
+   "per_image_cosine_median": 1.0,
+   "per_image_centered_cosine_median": 0.999992,
+   "relative_L2": 0.009194215257024269,
+   "PR_cuda_cpu": [
+    4.208,
+    4.207
+   ],
+   "pairwise_dist_quantiles_cuda": [
+    0.0168,
+    0.03,
+    0.0516,
+    0.0794,
+    0.1088
+   ],
+   "pairwise_dist_quantiles_cpu": [
+    0.0167,
+    0.03,
+    0.0516,
+    0.0794,
+    0.1086
+   ],
+   "pairwise_dist_corr": 0.999975
+  },
+  "lif_elements_equal_frac": 0.9967203191056054
+ },
+ "cuda_repeat_audit": {
+  "all": {
+   "within_image_repeat_cos_dist_median": 4.551914400963142e-15,
+   "within_image_repeat_cos_dist_max": 0.00013146109398642913,
+   "between_image_cos_dist_median": 0.20462258073765405,
+   "between_image_cos_dist_min": 0.01676521870186387
+  },
+  "central_vnc": {
+   "within_image_repeat_cos_dist_median": -2.220446049250313e-16,
+   "within_image_repeat_cos_dist_max": 0.00013186531081088582,
+   "between_image_cos_dist_median": 0.2026758269575708,
+   "between_image_cos_dist_min": 0.016500175196770828
+  },
+  "visual_projection": {
+   "within_image_repeat_cos_dist_median": 0.0,
+   "within_image_repeat_cos_dist_max": 1.7824476377881204e-05,
+   "between_image_cos_dist_median": 0.2991781238483238,
+   "between_image_cos_dist_min": 0.021841290499376775
+  },
+  "descending": {
+   "within_image_repeat_cos_dist_median": 0.0,
+   "within_image_repeat_cos_dist_max": 0.0003411818506565689,
+   "between_image_cos_dist_median": 0.04809310789445259,
+   "between_image_cos_dist_min": 0.008158459777715343
+  },
+  "lif_repeat_disagreement_vs_run0": 0.00032296021635759553,
+  "lif_units_ever_disagreeing_frac": 0.0014515653309737496
+ }
+}

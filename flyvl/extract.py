@@ -34,12 +34,14 @@ def load_graph(c: connectome.Connectome, name: str, cfg) -> sparse.csr_matrix:
 
 
 class Extractor:
-    def __init__(self, c: connectome.Connectome, graph: str = "real", device: str = "cuda"):
+    def __init__(self, c: connectome.Connectome, graph: str = "real", device: str = "cuda",
+                 backend: str = "cuda_fast"):
         self.cfg, self.eye_cfg, self.spec = frozen.load()
         self.c, self.graph, self.device = c, graph, device
         r16 = c.types(["R1-6"])
         self.driven = r16[c.column[r16, 0] >= 0]
-        self.sim = Sim(c, self.cfg, device=device, W=load_graph(c, graph, self.cfg), driven=self.driven)
+        self.sim = Sim(c, self.cfg, device=device, W=load_graph(c, graph, self.cfg), driven=self.driven,
+                       backend=backend)
         self.retina = Retina(c, self.driven, self.eye_cfg, self.cfg.dt, device=device)
         self.T = self.spec["stim_steps"]
         self.dirs = self.eye_cfg.drift_directions

@@ -1,4 +1,5 @@
-"""P0-2: CIFAR-10 train, first 10 per class (100 images). Gate defined in PROTOCOL.md before running."""
+"""P0-2: CIFAR-10 train, first 10 per class (100 images). Gate defined in PROTOCOL.md before running.
+usage: p0_2_cifar100.py [cuda_fast|cpu_deterministic]   (run 1 used cuda_fast)"""
 import json
 import sys
 from pathlib import Path
@@ -10,7 +11,8 @@ sys.path.insert(0, str(ROOT))
 from flyvl import connectome, data, masks, metrics  # noqa: E402
 from flyvl.extract import Extractor, to_luma  # noqa: E402
 
-OUT = connectome.DATA_ROOT / "runs" / "p0_2"
+BACKEND = sys.argv[1] if len(sys.argv) > 1 else "cpu_deterministic"
+OUT = connectome.DATA_ROOT / "runs" / f"p0_2_{BACKEND}"
 OUT.mkdir(parents=True, exist_ok=True)
 
 images, labels = data.cifar10(train=True)
@@ -19,7 +21,7 @@ imgs, y = images[idx], labels[idx]
 
 c = connectome.load()
 M = masks.build(c)
-ex = Extractor(c, "real")
+ex = Extractor(c, "real", backend=BACKEND)
 
 
 def extract():
@@ -39,7 +41,7 @@ np.save(OUT / "indices.npy", idx)
 
 views = {k: M[k] for k in ("all", "no_photoreceptor", "no_ol_intrinsic", "central_vnc", "visual_projection",
                             "descending")}
-report = {"n_images": len(idx), "views": {k: metrics.summary(F1[:, v]) for k, v in views.items()}}
+report = {"backend": BACKEND, "n_images": len(idx), "views": {k: metrics.summary(F1[:, v]) for k, v in views.items()}}
 report["reference"] = {
     "pixels_luma": metrics.summary(to_luma(imgs).reshape(len(imgs), -1).numpy()),
     "stim_only": metrics.summary(F1[:, ex.driven]),
