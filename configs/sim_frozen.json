@@ -1,0 +1,24 @@
+{
+ "model": "FlyVL-simple-v1",
+ "frozen_on": "2026-09-17",
+ "sim": {
+  "dt": 0.02, "tau_lif": 0.1, "tonic": 0.14, "g_ss": 3.0,
+  "noise": "off", "noise_hz": 1.2, "noise_amp": 0.22, "noise_seed": 64,
+  "tau_graded": 0.04, "rest": 0.5,
+  "g_gg": 4.0, "g_gs": 10.0, "g_sg": 0.5,
+  "saturation": 1.0, "tau_graded_by_type": {},
+  "cut_input_to_nonvisual_sensory": true, "kc_kc_scale": 0.0,
+  "dtype": "float32"
+ },
+ "eye": {
+  "front_sign": 1, "k_pr": 1.0, "tau_adapt": 0.5,
+  "image_half_width": 0.5, "drift_extent": 0.2, "drift_time": 0.4,
+  "drift_directions": ["LR", "RL", "UD", "DU"]
+ },
+ "driven": "R1-6 with a column assignment (3241 cells)",
+ "warm_steps": 100,
+ "stim_steps": 50,
+ "feature": "per neuron, mean over the 4 drift directions of (image branch - blank branch): LIF spike count over stim_steps, graded mean x over stim_steps",
+ "weights_sha256": "c29919aa44069a271b1ee978abe05fa9bf6e45e4ba3e436e92b624ef1b5be40c",
+ "selection_record": "runs/p0_1_kc0.0/selected.json and grid.json; grid v1 log runs/p0_1_grid.log"
+}

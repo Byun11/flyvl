@@ -1,0 +1,30 @@
+{
+ "results": {
+  "1": {
+   "ms_per_step": 0.589,
+   "ms_per_image_step": 0.5886,
+   "peak_MB": 200
+  },
+  "8": {
+   "ms_per_step": 3.102,
+   "ms_per_image_step": 0.3878,
+   "peak_MB": 223
+  },
+  "16": {
+   "ms_per_step": 3.131,
+   "ms_per_image_step": 0.1957,
+   "peak_MB": 245
+  },
+  "32": {
+   "ms_per_step": 3.252,
+   "ms_per_image_step": 0.1016,
+   "peak_MB": 294
+  },
+  "64": {
+   "ms_per_step": 3.737,
+   "ms_per_image_step": 0.0584,
+   "peak_MB": 392
+  }
+ },
+ "batch": 64
+}
