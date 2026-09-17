@@ -301,3 +301,23 @@ VIC 상위 11k 구성: visual_projection 9,056 + cb_intrinsic 1,550 + visual_cen
 2. VPN을 제외하고 중추 뉴런만 읽으면 절대값은 내려가지만 **real − matched 차이는 가장 커짐**(+1.67, CI 하한 +0.73)
    → real 배선의 이점은 optic lobe 출구보다 중추 깊은 쪽에서 더 드러남.
 3. 세 집합 모두 real > matched 방향.
+
+### 결과 11 — 2026-09-18 08시: 두 번째 matched shuffle 그래프 (대조군 변동성)
+`matched_shuffle_s1`을 새로 생성(동일 제약: edge 24,472,770, in/out-degree 보존, KC→KC 0, self-loop 0,
+블록 위반 11,000 = 0.045%)하고 central view를 8 seed로 비교.
+
+| central view, 8 seed | acc | val loss |
+|---|---|---|
+| real | **24.49** | 1.2619 |
+| matched_shuffle_s0 | 23.38 | 1.2700 |
+| matched_shuffle_s1 | 23.42 | 1.2635 |
+| global_shuffle_s0 | 21.59 | 1.2733 |
+
+| 비교 | diff | CI95 | seed 부호 |
+|---|---|---|---|
+| real − matched_s0 | +1.11 | [+0.27, +1.90] | 5/8 |
+| real − matched_s1 | +1.06 | [+0.24, +1.88] | 7/8 |
+| matched_s0 − matched_s1 | −0.05 | [−0.83, +0.68] | – |
+
+→ 두 독립 shuffle 그래프가 0.05%p 차이로 일치. **real 우위(+1.1%p)는 그래프 seed와 학습 seed 양쪽에 대해 재현됨.**
+이번 세션에서 가장 재현성이 높은 real 관련 결과. 단, 크기는 여전히 약 1%p이고 real은 눈 입력(24.40)과 동급, pixels(27.87)보다 낮음.
