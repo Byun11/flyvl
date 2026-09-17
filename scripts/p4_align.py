@@ -34,6 +34,8 @@ def rgb_patches(split):
 
 
 def load_rep(rep, split):
+    if "+" in rep:                                             # concatenation of per-token features
+        return torch.cat([load_rep(r, split) for r in rep.split("+")], -1)
     if rep == "pixels":
         x = F.pad(rgb_patches(split), (PAD,) * 4, mode="reflect")
         p = x.unfold(2, PATCH, STRIDE).unfold(3, PATCH, STRIDE)                # (N, 3, 4, 4, 16, 16)
@@ -98,7 +100,7 @@ def main():
     for rep in a.reps:
         X = {s: load_rep(rep, s) for s in ("train", "val", "test")}
         for seed in seeds:
-            out = RUNS / f"{a.tag}__{rep.replace(':', '-')}__s{seed}.json"
+            out = RUNS / f"{a.tag}__{rep.replace(':', '-').replace('+', '__plus__')}__s{seed}.json"
             if out.exists():
                 print("SKIP", out.name)
                 continue
