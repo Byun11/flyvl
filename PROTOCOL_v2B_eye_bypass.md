@@ -55,3 +55,24 @@ input neuron set, projection width, epoch 수, normalization, gain, dynamics, re
 해석: (A) learned-input real이 eye-fixed real보다 크게 높으면 sensory interface가 주요 병목.
 (B) learned-input real vs shuffle: seed 3개 모두 real > shuffle → real wiring 이점 가능성, 비슷 → connectome 특이적
 이점 없음, real < shuffle → generic classification에 불리. all_sensory는 표 아래 diagnostic으로만 보고.
+
+## Results — 2026-09-17 (`results/p2b_mini/`)
+visual_entry (primary), test acc %:
+
+| seed | REAL | SHUFFLE | real − shuffle |
+|---|---|---|---|
+| 0 | 33.3 | 33.8 | −0.5 |
+| 1 | 32.4 | 33.5 | −1.1 |
+| 2 | 34.3 | 34.4 | −0.1 |
+| mean | **33.3** | **33.9** | **−0.6 [95% CI −2.0, +0.9]** |
+
+(CI: test 이미지별 정답 여부를 seed 평균한 뒤 paired bootstrap 1,000회.)
+all_sensory (diagnostic, seed 0): REAL 32.2, SHUFFLE 31.6, 차이 +0.6 [−1.4, +2.5].
+best epoch는 대부분 5~7 (train acc는 약 90%까지 오름, 강한 과적합).
+
+해석 (사전 등록 기준):
+- (A) learned input은 fixed eye 대비 real 기준 약 +6~7%p (v2-A trained real 26.7/28.4, P1-mini frozen 29.5와 비교;
+  readout·입력 조건이 달라 대략적인 비교). sensory interface가 성능을 일부 제한하지만, 이 설정에서 BPU의
+  약 58%에는 한참 못 미침.
+- (B) real ≈ shuffle: seed 3개 모두 차이가 1.1%p 이하이고 CI가 0을 포함함 → connectome 특이적 이점은 관찰되지 않음.
+- entry를 L1–L5에서 전체 sensory(2배)로 늘려도 이점이 없었음.

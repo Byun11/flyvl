@@ -1,0 +1,17 @@
+{
+ "graph": "real",
+ "seed": 0,
+ "mode": "all_sensory",
+ "n_entry": 17937,
+ "entry_ids_sha256": "662ccbd465b9716a8b280f9268e1e8de6bfcd6eb2f94e1acd164258f5aa48eda",
+ "trainable": {
+  "input_projection": 55102464,
+  "classifier": 10250,
+  "total": 55112714,
+  "total_requires_grad": 55112714
+ },
+ "init_params_sha256": "d165a1d7d4305be50e80c88a393a599e3f5680a045437a312f134f87a51dbae2",
+ "best_epoch": 5,
+ "val_acc": 0.4000000059604645,
+ "test_acc": 0.32199999690055847
+}

@@ -1,0 +1,17 @@
+{
+ "graph": "real",
+ "seed": 2,
+ "mode": "visual_entry",
+ "n_entry": 8884,
+ "entry_ids_sha256": "f5c3864b3082af627d4c21f2d90e03a4e73b30e4a5034b9b28697428e8adbdc0",
+ "trainable": {
+  "input_projection": 27291648,
+  "classifier": 10250,
+  "total": 27301898,
+  "total_requires_grad": 27301898
+ },
+ "init_params_sha256": "2a88f52094f109f51b81fec688078437f7a84b7c70b421b02588212a4d219740",
+ "best_epoch": 5,
+ "val_acc": 0.38999998569488525,
+ "test_acc": 0.34299999475479126
+}

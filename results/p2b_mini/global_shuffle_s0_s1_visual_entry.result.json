@@ -1,0 +1,17 @@
+{
+ "graph": "global_shuffle_s0",
+ "seed": 1,
+ "mode": "visual_entry",
+ "n_entry": 8884,
+ "entry_ids_sha256": "f5c3864b3082af627d4c21f2d90e03a4e73b30e4a5034b9b28697428e8adbdc0",
+ "trainable": {
+  "input_projection": 27291648,
+  "classifier": 10250,
+  "total": 27301898,
+  "total_requires_grad": 27301898
+ },
+ "init_params_sha256": "0e345ac21577ad28274b8e556bf81c40ac4377e89478012bf438abe0e779237a",
+ "best_epoch": 17,
+ "val_acc": 0.3919999897480011,
+ "test_acc": 0.33500000834465027
+}
