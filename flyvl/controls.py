@@ -52,23 +52,30 @@ def rewire(W_eff: sparse.csr_matrix, c: Connectome, seed: int, matched: bool, ma
         dup[srt[1:]] = key[srt[1:]] == key[srt[:-1]]            # every repeat after the first
         return dup | (kc[pre] & kc[post]) | (pre == post)
 
-    history = []
-    for it in range(max_iter):
+    history, global_phase = [], 0
+    all_edges = np.arange(len(post))
+    for it in range(max_iter + 200):
         bad = np.flatnonzero(bad_mask(post))
         history.append(len(bad))
         if len(bad) == 0:
             break
-        # swap each bad edge's post with a random edge's post from the same block
+        # swap each bad edge's post with a random edge's post: from the same block first; if a dense block cannot
+        # be made duplicate-free, fall back to any edge for the leftovers (degree-exact, block rule relaxed)
         partner = np.empty_like(bad)
-        for b in np.unique(block[bad]):
-            m = block[bad] == b
-            partner[m] = rng.choice(segs[b], m.sum())
+        if it < max_iter:
+            for b in np.unique(block[bad]):
+                m = block[bad] == b
+                partner[m] = rng.choice(segs[b], m.sum())
+        else:
+            global_phase += 1
+            partner[:] = rng.choice(all_edges, len(bad))
         keep = ~np.isin(partner, bad)
         _, first = np.unique(partner[keep], return_index=True)
         a, p = bad[keep][first], partner[keep][first]
         post[a], post[p] = post[p].copy(), post[a].copy()
     else:
         raise RuntimeError(f"rewiring did not converge: {history[-5:]}")
+    block_violations = int((block != _blocks(c, pre, post, matched)).sum()) if matched else 0
 
     R = sparse.csr_matrix((w, (post, pre)), shape=W_eff.shape, dtype=np.float32)
     target = np.asarray(abs(W_eff).sum(1)).ravel()
@@ -77,7 +84,9 @@ def rewire(W_eff: sparse.csr_matrix, c: Connectome, seed: int, matched: bool, ma
     R = (sparse.diags(scale.astype(np.float32)) @ R).tocsr()
     R.sort_indices()
     info = {"seed": seed, "matched": matched, "fix_iterations": len(history), "bad_initial": history[0],
-            "nnz": int(R.nnz), "nnz_eff": int(W_eff.nnz)}
+            "nnz": int(R.nnz), "nnz_eff": int(W_eff.nnz),
+            "global_fallback_iterations": global_phase, "edges_violating_block": block_violations,
+            "bad_before_fallback": history[min(max_iter, len(history)) - 1]}
     return R, info
 
 
