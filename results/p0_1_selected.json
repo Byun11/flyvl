@@ -1,0 +1,313 @@
+{
+ "sim": {
+  "model": "FlyVL-simple",
+  "weights_sha256": "c29919aa44069a271b1ee978abe05fa9bf6e45e4ba3e436e92b624ef1b5be40c",
+  "graded_units": 95501,
+  "lif_units": 71199,
+  "driven_photoreceptors": 3241,
+  "dt": 0.02,
+  "tau_lif": 0.1,
+  "tonic": 0.14,
+  "g_ss": 3.0,
+  "noise": "off",
+  "noise_hz": 1.2,
+  "noise_amp": 0.22,
+  "noise_seed": 64,
+  "tau_graded": 0.04,
+  "rest": 0.5,
+  "g_gg": 4.0,
+  "g_sg": 0.5,
+  "g_gs": 10.0,
+  "saturation": 1.0,
+  "tau_graded_by_type": {},
+  "cut_input_to_nonvisual_sensory": true,
+  "kc_kc_scale": 0.0,
+  "dtype": "float32"
+ },
+ "eye": {
+  "front_sign": -1,
+  "k_pr": 1.0,
+  "tau_adapt": 0.5,
+  "image_half_width": 0.5,
+  "drift_speed": 0.25,
+  "drift_total": 0.1,
+  "jitter_amp": 0.01,
+  "jitter_hz": 4.0
+ },
+ "driven": "R1-6 with column",
+ "warm_steps": 100,
+ "stim_steps": 50,
+ "selection": {
+  "rule": "stable -> max DS correct (either front sign) -> max central frac changed (moving)",
+  "metrics": {
+   "g_gg": 4.0,
+   "g_gs": 10.0,
+   "g_sg": 0.5,
+   "saturation": 1.0,
+   "delay": false,
+   "warm_rate_hz_first_last": [
+    0.0,
+    0.0
+   ],
+   "blank_mean_rate_hz": 0.0,
+   "frac_lif_over_40hz_blank": 0.0,
+   "graded_max_abs_x": 0.5,
+   "frac_lif_over_40hz_stim_tail_max": 0.00261,
+   "stable": true,
+   "relay_abs_dx_grating": {
+    "R1-6": 0.2571,
+    "L1": 0.2285,
+    "L2": 0.238,
+    "L3": 0.16519,
+    "Mi1": 0.15039,
+    "Tm3": 0.1493,
+    "Mi4": 0.07328,
+    "Mi9": 0.17436,
+    "Tm1": 0.2306,
+    "Tm2": 0.23636,
+    "T4a": 0.1319,
+    "T5a": 0.18794
+   },
+   "ds_table": {
+    "T4a_L": {
+     "pref": "down",
+     "dsi": 0.525,
+     "ftb": 0.09092,
+     "btf": 0.07567,
+     "up": 0.03456,
+     "down": 0.11084
+    },
+    "T4a_R": {
+     "pref": "down",
+     "dsi": 0.111,
+     "ftb": 0.13118,
+     "btf": 0.11368,
+     "up": 0.10827,
+     "down": 0.13518
+    },
+    "T4b_L": {
+     "pref": "down",
+     "dsi": 0.496,
+     "ftb": 0.09632,
+     "btf": 0.06956,
+     "up": 0.03643,
+     "down": 0.10817
+    },
+    "T4b_R": {
+     "pref": "ftb",
+     "dsi": 0.165,
+     "ftb": 0.1425,
+     "btf": 0.10205,
+     "up": 0.11097,
+     "down": 0.13139
+    },
+    "T4c_L": {
+     "pref": "down",
+     "dsi": 0.485,
+     "ftb": 0.09117,
+     "btf": 0.06763,
+     "up": 0.03549,
+     "down": 0.10228
+    },
+    "T4c_R": {
+     "pref": "ftb",
+     "dsi": 0.12,
+     "ftb": 0.13375,
+     "btf": 0.10498,
+     "up": 0.11115,
+     "down": 0.1246
+    },
+    "T4d_L": {
+     "pref": "down",
+     "dsi": 0.502,
+     "ftb": 0.09228,
+     "btf": 0.07175,
+     "up": 0.03592,
+     "down": 0.10843
+    },
+    "T4d_R": {
+     "pref": "down",
+     "dsi": 0.112,
+     "ftb": 0.13174,
+     "btf": 0.10852,
+     "up": 0.10529,
+     "down": 0.13188
+    },
+    "T5a_L": {
+     "pref": "down",
+     "dsi": 0.486,
+     "ftb": 0.09491,
+     "btf": 0.07577,
+     "up": 0.0421,
+     "down": 0.12163
+    },
+    "T5a_R": {
+     "pref": "down",
+     "dsi": 0.135,
+     "ftb": 0.12953,
+     "btf": 0.11131,
+     "up": 0.1053,
+     "down": 0.13806
+    },
+    "T5b_L": {
+     "pref": "down",
+     "dsi": 0.478,
+     "ftb": 0.10501,
+     "btf": 0.0742,
+     "up": 0.04511,
+     "down": 0.12772
+    },
+    "T5b_R": {
+     "pref": "ftb",
+     "dsi": 0.155,
+     "ftb": 0.14455,
+     "btf": 0.10567,
+     "up": 0.11073,
+     "down": 0.1418
+    },
+    "T5c_L": {
+     "pref": "down",
+     "dsi": 0.451,
+     "ftb": 0.09881,
+     "btf": 0.07045,
+     "up": 0.04461,
+     "down": 0.11786
+    },
+    "T5c_R": {
+     "pref": "ftb",
+     "dsi": 0.129,
+     "ftb": 0.1383,
+     "btf": 0.10665,
+     "up": 0.11486,
+     "down": 0.13115
+    },
+    "T5d_L": {
+     "pref": "down",
+     "dsi": 0.469,
+     "ftb": 0.10439,
+     "btf": 0.07742,
+     "up": 0.04651,
+     "down": 0.12862
+    },
+    "T5d_R": {
+     "pref": "down",
+     "dsi": 0.138,
+     "ftb": 0.1437,
+     "btf": 0.11154,
+     "up": 0.11041,
+     "down": 0.14583
+    }
+   },
+   "ds_correct": 4,
+   "ds_correct_if_front_flipped": 6,
+   "loom_dHz": {
+    "LPLC2_L": {
+     "loom_L": 6.245,
+     "loom_R": 1.447
+    },
+    "LPLC2_R": {
+     "loom_L": 1.198,
+     "loom_R": 7.033
+    },
+    "LC4_L": {
+     "loom_L": 5.831,
+     "loom_R": 1.028
+    },
+    "LC4_R": {
+     "loom_L": 0.891,
+     "loom_R": 8.145
+    },
+    "DNp01_L": {
+     "loom_L": 6.0,
+     "loom_R": 2.0
+    },
+    "DNp01_R": {
+     "loom_L": 2.0,
+     "loom_R": 9.0
+    }
+   },
+   "central_frac_units_changed": {
+    "flash": 0.45016,
+    "loom_L": 0.27833,
+    "loom_R": 0.27259,
+    "grating_ftb": 0.37828,
+    "grating_btf": 0.39627,
+    "grating_up": 0.38516,
+    "grating_down": 0.35929,
+    "on_edge_ftb": 0.33708,
+    "on_edge_btf": 0.34182,
+    "on_edge_up": 0.31843,
+    "on_edge_down": 0.32817,
+    "off_edge_ftb": 0.3737,
+    "off_edge_btf": 0.36371,
+    "off_edge_up": 0.33213,
+    "off_edge_down": 0.3581
+   },
+   "central_mean_abs_dcount": {
+    "flash": 1.85783,
+    "loom_L": 0.58239,
+    "loom_R": 0.60856,
+    "grating_ftb": 1.00979,
+    "grating_btf": 1.06408,
+    "grating_up": 1.09227,
+    "grating_down": 0.92295,
+    "on_edge_ftb": 0.85133,
+    "on_edge_btf": 0.79018,
+    "on_edge_up": 0.67649,
+    "on_edge_down": 0.80702,
+    "off_edge_ftb": 1.15717,
+    "off_edge_btf": 0.91164,
+    "off_edge_up": 0.7747,
+    "off_edge_down": 1.1419
+   },
+   "central_frac_changed_moving_mean": 0.35601
+  },
+  "detector_diagnostic": {
+   "DNp01_L": {
+    "blank": 0.0,
+    "LC4+LPLC2_L": 38.0,
+    "LC10a_L": 5.0
+   },
+   "DNp01_R": {
+    "blank": 0.0,
+    "LC4+LPLC2_L": 5.0,
+    "LC10a_L": 2.0
+   },
+   "DNa02_L": {
+    "blank": 0.0,
+    "LC4+LPLC2_L": 2.0,
+    "LC10a_L": 6.0
+   },
+   "DNa02_R": {
+    "blank": 0.0,
+    "LC4+LPLC2_L": 1.0,
+    "LC10a_L": 0.0
+   },
+   "LPLC2_L": {
+    "blank": 0.0,
+    "LC4+LPLC2_L": 40.468,
+    "LC10a_L": 5.309
+   },
+   "LPLC2_R": {
+    "blank": 0.0,
+    "LC4+LPLC2_L": 4.868,
+    "LC10a_L": 2.22
+   },
+   "LC4_L": {
+    "blank": 0.0,
+    "LC4+LPLC2_L": 39.239,
+    "LC10a_L": 4.845
+   },
+   "LC4_R": {
+    "blank": 0.0,
+    "LC4+LPLC2_L": 4.091,
+    "LC10a_L": 2.527
+   },
+   "central_frac_units_changed": {
+    "blank": 0.0,
+    "LC4+LPLC2_L": 0.43265,
+    "LC10a_L": 0.39515
+   }
+  }
+ }
+}

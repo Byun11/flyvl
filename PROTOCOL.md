@@ -88,3 +88,15 @@ KC→KC edge 생성 금지, self-loop 없음 (effective graph에는 101개, 무�
 (4) real > shuffled 방향이 반복됨.
 강한 성공: real − matched_shuffle ≥ 3%p, 3 graph seeds 모두 같은 방향, test bootstrap CI 하한 > 0.
 판단에는 PCA / effective rank / pairwise distance / probe accuracy만 사용; UMAP은 그림용.
+
+## Results log
+
+### P0-2 run 1 — CUDA (cuSPARSE) backend: **STOP (G1 FAIL)** — 2026-09-17
+`results/p0_2_cuda_fast/report.json`
+- G1 FAIL: LIF feature 원소 99.87% 동일 (기준 99.99%), graded 최대 차이 3.6e-3 (기준 1e-4).
+- G2 PASS (100%), G3 PASS (max 0.2%), G4a PASS (PR 4.67), G4b PASS (cos dist median 0.20).
+- 해석: 모델 불안정이 아니라 cuSPARSE SpMM의 numerical nondeterminism (반복 간 ≤2e-7)이
+  threshold 근처 LIF spike를 뒤집어 전파된 것으로 추정. G1 기준은 변경하지 않는다.
+- 조치: 모델·자극·gate는 그대로 두고 행렬곱 backend만 분리 (`cuda_fast` / `cpu_deterministic`),
+  `cpu_deterministic`으로 P0-2를 재실행한다. CUDA 반복 변동성은 gate가 아닌 characterization으로만 측정.
+- 데이터 소스: toronto.edu tarball이 ~90 kB/s라 HuggingFace `uoft-cs/cifar10` parquet 미러 사용.
