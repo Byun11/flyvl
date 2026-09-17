@@ -155,3 +155,10 @@ real central_vnc − stim_only +1.1 [−1.6, 3.8], − pixels −1.0 [−3.5, 1.
 결론 (v1 범위 한정): FlyVL-simple-v1과 4-way drift 입력에서, 측정된 MaleCNS wiring은 정적 이미지
 class decodability에서 degree-matched global shuffle보다 일관되게 **낮았다**. real은 입력(stim_only/pixels)과
 통계적으로 구분되지 않았고, shuffle은 random projection 수준 이상이었다. matched_shuffle은 미실행.
+
+## v1 종료 — 2026-09-17
+FlyVL-simple-v1(고정 dynamics + linear probe)은 P1-mini STOP으로 종료한다. 해석 후보(실제 wiring의
+retinotopic·수렴 구조, 손으로 정한 gain/saturation, T4/T5 미재현, 과제 불일치)는 검증하지 않았다.
+v1의 실패는 "손으로 정한 dynamics 위에서 실제 wiring이 학습 없이 좋은 표현을 즉시 만들지 않는다"까지만
+말한다. 다음 단계는 FlyVis식 connectome-constrained, task-optimized 모델(v2)이며 `PROTOCOL_v2.md`에서
+별도로 사전 등록한다.
