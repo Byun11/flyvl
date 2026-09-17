@@ -162,3 +162,24 @@ retinotopic·수렴 구조, 손으로 정한 gain/saturation, T4/T5 미재현, �
 v1의 실패는 "손으로 정한 dynamics 위에서 실제 wiring이 학습 없이 좋은 표현을 즉시 만들지 않는다"까지만
 말한다. 다음 단계는 FlyVis식 connectome-constrained, task-optimized 모델(v2)이며 `PROTOCOL_v2.md`에서
 별도로 사전 등록한다.
+
+## P1-mini 재검증 (block-matched shuffle 대조군 추가) — 2026-09-18
+P4에서 "global shuffle 대조군은 dynamics에 따라 순서가 뒤집혀 신뢰할 수 없다"는 것이 드러났으므로,
+V1과 **완전히 동일한 조건**(FlyVL-simple-v1 고정 dynamics, cpu_deterministic feature, PCA+L2 logistic, K=1024, 3 seed)에서
+`matched_shuffle_s0`(superclass×side 블록 보존)을 대조군으로 추가해 재실행함. `results/p1_mini_matched/probe.log`.
+
+| rep | central_vnc | visual_projection |
+|---|---|---|
+| real | 29.5 | 31.9 |
+| **matched_shuffle** | **31.2** | **32.7** |
+| global_shuffle | 37.3 | 38.7 |
+| pixels | 30.5 | – |
+| stim_only (눈 입력) | 28.4 | – |
+
+- pixels·stim_only·real·global_shuffle 값은 원래 P1-mini와 소수점까지 동일 → 파이프라인 재현 확인.
+- **real − matched_shuffle = −1.7 (central) / −0.8 (VPN)**. 원래 보고한 real − global_shuffle = −7.8과 비교하면
+  차이의 대부분은 global shuffle이 영역 구조를 깨뜨려 만든 **무작위 고차원 확산** 때문이었음.
+- P1-mini의 STOP 판정 자체는 유지(사전 등록 규칙은 global shuffle 기준). 다만 그 근거는 약해짐:
+  실제 불리한 폭은 1~2%p 수준이며 seed 3개로는 확정하기 어려운 크기임.
+- 방향 자체는 P4와 반대임(P4에서는 학습 정렬기 사용 시 real이 matched보다 +1.0~1.1%p). 차이는 readout 종류:
+  선형 probe에서는 real 표현이 불리하고, 학습 가능한 비선형 정렬기를 쓰면 약간 유리.

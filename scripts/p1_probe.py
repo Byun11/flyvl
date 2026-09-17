@@ -12,13 +12,13 @@ from flyvl import connectome, data, masks, probe  # noqa: E402
 from flyvl.extract import to_luma  # noqa: E402
 
 subset = sys.argv[1]
-KS = (256, 1024, 4096)
+KS = (1024,)
 SEEDS = (0, 1, 2)
-VIEWS = ("all", "no_photoreceptor", "central_vnc", "visual_projection", "descending")
-GRAPHS = {"mini": ("real", "global_shuffle_s0")}[subset]
+VIEWS = ("central_vnc", "visual_projection")
+GRAPHS = {"mini": ("real", "global_shuffle_s0", "matched_shuffle_s0")}[subset]
 PRIMARY = {"view": "central_vnc", "K": 1024, "a": "real", "b": "global_shuffle_s0"}
 FEAT = connectome.DATA_ROOT / "features"
-OUT = connectome.DATA_ROOT / "runs" / f"p1_{subset}"
+OUT = connectome.DATA_ROOT / "runs" / f"p1_{subset}_matched"
 OUT.mkdir(parents=True, exist_ok=True)
 
 c = connectome.load()
@@ -40,10 +40,7 @@ imgs_tr, _ = data.cifar10(True)
 imgs_te, _ = data.cifar10(False)
 pix_tr = to_luma(imgs_tr[itr]).reshape(len(itr), -1).numpy()
 pix_te = to_luma(imgs_te[ite]).reshape(len(ite), -1).numpy()
-reps["pixels"] = lambda: (pix_tr, pix_te)
-rng = np.random.default_rng(0)
-P = rng.standard_normal((1024, 16384)).astype(np.float32) / np.sqrt(1024)
-reps["randproj"] = lambda: (np.maximum((pix_tr - 0.5) @ P, 0), np.maximum((pix_te - 0.5) @ P, 0))
+reps["pixels"] = lambda: (pix_tr, pix_te)  # kept for reference
 reps["stim_only"] = lambda: (np.asarray(Fr_tr[:, driven], np.float32), np.asarray(Fr_te[:, driven], np.float32))
 for g in GRAPHS:
     Ftr, gy, gi = load(g, "train")

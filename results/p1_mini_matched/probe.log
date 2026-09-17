@@ -1,0 +1,14 @@
+pixels                           K= 1024 (k=1024) acc=0.3050 [0.307, 0.307, 0.301] lam=[10.0, 10.0, 1.0] [72s]
+stim_only                        K= 1024 (k=411) acc=0.2840 [0.284, 0.284, 0.284] lam=[1.0, 1.0, 1.0] [199s]
+real:central_vnc                 K= 1024 (k=1024) acc=0.2953 [0.296, 0.295, 0.295] lam=[0.1, 1.0, 1.0] [77s]
+real:visual_projection           K= 1024 (k=1024) acc=0.3190 [0.319, 0.319, 0.319] lam=[0.1, 0.1, 0.1] [70s]
+global_shuffle_s0:central_vnc    K= 1024 (k=1024) acc=0.3730 [0.373, 0.373, 0.373] lam=[0.1, 0.1, 0.1] [224s]
+global_shuffle_s0:visual_projection K= 1024 (k=1024) acc=0.3870 [0.387, 0.387, 0.387] lam=[0.1, 0.1, 0.1] [69s]
+matched_shuffle_s0:central_vnc   K= 1024 (k=1024) acc=0.3120 [0.312, 0.312, 0.312] lam=[0.1, 0.1, 0.1] [65s]
+matched_shuffle_s0:visual_projection K= 1024 (k=1024) acc=0.3270 [0.327, 0.327, 0.327] lam=[0.1, 0.1, 0.1] [76s]
+Traceback (most recent call last):
+  File "C:\Users\9722j\OneDrive\Desktop\실험\초파리\scripts\p1_probe.py", line 76, in <module>
+    secondary[f"real:central_vnc - {ref}|K=1024"] = probe.paired_bootstrap(correct[(a, 1024)], correct[(ref, 1024)])
+                                                                                               ~~~~~~~^^^^^^^^^^^^^
+KeyError: ('randproj', 1024)
+EXIT 1
