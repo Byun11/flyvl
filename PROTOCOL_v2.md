@@ -49,3 +49,22 @@ central_vnc 59,064 뉴런의 시간·방향 평균 evoked f(V) → 고정 Gaussi
 - 그 외(평균은 양수인데 방향이 엇갈림): INCONCLUSIVE → seed를 늘리지 않고 그대로 보고.
 보고용: init 조건 결과, 학습 이득(trained − init) real vs shuffle, test 이미지 paired bootstrap CI(seed 평균 정답 여부),
 epoch별 gain/τ/bias 통계와 학습 후 rest 안정성.
+
+## P2-mini result — **INCONCLUSIVE** — 2026-09-17 (`results/p2_mini/`)
+
+| test acc % | seed 0 | seed 1 | seed 2 | mean |
+|---|---|---|---|---|
+| init real (readout only) | 24.2 | 25.5 | 26.8 | 25.5 |
+| init shuffle | 25.4 | 25.2 | 24.6 | 25.1 |
+| **trained real** | 26.7 | 28.4 | 27.1 | **27.4** |
+| **trained shuffle** | 26.8 | 27.6 | 26.3 | **26.9** |
+| trained real − shuffle | −0.1 | +0.8 | +0.8 | **+0.5 [95% CI −1.2, +2.4]** |
+
+사전 등록 규칙: 평균 차이 > 0 이지만 seed 0에서 방향이 반대 → INCONCLUSIVE. seed를 늘리지 않고 그대로 보고함.
+- 학습 이득(trained − init): real +1.9%p, shuffle +1.8%p — 거의 같음.
+- init 차이 real − shuffle +0.4 [−1.3, +2.1].
+- 마지막 epoch type 평균: g_pre real 1.006~1.008 / shuffle 1.027~1.029, g_post 약 1.00, τ 약 40 ms, |bias| real 0.085~0.089 /
+  shuffle 0.108~0.111. dynamics 파라미터는 init에서 거의 움직이지 않았고 변화는 주로 bias에서 나옴.
+  best val epoch는 대부분 2~4 (shuffle seed 2만 15).
+- 해석: 이 설정(5k, 20 epoch, 공통 g=1 init, type-shared gain)에서는 task optimization이 real wiring의 이점을
+  드러내지 못했음. real ≈ shuffle.

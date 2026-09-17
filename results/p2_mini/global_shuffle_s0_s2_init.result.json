@@ -1,0 +1,8 @@
+{
+ "graph": "global_shuffle_s0",
+ "seed": 2,
+ "condition": "init",
+ "best_epoch": 14,
+ "val_acc": 0.2540000081062317,
+ "test_acc": 0.2460000067949295
+}

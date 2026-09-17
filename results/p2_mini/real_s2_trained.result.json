@@ -1,0 +1,8 @@
+{
+ "graph": "real",
+ "seed": 2,
+ "condition": "trained",
+ "best_epoch": 4,
+ "val_acc": 0.2720000147819519,
+ "test_acc": 0.2709999978542328
+}
