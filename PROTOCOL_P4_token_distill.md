@@ -154,3 +154,27 @@ val loss는 500에서도 real(1.376) < matched(1.395) < global(1.405).
 - 마리 수를 늘리면 네 조건 모두 정확도가 오르고 val loss가 줄어듦 (swarm 방향은 유효).
 - 그러나 같은 크기의 이득이 pixels에서도 나타남 → 이득의 원인은 **영역 분할 구조**이고 초파리 뇌 특이적이지 않음.
 - 16마리는 patch가 겹치므로(stride 8) 4마리·1마리보다 유효 해상도가 높다는 점을 감안해야 함.
+
+### 결과 4 — 2026-09-18 04시: concat 전체 (뇌를 추가 채널로 사용)
+눈 입력(photoreceptor) 토큰에 뇌 view 토큰을 이어붙이고 같은 정렬기를 학습. 3 seed, 파일 기준.
+
+| 조건 | zero-shot | val loss | centered cos |
+|---|---|---|---|
+| eye only | 24.60 | 1.2569 | 0.4926 |
+| eye + real optic_lobe | 25.00 | 1.2528 | 0.4986 |
+| eye + real visual_projection | 24.97 | 1.2469 | 0.5020 |
+| **eye + real central_vnc** | **26.07** | 1.2484 | 0.5009 |
+| eye + matched_shuffle central_vnc | 24.53 | 1.2517 | 0.4993 |
+| eye + global_shuffle central_vnc | 25.07 | 1.2510 | 0.4990 |
+| eye + global_shuffle visual_projection | 25.30 | 1.2555 | 0.4975 |
+
+paired bootstrap:
+- **eye+real central − eye+matched_shuffle central: +1.53 [+0.23, +2.77]** ← block-matched 대조군을 통과한 유일한 real 우위
+- eye+real central − eye+global_shuffle central: +1.00 [−0.17, +2.17]
+- eye+real central − eye only: +1.47 [−0.03, +2.80]
+- eye+matched_shuffle central − eye only: −0.07 [−1.43, +1.37]
+- eye+real optic_lobe − eye only: +0.40 [−0.97, +1.83]
+
+해석: 뇌 상태를 입력의 **대체물**로 쓰면 어느 view도 눈 입력을 넘지 못하지만, **추가 채널**로 쓰면 real 중추(central_vnc)만
++1.5%p를 주고 같은 구조의 shuffle은 0%p임. 즉 real 중추 표현에 눈 입력과 **상보적인** 성분이 있을 가능성.
+주의: 2,000장 / seed 3개 규모, eye only 대비 CI 하한이 0에 걸침(−0.03). 확인에는 seed 확대가 필요.
