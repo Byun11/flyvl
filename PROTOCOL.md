@@ -121,3 +121,12 @@ Diagnostics (`results/p0_2_backend_audit.json`, gate 아님):
 
 결론: 최초 P0-2 failure는 모델 불안정이 아니라 CUDA sparse SpMM의 numerical nondeterminism에서
 발생했다. P1-mini는 `cpu_deterministic` backend로 진행한다.
+
+### P1-mini probe 구현 세부 (brain feature·test set 확인 전에 확정) — 2026-09-17
+- L2 grid: λ ∈ {1e3, 1e2, 1e1, 1, 1e-1, 1e-2, 1e-3} (loss = CE + λ/2‖W‖², bias 제외), 강한 λ부터
+  warm start, LBFGS 150 iter. 초기 grid {1e-4..1}은 train 내부 pixel 분할 스모크 테스트에서 최적값이
+  grid 끝(λ=1)에 붙어 확장함. 스모크 테스트는 train 이미지만 사용함 (4k/1k 분할, pixels K=1024 val 27.9%).
+- PCA는 train 전체로 한 번 fit(label 미사용)해서 CV fold 안에서 재사용하고, test는 어떤 fit에도 쓰지 않음.
+- PCA score는 단일 전역 scale로만 나눔 (whitening 없음).
+- probe seed = CV fold 분할 seed {0, 1, 2}. bootstrap은 test 이미지별 정답 여부를 seed 평균한 값으로 paired resampling.
+- 참고: "pixels ≈ 39–41%"라는 이전 계획 문구는 RGB 전체 데이터 기준이라 5k grayscale mini의 sanity 기준으로는 쓰지 않음.
