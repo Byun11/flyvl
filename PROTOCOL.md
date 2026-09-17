@@ -133,3 +133,25 @@ Diagnostics (`results/p0_2_backend_audit.json`, gate 아님):
 - 구현 버그 수정 (P1-mini probe 첫 실행 중 발견, brain feature 결과 출력 전): PCA 성분 수가 feature 차원을
   넘을 수 있었음 (pixels 1024-d에서 K=4096 → 수치 노이즈 성분 2,694개 사용). k ≤ min(K, n−1, D)와
   고유값 > 1e-6·λ_max로 제한하고 probe를 처음부터 재실행함. 첫 실행 로그에는 pixels 결과 3줄만 있었음.
+
+### P1-mini — cpu_deterministic features: **STOP** — 2026-09-17
+`results/p1_mini/results.json`. train 5k / test 1k, probe seed 3개, paired bootstrap 1,000회.
+
+**Primary** (central_vnc, K=1024): real 29.5% vs global_shuffle_s0 37.3%,
+차이 **−7.8%p [95% CI −10.5, −4.7]** → 사전 등록 규칙(차이 ≤ 0)에 따라 STOP. P1-full은 진행하지 않음.
+
+| view | K=256 | K=1024 | K=4096 | real − shuffle (K=1024, CI) |
+|---|---|---|---|---|
+| all | 31.5 / 36.2 | 31.7 / 37.0 | 31.7 / 37.8 | −5.3 [−8.2, −2.1] |
+| no_photoreceptor | 31.6 / 35.9 | 31.4 / 37.1 | 31.6 / 37.7 | −5.7 [−8.6, −2.4] |
+| central_vnc | 29.4 / 36.9 | 29.5 / 37.3 | 30.4 / 37.6 | −7.8 [−10.5, −4.7] |
+| visual_projection | 31.3 / 37.1 | 31.9 / 38.7 | 32.5 / 38.6 | −6.8 [−9.7, −3.8] |
+| descending | 23.0 / 34.5 | 25.2 / 35.3 | 25.2 / 35.0 | −10.1 [−13.7, −6.7] |
+
+(셀 = real / global_shuffle 정확도 %). 15개 view×K 조합 모두 shuffle > real이고, CI 상한이 전부 0 미만.
+기준선: pixels 30.4 / 30.5 / 30.5, randproj 35.6 / 35.1 / 35.3, stim_only 28.6 / 28.4 / 28.4.
+real central_vnc − stim_only +1.1 [−1.6, 3.8], − pixels −1.0 [−3.5, 1.6], − randproj −5.6 [−8.4, −2.8].
+
+결론 (v1 범위 한정): FlyVL-simple-v1과 4-way drift 입력에서, 측정된 MaleCNS wiring은 정적 이미지
+class decodability에서 degree-matched global shuffle보다 일관되게 **낮았다**. real은 입력(stim_only/pixels)과
+통계적으로 구분되지 않았고, shuffle은 random projection 수준 이상이었다. matched_shuffle은 미실행.

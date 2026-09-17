@@ -1,0 +1,53 @@
+pixels                           K=  256 (k=256) acc=0.3040 [0.308, 0.308, 0.296] lam=[1.0, 1.0, 0.1] [52s]
+pixels                           K= 1024 (k=1024) acc=0.3050 [0.307, 0.307, 0.301] lam=[10.0, 10.0, 1.0] [124s]
+pixels                           K= 4096 (k=1024) acc=0.3050 [0.307, 0.307, 0.301] lam=[10.0, 10.0, 1.0] [198s]
+randproj                         K=  256 (k=256) acc=0.3560 [0.356, 0.356, 0.356] lam=[0.1, 0.1, 0.1] [44s]
+randproj                         K= 1024 (k=1024) acc=0.3513 [0.346, 0.362, 0.346] lam=[0.1, 1.0, 0.1] [108s]
+randproj                         K= 4096 (k=4096) acc=0.3530 [0.353, 0.353, 0.353] lam=[1.0, 1.0, 1.0] [226s]
+stim_only                        K=  256 (k=256) acc=0.2860 [0.286, 0.286, 0.286] lam=[0.1, 0.1, 0.1] [67s]
+stim_only                        K= 1024 (k=411) acc=0.2840 [0.284, 0.284, 0.284] lam=[1.0, 1.0, 1.0] [145s]
+stim_only                        K= 4096 (k=411) acc=0.2840 [0.284, 0.284, 0.284] lam=[1.0, 1.0, 1.0] [224s]
+real:all                         K=  256 (k=256) acc=0.3150 [0.315, 0.315, 0.315] lam=[0.1, 0.1, 0.1] [58s]
+real:all                         K= 1024 (k=1024) acc=0.3170 [0.317, 0.317, 0.317] lam=[1.0, 1.0, 1.0] [123s]
+real:all                         K= 4096 (k=4096) acc=0.3170 [0.317, 0.317, 0.317] lam=[1.0, 1.0, 1.0] [242s]
+real:no_photoreceptor            K=  256 (k=256) acc=0.3160 [0.316, 0.316, 0.316] lam=[0.1, 0.1, 0.1] [56s]
+real:no_photoreceptor            K= 1024 (k=1024) acc=0.3140 [0.314, 0.314, 0.314] lam=[1.0, 1.0, 1.0] [124s]
+real:no_photoreceptor            K= 4096 (k=4096) acc=0.3160 [0.316, 0.316, 0.316] lam=[1.0, 1.0, 1.0] [242s]
+real:central_vnc                 K=  256 (k=256) acc=0.2940 [0.294, 0.294, 0.294] lam=[0.1, 0.1, 0.1] [51s]
+real:central_vnc                 K= 1024 (k=1024) acc=0.2953 [0.296, 0.295, 0.295] lam=[0.1, 1.0, 1.0] [112s]
+real:central_vnc                 K= 4096 (k=4096) acc=0.3040 [0.304, 0.304, 0.304] lam=[1.0, 1.0, 1.0] [215s]
+real:visual_projection           K=  256 (k=256) acc=0.3133 [0.306, 0.317, 0.317] lam=[0.01, 0.1, 0.1] [53s]
+real:visual_projection           K= 1024 (k=1024) acc=0.3190 [0.319, 0.319, 0.319] lam=[0.1, 0.1, 0.1] [123s]
+real:visual_projection           K= 4096 (k=4096) acc=0.3250 [0.325, 0.325, 0.325] lam=[1.0, 1.0, 1.0] [249s]
+real:descending                  K=  256 (k=256) acc=0.2303 [0.225, 0.241, 0.225] lam=[1.0, 0.1, 1.0] [40s]
+real:descending                  K= 1024 (k=986) acc=0.2520 [0.252, 0.252, 0.252] lam=[1.0, 1.0, 1.0] [92s]
+real:descending                  K= 4096 (k=986) acc=0.2520 [0.252, 0.252, 0.252] lam=[1.0, 1.0, 1.0] [146s]
+global_shuffle_s0:all            K=  256 (k=256) acc=0.3620 [0.362, 0.362, 0.362] lam=[0.01, 0.01, 0.01] [65s]
+global_shuffle_s0:all            K= 1024 (k=1024) acc=0.3700 [0.37, 0.37, 0.37] lam=[0.1, 0.1, 0.1] [141s]
+global_shuffle_s0:all            K= 4096 (k=4096) acc=0.3780 [0.378, 0.378, 0.378] lam=[0.1, 0.1, 0.1] [274s]
+global_shuffle_s0:no_photoreceptor K=  256 (k=256) acc=0.3590 [0.359, 0.359, 0.359] lam=[0.01, 0.01, 0.01] [63s]
+global_shuffle_s0:no_photoreceptor K= 1024 (k=1024) acc=0.3710 [0.371, 0.371, 0.371] lam=[0.1, 0.1, 0.1] [138s]
+global_shuffle_s0:no_photoreceptor K= 4096 (k=4096) acc=0.3770 [0.377, 0.377, 0.377] lam=[0.1, 0.1, 0.1] [271s]
+global_shuffle_s0:central_vnc    K=  256 (k=256) acc=0.3690 [0.369, 0.369, 0.369] lam=[0.01, 0.01, 0.01] [55s]
+global_shuffle_s0:central_vnc    K= 1024 (k=1024) acc=0.3730 [0.373, 0.373, 0.373] lam=[0.1, 0.1, 0.1] [124s]
+global_shuffle_s0:central_vnc    K= 4096 (k=4096) acc=0.3757 [0.376, 0.375, 0.376] lam=[0.1, 1.0, 0.1] [249s]
+global_shuffle_s0:visual_projection K=  256 (k=256) acc=0.3710 [0.371, 0.371, 0.371] lam=[0.01, 0.01, 0.01] [53s]
+global_shuffle_s0:visual_projection K= 1024 (k=1024) acc=0.3870 [0.387, 0.387, 0.387] lam=[0.1, 0.1, 0.1] [122s]
+global_shuffle_s0:visual_projection K= 4096 (k=4096) acc=0.3860 [0.386, 0.386, 0.386] lam=[1.0, 1.0, 1.0] [241s]
+global_shuffle_s0:descending     K=  256 (k=256) acc=0.3450 [0.349, 0.337, 0.349] lam=[0.1, 0.01, 0.1] [47s]
+global_shuffle_s0:descending     K= 1024 (k=1024) acc=0.3530 [0.353, 0.353, 0.353] lam=[0.1, 0.1, 0.1] [113s]
+global_shuffle_s0:descending     K= 4096 (k=1314) acc=0.3500 [0.35, 0.35, 0.35] lam=[1.0, 1.0, 1.0] [185s]
+{
+ "primary": {
+  "view": "central_vnc",
+  "K": 1024,
+  "a": "real",
+  "b": "global_shuffle_s0",
+  "diff": -0.0776666666666666,
+  "ci95": [
+   -0.10500833333333337,
+   -0.04663333333333328
+  ]
+ },
+ "decision": "STOP"
+}
