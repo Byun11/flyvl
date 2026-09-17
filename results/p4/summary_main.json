@@ -16,14 +16,15 @@
    "val_loss_mean": 1.1104
   },
   "global_shuffle_s0:central_vnc": {
-   "n_seeds": 2,
+   "n_seeds": 3,
    "zeroshot": [
     23.9,
-    20.4
+    20.4,
+    20.7
    ],
-   "zeroshot_mean": 22.15,
-   "centered_cos_mean": 0.4868,
-   "val_loss_mean": 1.2724
+   "zeroshot_mean": 21.67,
+   "centered_cos_mean": 0.4861,
+   "val_loss_mean": 1.2723
   },
   "global_shuffle_s0:optic_lobe": {
    "n_seeds": 3,
@@ -36,6 +37,15 @@
    "centered_cos_mean": 0.4868,
    "val_loss_mean": 1.2734
   },
+  "global_shuffle_s0-v1:visual_projection": {
+   "n_seeds": 1,
+   "zeroshot": [
+    27.1
+   ],
+   "zeroshot_mean": 27.1,
+   "centered_cos_mean": 0.4933,
+   "val_loss_mean": 1.2669
+  },
   "global_shuffle_s0:visual_projection": {
    "n_seeds": 3,
    "zeroshot": [
@@ -46,6 +56,39 @@
    "zeroshot_mean": 21.77,
    "centered_cos_mean": 0.484,
    "val_loss_mean": 1.2773
+  },
+  "matched_shuffle_s0:central_vnc": {
+   "n_seeds": 3,
+   "zeroshot": [
+    25.2,
+    24.2,
+    23.0
+   ],
+   "zeroshot_mean": 24.13,
+   "centered_cos_mean": 0.4891,
+   "val_loss_mean": 1.2654
+  },
+  "matched_shuffle_s0:optic_lobe": {
+   "n_seeds": 3,
+   "zeroshot": [
+    23.6,
+    25.4,
+    19.9
+   ],
+   "zeroshot_mean": 22.97,
+   "centered_cos_mean": 0.4911,
+   "val_loss_mean": 1.263
+  },
+  "matched_shuffle_s0:visual_projection": {
+   "n_seeds": 3,
+   "zeroshot": [
+    23.9,
+    24.5,
+    22.5
+   ],
+   "zeroshot_mean": 23.63,
+   "centered_cos_mean": 0.4882,
+   "val_loss_mean": 1.2706
   },
   "mean": {
    "n_seeds": 3,
@@ -102,6 +145,39 @@
    "centered_cos_mean": 0.4926,
    "val_loss_mean": 1.2569
   },
+  "real-v1:central_vnc": {
+   "n_seeds": 3,
+   "zeroshot": [
+    23.5,
+    23.7,
+    21.9
+   ],
+   "zeroshot_mean": 23.03,
+   "centered_cos_mean": 0.4862,
+   "val_loss_mean": 1.2682
+  },
+  "real-v1:optic_lobe": {
+   "n_seeds": 3,
+   "zeroshot": [
+    22.8,
+    26.3,
+    25.1
+   ],
+   "zeroshot_mean": 24.73,
+   "centered_cos_mean": 0.49,
+   "val_loss_mean": 1.2684
+  },
+  "real-v1:visual_projection": {
+   "n_seeds": 3,
+   "zeroshot": [
+    24.6,
+    23.1,
+    22.8
+   ],
+   "zeroshot_mean": 23.5,
+   "centered_cos_mean": 0.49,
+   "val_loss_mean": 1.2622
+  },
   "real:visual_projection": {
    "n_seeds": 3,
    "zeroshot": [
@@ -122,11 +198,53 @@
     2.1
    ]
   },
+  "real:optic_lobe - matched_shuffle_s0:optic_lobe": {
+   "diff_pp": 0.23,
+   "ci95_pp": [
+    -0.93,
+    1.3
+   ]
+  },
   "real:visual_projection - global_shuffle_s0:visual_projection": {
    "diff_pp": 1.57,
    "ci95_pp": [
     0.17,
     2.9
+   ]
+  },
+  "real:visual_projection - matched_shuffle_s0:visual_projection": {
+   "diff_pp": -0.3,
+   "ci95_pp": [
+    -1.5,
+    0.83
+   ]
+  },
+  "real:central_vnc - global_shuffle_s0:central_vnc": {
+   "diff_pp": 2.27,
+   "ci95_pp": [
+    0.96,
+    3.5
+   ]
+  },
+  "real:central_vnc - matched_shuffle_s0:central_vnc": {
+   "diff_pp": -0.2,
+   "ci95_pp": [
+    -1.4,
+    0.93
+   ]
+  },
+  "global_shuffle_s0:central_vnc - real:photoreceptor": {
+   "diff_pp": -2.93,
+   "ci95_pp": [
+    -4.4,
+    -1.57
+   ]
+  },
+  "global_shuffle_s0:central_vnc - pixels": {
+   "diff_pp": -6.2,
+   "ci95_pp": [
+    -8.27,
+    -4.1
    ]
   },
   "global_shuffle_s0:optic_lobe - real:photoreceptor": {
@@ -155,6 +273,48 @@
    "ci95_pp": [
     -8.13,
     -4.1
+   ]
+  },
+  "matched_shuffle_s0:central_vnc - real:photoreceptor": {
+   "diff_pp": -0.47,
+   "ci95_pp": [
+    -1.93,
+    1.07
+   ]
+  },
+  "matched_shuffle_s0:central_vnc - pixels": {
+   "diff_pp": -3.73,
+   "ci95_pp": [
+    -5.7,
+    -1.73
+   ]
+  },
+  "matched_shuffle_s0:optic_lobe - real:photoreceptor": {
+   "diff_pp": -1.63,
+   "ci95_pp": [
+    -3.07,
+    -0.13
+   ]
+  },
+  "matched_shuffle_s0:optic_lobe - pixels": {
+   "diff_pp": -4.9,
+   "ci95_pp": [
+    -6.8,
+    -2.8
+   ]
+  },
+  "matched_shuffle_s0:visual_projection - real:photoreceptor": {
+   "diff_pp": -0.97,
+   "ci95_pp": [
+    -2.23,
+    0.37
+   ]
+  },
+  "matched_shuffle_s0:visual_projection - pixels": {
+   "diff_pp": -4.23,
+   "ci95_pp": [
+    -6.1,
+    -2.17
    ]
   },
   "real:central_vnc - real:photoreceptor": {
@@ -197,6 +357,48 @@
    "ci95_pp": [
     -5.23,
     -1.33
+   ]
+  },
+  "real-v1:central_vnc - real:photoreceptor": {
+   "diff_pp": -1.57,
+   "ci95_pp": [
+    -3.3,
+    0.2
+   ]
+  },
+  "real-v1:central_vnc - pixels": {
+   "diff_pp": -4.83,
+   "ci95_pp": [
+    -6.77,
+    -2.8
+   ]
+  },
+  "real-v1:optic_lobe - real:photoreceptor": {
+   "diff_pp": 0.13,
+   "ci95_pp": [
+    -1.53,
+    1.73
+   ]
+  },
+  "real-v1:optic_lobe - pixels": {
+   "diff_pp": -3.13,
+   "ci95_pp": [
+    -5.17,
+    -0.9
+   ]
+  },
+  "real-v1:visual_projection - real:photoreceptor": {
+   "diff_pp": -1.1,
+   "ci95_pp": [
+    -2.77,
+    0.5
+   ]
+  },
+  "real-v1:visual_projection - pixels": {
+   "diff_pp": -4.37,
+   "ci95_pp": [
+    -6.33,
+    -2.27
    ]
   },
   "real:visual_projection - real:photoreceptor": {

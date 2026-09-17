@@ -51,3 +51,31 @@ train = CIFAR train 클래스당 첫 200장 (2,000) / val = 같은 클래스의 
 
 ## 변형 로그
 (결과를 보며 추가)
+
+### 결과 1 — 2026-09-18 03시 (`results/p4/summary_main.json`)
+천장: teacher 원본 256 토큰 83.3%, 4×4 pooled 73.5%. test 1,000장, 3 seed 평균 zero-shot %.
+
+| rep | zero-shot | centered cos |
+|---|---|---|
+| cnn (일반 작은 CNN) | 36.3 | 0.567 |
+| pixels (patch 픽셀) | 27.9 | 0.511 |
+| real:photoreceptor (눈 입력만) | 24.6 | 0.493 |
+| real: optic lobe / VPN / central (v2 g=1) | 23.2 / 23.3 / 23.9 | 0.496 / 0.491 / 0.492 |
+| matched_shuffle: optic lobe / VPN / central | 23.0 / 23.6 / 24.1 | 0.491 / 0.488 / 0.489 |
+| global_shuffle: optic lobe / VPN / central | 22.2 / 21.8 / 21.7 | 0.487 / 0.484 / 0.486 |
+| real-v1 (LIF): optic lobe / VPN / central | 24.7 / 23.5 / 23.0 | 0.490 / 0.490 / 0.486 |
+| mean | 10.0 | 0 |
+
+paired bootstrap (seed 평균 정답 여부):
+- real − global shuffle: optic lobe +1.0 [−0.1, +2.1], VPN **+1.6 [+0.2, +2.9]**, central **+2.3 [+1.0, +3.5]**
+- real − matched shuffle: optic lobe +0.2 [−0.9, +1.3], VPN −0.3 [−1.5, +0.8], central −0.2 [−1.4, +0.9]
+- real 뇌 view − photoreceptor: −0.7 ~ −1.4 (CI가 0을 포함하거나 경계), − pixels: −3.9 ~ −4.7 (CI < 0)
+
+해석 (탐색적):
+1. global shuffle 대비 real 우위는 superclass×side 블록을 보존한 shuffle 대비 사라짐 → 이점은 세부 배선이 아니라 영역 간 거시 연결 구조 수준.
+2. 어떤 뇌 view도 눈 입력(photoreceptor)보다 높지 않음 → 뇌가 토큰 정렬에 쓸 정보를 더하지 않음.
+3. v1 LIF(신호가 central까지 강함)와 v2 g=1(매우 약함)의 결과가 비슷 → 신호 세기는 병목이 아님.
+4. 작은 CNN이 모든 초파리 조건보다 약 12%p 높음.
+
+### 변형 로그
+- 03시: concat(photoreceptor + 뇌 view, real vs global shuffle), v1 global shuffle 정렬기 진행.
