@@ -1,0 +1,16 @@
+{
+ "graph": "real",
+ "seed": 0,
+ "mode": "translators",
+ "n_entry": 8884,
+ "trainable": {
+  "input_projection": 27291648,
+  "classifier": 1059850,
+  "total": 28351498,
+  "total_requires_grad": 28351498
+ },
+ "init_params_sha256": "51f18b648c5619523d1653a8728b6f277f4ebd040d8ef61834f8f6f1bbe00ddf",
+ "best_epoch": 5,
+ "val_acc": 0.39800000190734863,
+ "test_acc": 0.33500000834465027
+}
