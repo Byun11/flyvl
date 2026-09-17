@@ -244,3 +244,23 @@ val loss도 같은 순서(1.2619 < 1.2700 < 1.2733).
 3. real > matched: central에서만 CI>0 (+1.11), 나머지는 경계 → 거시 구조를 넘는 세부 배선의 기여는 작음.
 4. val loss 순서도 real < matched < global로 일치.
 5. 그러나 real도 eye input(24.40) · pixels(27.87) · cnn(36.27)을 넘지 못함.
+
+### 결과 8 — 2026-09-18 06시: dynamics 모델 교차 검증 (central view)
+
+| | real | matched_shuffle | global_shuffle |
+|---|---|---|---|
+| v2 (g=1), 8 seed | **24.49** (val 1.2619) | 23.38 (1.2700) | 21.59 (1.2733) |
+| v1 LIF, 5 seed | 23.24 (1.2689) | 21.96 (1.2830) | **24.50** (1.2648) |
+
+| 비교 | v2 (8 seed) | v1 LIF (5 seed) |
+|---|---|---|
+| real − matched | +1.11 [+0.27, +1.90] 5/8 | +1.28 [0.00, +2.60] 3/5 |
+| real − global | **+2.90 [+1.96, +3.85]** 6/8 | **−1.26 [−2.50, +0.02]** 1/5 |
+| matched − global | +1.79 [+0.89, +2.73] 6/8 | **−2.54 [−3.78, −1.24]** 0/5 |
+
+해석:
+- **real > matched shuffle은 두 dynamics에서 같은 방향** (+1.1 / +1.3%p). 이 부분만 모델에 비교적 견고함.
+- **global shuffle의 위치는 dynamics에 따라 완전히 뒤집힘** (v2에서 최하위, v1에서 최상위).
+  v2 g=1에서는 global shuffle이 신호를 central까지 가장 강하게 전달했고(1.5e-3 vs real 3.8e-5), v1에서는 반대(1.07 vs 1.57).
+  즉 global shuffle 비교는 "배선 품질"보다 "그 dynamics에서 신호가 얼마나 전달되는지"를 반영할 수 있음.
+- 따라서 **global shuffle 단독 대조군으로는 어떤 주장도 하기 어렵고, matched shuffle이 필수**임.
