@@ -4,6 +4,12 @@ Stimuli (synthetic, parameterised, rendered onto the same eye model as every oth
   looming_side : a dark disc expands at azimuth +-a  -> label = left / right            (2 classes)
   motion_dir   : a grating drifts front-to-back / back-to-front / up / down             (4 classes)
   loom_speed   : disc expands slowly / quickly (side randomised)                        (2 classes)
+Basic visual characterisation (STATIC stimuli - no motion, so these measure spatial vision, which the
+motion tasks cannot):
+  orient_static: a stationary grating is horizontal or vertical                          (2 classes)
+  acuity_f<F>  : orient_static at a FIXED spatial frequency F -> acuity curve vs F
+  position     : a dark spot sits in one of 4 quadrants                                  (4 classes)
+  size         : a dark disc is small or large, position randomised                      (2 classes)
 Each trial has randomised nuisance parameters (position, size, speed, contrast, phase) so the label cannot be
 read off a single global statistic.
 
@@ -40,6 +46,7 @@ SERIES_VIEWS = ("optic_lobe", "visual_projection", "central_vnc")   # also read 
 # 23x neuron disadvantage against the full-view time mean (9,201 for visual_projection). Raised: at
 # N_SUB x STEPS = 50,000 dims the 1024-d projection matrix is ~205 MB, which is comfortable.
 N_SUB = 2000
+NOISE_SEED = 777         # fixed so that photoreceptor noise is identical across runs and graphs
 OUT = connectome.DATA_ROOT / "runs" / "p5"
 OUT.mkdir(parents=True, exist_ok=True)
 
@@ -85,6 +92,27 @@ def trial_params(rng, task, n):
         p["phase"] = rng.uniform(0, 2 * np.pi, n)
         p["contrast"] = rng.uniform(0.25, 0.45, n) if not hard else rng.uniform(0.04, 0.10, n)
         p["noise"] = np.full(n, 0.0 if not hard else 0.06)
+    elif task == "orient_static" or task.startswith("acuity_f"):
+        # No drift at all: the grating is frozen. Direction-selective machinery cannot help here.
+        y = rng.integers(0, 2, n)
+        p["orient"] = y                                       # 0 = varies along azimuth, 1 = along elevation
+        p["freq"] = (rng.uniform(1.5, 6.0, n) if task == "orient_static"
+                     else np.full(n, float(task.split("f")[1])))
+        p["phase"] = rng.uniform(0, 2 * np.pi, n)
+        p["contrast"] = rng.uniform(0.25, 0.45, n)
+        p["noise"] = np.zeros(n)
+    elif task == "position":
+        y = rng.integers(0, 4, n)                             # quadrant: (left/right) x (down/up)
+        p["az"] = np.where(y % 2 == 0, -1.0, 1.0) * rng.uniform(0.3, 0.6, n)
+        p["el"] = np.where(y // 2 == 0, -1.0, 1.0) * rng.uniform(0.3, 0.6, n)
+        p["rad"] = rng.uniform(0.12, 0.20, n)
+        p["contrast"] = rng.uniform(0.6, 1.0, n)
+    elif task == "size":
+        y = rng.integers(0, 2, n)
+        p["az"] = rng.uniform(-0.6, 0.6, n)
+        p["el"] = rng.uniform(-0.5, 0.5, n)
+        p["rad"] = np.where(y == 0, rng.uniform(0.08, 0.13, n), rng.uniform(0.22, 0.32, n))
+        p["contrast"] = rng.uniform(0.6, 1.0, n)
     else:
         raise ValueError(TASK)
     return y, p
@@ -96,6 +124,13 @@ def render(retina, task, p, t, device="cuda"):
     g = lambda k: torch.as_tensor(p[k], dtype=torch.float32, device=device)[None]
     if task.startswith("motion_dir"):
         pass
+    if task == "orient_static" or task.startswith("acuity_f"):
+        coord = torch.where(g("orient") > 0.5, th.expand_as(phi + g("orient")), phi.expand_as(th + g("orient")))
+        return GRAY + g("contrast") * torch.sin(2 * np.pi * g("freq") * coord + g("phase"))
+    if task in ("position", "size"):                        # static dark disc, no expansion
+        d = torch.sqrt((phi - g("az")) ** 2 + ((th - g("el")) * 0.5) ** 2)
+        return torch.where(d < g("rad"), (GRAY * (1 - g("contrast"))).expand_as(d),
+                           torch.full_like(d, GRAY))
     if task in ("looming_side", "loom_speed", "loom_vs_recede"):
         if task == "loom_vs_recede":
             span = g("rate") * (STEPS - 1) * 0.02
@@ -114,7 +149,10 @@ def render(retina, task, p, t, device="cuda"):
     coord = torch.stack([along[i, :, 0] for i in range(4)], 0)[idx].T   # (n_driven, B)
     lum = GRAY + g("contrast") * torch.sin(2 * np.pi * g("freq") * (coord - g("speed") * t) + g("phase"))
     if "noise" in p and float(p["noise"][0]) > 0:                       # sensor noise, redrawn every step
-        lum = lum + torch.randn_like(lum) * g("noise")
+        # Seeded per (trial block, step): unseeded noise made the SAME condition vary by up to 3.6%p
+        # between runs, which silently invalidated every across-run absolute comparison.
+        gen = torch.Generator(device=lum.device).manual_seed(NOISE_SEED + int(round(t / 0.02)))
+        lum = lum + torch.randn(lum.shape, generator=gen, device=lum.device, dtype=lum.dtype) * g("noise")
     return lum
 
 
@@ -215,4 +253,10 @@ if __name__ == "__main__":
                 print(f"{graph:20s} {view:24s} K{K:<5d} k={k:<5d} mean {np.mean(accs)*100:.2f} "
                       f"{[round(a*100,1) for a in accs]}", flush=True)
         print(f"  ({graph} {time.time()-t0:.0f}s)", flush=True)
-    (OUT / f"{TASK}_t{trial_seed}.json" if trial_seed else OUT / f"{TASK}.json").write_text(json.dumps({"task": TASK, "n": N, "chance": 1/len(set(y.tolist())), "res": res}, indent=1))
+    # MERGE, do not overwrite: each invocation runs a subset of graphs, and overwriting silently dropped
+    # the graphs measured by earlier runs of the same task (it cost the `real` row once already).
+    path = OUT / (f"{TASK}_t{trial_seed}.json" if trial_seed else f"{TASK}.json")
+    merged = json.loads(path.read_text())["res"] if path.exists() else {}
+    merged.update(res)
+    path.write_text(json.dumps({"task": TASK, "n": N, "chance": 1 / len(set(y.tolist())), "res": merged},
+                               indent=1))
