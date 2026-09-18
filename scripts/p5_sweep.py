@@ -9,6 +9,7 @@ usage: p5_sweep.py AXIS [n_trials] [graphs] [trial_seed]
   AXIS = noise    : contrast fixed at 0.35, noise in {0.0, 0.03, 0.06, 0.12, 0.25}
 Readout: 5 probe seeds (p5_flytask uses 3), time-mean evoked activity, fixed random projection.
 """
+import hashlib
 import json
 import sys
 import time
@@ -39,6 +40,13 @@ OUT = connectome.DATA_ROOT / "runs" / "p5"
 OUT.mkdir(parents=True, exist_ok=True)
 
 
+def view_seed(view: str) -> int:
+    """Deterministic across processes: Python's str hash is randomised per interpreter (PYTHONHASHSEED),
+    so hash(view) gave a different random projection on every run and absolute numbers drifted between
+    runs (graph comparisons inside one run were still valid, since all graphs shared the projection)."""
+    return int(hashlib.md5(view.encode()).hexdigest()[:8], 16) % 2**31
+
+
 if __name__ == "__main__":
     c = connectome.load()
     cfg, _, _ = frozen.load()
@@ -60,7 +68,7 @@ if __name__ == "__main__":
             for view, X in F.items():
                 if graph == "nobrain" and not view.startswith("photoreceptor"):
                     continue
-                gen = torch.Generator().manual_seed(hash(view) % 2**31)
+                gen = torch.Generator().manual_seed(view_seed(view))
                 proj = (torch.randn(P5.PROJ, X.shape[1], generator=gen) / np.sqrt(P5.PROJ)).numpy().astype(np.float32)
                 Z = X @ proj.T
                 sc = probe.standardize_pca(Z[:n_tr], Z[n_tr:], (256,))

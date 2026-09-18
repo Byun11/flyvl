@@ -13,6 +13,7 @@ standardize -> multinomial logistic regression (same probe code as P1). Conditio
 Views: descending (1,314), central_vnc, visual_projection.
 usage: p5_flytask.py TASK [n_trials]
 """
+import hashlib
 import json
 import sys
 import time
@@ -33,6 +34,13 @@ N = int(sys.argv[2]) if len(sys.argv) > 2 else 600
 STEPS, PROJ = 25, 1024
 OUT = connectome.DATA_ROOT / "runs" / "p5"
 OUT.mkdir(parents=True, exist_ok=True)
+
+
+def view_seed(view: str) -> int:
+    """Deterministic across processes: Python's str hash is randomised per interpreter (PYTHONHASHSEED),
+    so hash(view) gave a different random projection on every run and absolute numbers drifted between
+    runs (graph comparisons inside one run were still valid, since all graphs shared the projection)."""
+    return int(hashlib.md5(view.encode()).hexdigest()[:8], 16) % 2**31
 
 
 def trial_params(rng, task, n):
@@ -149,7 +157,8 @@ if __name__ == "__main__":
     cfg, _, _ = frozen.load()
     M = masks.build(c)
     views = {"descending": M["descending"], "central_vnc": M["central_vnc"],
-             "visual_projection": M["visual_projection"]}
+             "visual_projection": M["visual_projection"],
+             "optic_lobe": np.flatnonzero(c.graded)}     # read the optic lobe directly, bypassing the brain
     trial_seed = int(sys.argv[4]) if len(sys.argv) > 4 else 0
     rng = np.random.default_rng(trial_seed)
     y, p = trial_params(rng, TASK, N)
@@ -164,7 +173,7 @@ if __name__ == "__main__":
         for view, X in F.items():
             if graph == "nobrain" and not view.startswith("photoreceptor"):
                 continue
-            P = (torch.randn(PROJ, X.shape[1], generator=torch.Generator().manual_seed(hash(view) % 2**31)) /
+            P = (torch.randn(PROJ, X.shape[1], generator=torch.Generator().manual_seed(view_seed(view))) /
                  np.sqrt(PROJ)).numpy().astype(np.float32)
             Z = X @ P.T
             sc = probe.standardize_pca(Z[:n_tr], Z[n_tr:], (256,))
