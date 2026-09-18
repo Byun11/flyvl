@@ -197,13 +197,22 @@ if __name__ == "__main__":
         for view, X in F.items():
             if graph == "nobrain" and not view.startswith("photoreceptor"):
                 continue
-            P = (torch.randn(PROJ, X.shape[1], generator=torch.Generator().manual_seed(view_seed(view))) /
-                 np.sqrt(PROJ)).numpy().astype(np.float32)
+            # Keep the projection RATIO, not the width: a fixed 1024-d projection discards 98% of a
+            # 50,000-d series but only 49% of a 2,000-d mean, which alone can make the series lose.
+            width = min(int(round(X.shape[1] * PROJ / max(X.shape[1] // STEPS, 1))), X.shape[1])                 if view.endswith("_series") else PROJ
+            width = min(max(width, PROJ), 32768)
+            P = (torch.randn(width, X.shape[1], generator=torch.Generator().manual_seed(view_seed(view))) /
+                 np.sqrt(width)).numpy().astype(np.float32)
             Z = X @ P.T
-            sc = probe.standardize_pca(Z[:n_tr], Z[n_tr:], (256,))
+            # PCA K is a second bottleneck: a series' variance is dominated by phase/noise, so the
+            # label-relevant direction can fall outside the top 256 PCs. Report every K, never pick on test.
+            sc = probe.standardize_pca(Z[:n_tr], Z[n_tr:], (256, 1024, 2048))
             for K, (Str, Ste, k) in sc.items():
                 accs = [float((probe.fit_probe(Str, y[:n_tr], Ste, seed)["pred"] == y[n_tr:]).mean()) for seed in (0, 1, 2)]
-                res[f"{graph}:{view}"] = {"acc": accs, "mean": float(np.mean(accs)), "k": k}
-                print(f"{graph:20s} {view:20s} acc {[round(a*100,1) for a in accs]} mean {np.mean(accs)*100:.2f}", flush=True)
+                res[f"{graph}:{view}:K{K}"] = {"acc": accs, "mean": float(np.mean(accs)), "k": k}
+                if K == 256:
+                    res[f"{graph}:{view}"] = {"acc": accs, "mean": float(np.mean(accs)), "k": k}
+                print(f"{graph:20s} {view:24s} K{K:<5d} k={k:<5d} mean {np.mean(accs)*100:.2f} "
+                      f"{[round(a*100,1) for a in accs]}", flush=True)
         print(f"  ({graph} {time.time()-t0:.0f}s)", flush=True)
     (OUT / f"{TASK}_t{trial_seed}.json" if trial_seed else OUT / f"{TASK}.json").write_text(json.dumps({"task": TASK, "n": N, "chance": 1/len(set(y.tolist())), "res": res}, indent=1))
