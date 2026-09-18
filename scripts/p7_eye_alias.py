@@ -11,6 +11,15 @@ without a pre-sampling Gaussian blur. Reference points from P1: pixels 27.87, ey
 
 If blur moves the eye readout toward pixels, aliasing was destroying the image before the circuit
 had a chance. usage: p7_eye_alias.py [n_per_class] [blur_px ...]
+       p7_eye_alias.py adapt [n_per_class]     -> sweep tau_adapt x drift_extent instead
+
+Hypotheses tested here, in order:
+  1. aliasing        -> REJECTED: blur recovers at most 1.0pp of the 3.4pp loss.
+  2. resolution      -> REJECTED: pixels at 21x21 (441 px, the eye's sampling) score 30.60 vs
+                        29.17 at 32x32, i.e. CIFAR-10 linear decoding needs no more than ~13x13.
+  3. adaptation      -> the photoreceptor is a temporal high-pass (tau_adapt = 0.5 s) and the stimulus
+                        lasts exactly 0.5 s, while the image is drifted by only 10% of its width. A
+                        static photo may simply be washed out by design.
 """
 import dataclasses
 import json
@@ -27,8 +36,12 @@ from flyvl import connectome, data, frozen, probe  # noqa: E402
 from flyvl.extract import to_luma  # noqa: E402
 from flyvl.stimulus import GRAY, Retina  # noqa: E402
 
-PER_CLASS = int(sys.argv[1]) if len(sys.argv) > 1 else 300
-BLURS = [float(b) for b in sys.argv[2:]] or [0.0, 0.5, 0.7, 1.0, 1.5]
+MODE = "adapt" if len(sys.argv) > 1 and sys.argv[1] == "adapt" else "blur"
+_args = sys.argv[2:] if MODE == "adapt" else sys.argv[1:]
+PER_CLASS = int(_args[0]) if _args else 300
+BLURS = [float(b) for b in _args[1:]] or [0.0, 0.5, 0.7, 1.0, 1.5]
+# (tau_adapt seconds, drift_extent in image units; the image spans 2, so 0.2 = 10% of its width)
+ADAPT_GRID = [(0.5, 0.2), (0.5, 0.6), (0.5, 1.2), (2.0, 0.2), (2.0, 0.6), (1e6, 0.2), (1e6, 0.6)]
 STEPS, KS = 25, (1024,)
 OUT = connectome.DATA_ROOT / "runs" / "p7"
 OUT.mkdir(parents=True, exist_ok=True)
@@ -76,6 +89,23 @@ if __name__ == "__main__":
             accs = [float((probe.fit_probe(Str, ltr, Ste, s)["pred"] == lte).mean()) for s in (0, 1, 2)]
             res[name] = {"acc": accs, "mean": float(np.mean(accs)), "k": k}
             print(f"{name:16s} mean {np.mean(accs)*100:.2f} {[round(a*100,1) for a in accs]}", flush=True)
+
+    if MODE == "adapt":
+        for tau, extent in ADAPT_GRID:
+            t0 = time.time()
+            ec = dataclasses.replace(eye_cfg, tau_adapt=tau, drift_extent=extent)
+            retina = Retina(c, driven, ec, cfg.dt)
+            A = eye_features(retina, imgs_tr, ec.drift_directions)
+            B = eye_features(retina, imgs_te, ec.drift_directions)
+            sc = probe.standardize_pca(A, B, KS)
+            for K, (Str, Ste, k) in sc.items():
+                accs = [float((probe.fit_probe(Str, ltr, Ste, s)["pred"] == lte).mean()) for s in (0, 1, 2)]
+                res[f"tau{tau:g}_drift{extent:g}"] = {"acc": accs, "mean": float(np.mean(accs)), "k": k}
+                print(f"tau {tau:<8g} drift {extent:<5g} mean {np.mean(accs)*100:.2f} "
+                      f"{[round(a*100,1) for a in accs]} ({time.time()-t0:.0f}s)", flush=True)
+            (OUT / f"eye_adapt_{PER_CLASS}.json").write_text(
+                json.dumps({"per_class": PER_CLASS, "chance": 0.1, "res": res}, indent=1))
+        sys.exit()
 
     for blur in BLURS:
         t0 = time.time()
