@@ -7,7 +7,8 @@ the linear readout.
 conditions
   init    : dynamics frozen at the common init (g = 1), readout only  -> what P5 measured
   trained : dynamics + readout
-usage: p6_train_motion.py GRAPH SEED CONDITION [epochs] [n_train]
+usage: p6_train_motion.py GRAPH SEED CONDITION [epochs] [n_train] [difficulty]
+  difficulty: hard (contrast 0.04-0.10, default) | harder (0.015-0.040)
 """
 import json
 import sys
@@ -21,21 +22,22 @@ ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 from flyvl import connectome, frozen  # noqa: E402
 from flyvl.extract import load_graph  # noqa: E402
-from flyvl.v2motion import MotionFlyVL2, trial_params  # noqa: E402
+from flyvl.v2motion import CONTRAST, MotionFlyVL2, trial_params  # noqa: E402
 
 GRAPH, SEED, COND = sys.argv[1], int(sys.argv[2]), sys.argv[3]
 assert COND in ("trained", "init")
 EPOCHS = int(sys.argv[4]) if len(sys.argv) > 4 else 20
 N_TRAIN = int(sys.argv[5]) if len(sys.argv) > 5 else 2000
 N_VAL, N_TEST, BATCH = 500, 1000, 32
+DIFF = sys.argv[6] if len(sys.argv) > 6 else "hard"
 LR_DYN, LR_READOUT, CLIP = 3e-3, 1e-3, 1.0
-OUT = connectome.DATA_ROOT / "runs" / "p6" / f"{GRAPH}_s{SEED}_{COND}"
+OUT = connectome.DATA_ROOT / "runs" / "p6" / (f"{GRAPH}_s{SEED}_{COND}" + ("" if DIFF == "hard" else f"_{DIFF}"))
 OUT.mkdir(parents=True, exist_ok=True)
 
 # Trials are drawn once from fixed seeds, so every graph/condition/seed sees the SAME stimuli.
 P, Y = {}, {}
 for name, (n, s) in {"train": (N_TRAIN, 100), "val": (N_VAL, 101), "test": (N_TEST, 102)}.items():
-    P[name], Y[name] = trial_params(np.random.default_rng(s), n)
+    P[name], Y[name] = trial_params(np.random.default_rng(s), n, CONTRAST[DIFF])
 
 c = connectome.load()
 cfg, _, _ = frozen.load()
@@ -99,6 +101,6 @@ model.load_state_dict(torch.load(OUT / "best.pt", weights_only=False))
 best = max(log, key=lambda r: (r["val_acc"], -r["epoch"]))
 result = {"graph": GRAPH, "seed": SEED, "condition": COND, "best_epoch": best["epoch"],
           "val_acc": best["val_acc"], "test_acc": evaluate("test"), "chance": 0.25,
-          "n_train": N_TRAIN, "epochs": EPOCHS, "log": log}
+          "n_train": N_TRAIN, "epochs": EPOCHS, "difficulty": DIFF, "log": log}
 (OUT / "result.json").write_text(json.dumps(result, indent=1))
 print("TEST", json.dumps({k: v for k, v in result.items() if k != "log"}), flush=True)

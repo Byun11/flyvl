@@ -10,7 +10,7 @@ baselines
   mlp           : 2-layer MLP on the flattened movie
   tempconv      : per-photoreceptor temporal conv (this is the computation a motion detector needs:
                   a learned temporal filter, then pooling over the eye) -> linear
-usage: p5_cnn_baseline.py [n_trials] [trial_seed]
+usage: p5_cnn_baseline.py [n_trials] [trial_seed] [difficulty]   difficulty: hard | harder
 """
 import json
 import sys
@@ -30,6 +30,7 @@ import p5_flytask as P5  # noqa: E402
 
 N = int(sys.argv[1]) if len(sys.argv) > 1 else 600
 TRIAL_SEED = int(sys.argv[2]) if len(sys.argv) > 2 else 0
+DIFF = sys.argv[3] if len(sys.argv) > 3 else "hard"
 EPOCHS, BATCH = 60, 64
 P5.TASK = "motion_dir_hard"
 OUT = connectome.DATA_ROOT / "runs" / "p5"
@@ -86,6 +87,8 @@ if __name__ == "__main__":
     cfg, _, _ = frozen.load()
     M = masks.build(c)
     y, p = P5.trial_params(np.random.default_rng(TRIAL_SEED), "motion_dir_hard", N)
+    if DIFF == "harder":
+        p["contrast"] = np.random.default_rng(TRIAL_SEED + 7).uniform(0.015, 0.040, N)
     t0 = time.time()
     F = P5.features("nobrain", y, p, c, cfg, {})
     X = F["photoreceptor_series"]
@@ -105,6 +108,6 @@ if __name__ == "__main__":
         res[name] = {"acc": accs, "mean": float(np.mean(accs))}
         print(f"{name:10s} best-epoch acc {[round(a*100,1) for a in accs]} mean {np.mean(accs)*100:.2f}",
               flush=True)
-    (OUT / f"cnn_baseline_t{TRIAL_SEED}.json").write_text(
+    (OUT / f"cnn_baseline_t{TRIAL_SEED}_{DIFF}.json").write_text(
         json.dumps({"n": N, "chance": 0.25, "note": "no brain; input = eye movie; best epoch on test = upper bound",
                     "res": res}, indent=1))

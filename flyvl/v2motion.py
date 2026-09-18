@@ -53,6 +53,9 @@ class MotionFlyVL2(FlyVL2):
         return torch.stack(seq)
 
 
+CONTRAST = {"hard": (0.04, 0.10), "harder": (0.015, 0.040)}
+
+
 def trial_params(rng: np.random.Generator, n: int, contrast: tuple[float, float] = (0.04, 0.10)):
     """Same distributions as p5_flytask's motion_dir_hard. Returns (params (n, 5) float32, labels (n,))."""
     y = rng.integers(0, 4, n)
