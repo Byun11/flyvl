@@ -60,13 +60,15 @@ def trial_params(rng, task, n):
         p["el"] = rng.uniform(-0.4, 0.4, n)
         p["rate"] = rng.uniform(0.5, 0.9, n)
         p["contrast"] = rng.uniform(0.6, 1.0, n)
-    elif task == "motion_dir":
+    elif task in ("motion_dir", "motion_dir_hard"):
+        hard = task.endswith("hard")
         y = rng.integers(0, 4, n)
         p["dir"] = y
-        p["freq"] = rng.uniform(2.5, 5.0, n)
-        p["speed"] = rng.uniform(0.7, 1.3, n)
+        p["freq"] = rng.uniform(2.5, 5.0, n) if not hard else rng.uniform(2.0, 7.0, n)
+        p["speed"] = rng.uniform(0.7, 1.3, n) if not hard else rng.uniform(0.5, 1.6, n)
         p["phase"] = rng.uniform(0, 2 * np.pi, n)
-        p["contrast"] = rng.uniform(0.25, 0.45, n)
+        p["contrast"] = rng.uniform(0.25, 0.45, n) if not hard else rng.uniform(0.04, 0.10, n)
+        p["noise"] = np.full(n, 0.0 if not hard else 0.06)
     else:
         raise ValueError(TASK)
     return y, p
@@ -76,6 +78,8 @@ def render(retina, task, p, t, device="cuda"):
     """Luminance (n_driven, B) at time t for all trials."""
     phi, th = retina.phi[:, None], retina.theta[:, None]
     g = lambda k: torch.as_tensor(p[k], dtype=torch.float32, device=device)[None]
+    if task.startswith("motion_dir"):
+        pass
     if task in ("looming_side", "loom_speed", "loom_vs_recede"):
         if task == "loom_vs_recede":
             span = g("rate") * (STEPS - 1) * 0.02
@@ -86,13 +90,16 @@ def render(retina, task, p, t, device="cuda"):
         d = torch.sqrt((phi - g("az")) ** 2 + (th * 0.5) ** 2)
         dark = GRAY * (1 - g("contrast"))
         return torch.where(d < r, dark.expand_as(d), torch.full_like(d, GRAY))
-    fb = (phi.abs() - 0.05) / 0.95
+    fb = (phi.abs() - 0.05) / 0.95    # motion tasks
     along = torch.stack([2 * fb - 1, 1 - 2 * fb, th, -th], 0)          # ftb, btf, up, down
     coord = along[torch.as_tensor(p["dir"], device=device), torch.arange(len(phi), device=device)[:, None],
                   torch.arange(len(p["dir"]), device=device)[None]] if False else None
     idx = torch.as_tensor(p["dir"], dtype=torch.long, device=device)
     coord = torch.stack([along[i, :, 0] for i in range(4)], 0)[idx].T   # (n_driven, B)
-    return GRAY + g("contrast") * torch.sin(2 * np.pi * g("freq") * (coord - g("speed") * t) + g("phase"))
+    lum = GRAY + g("contrast") * torch.sin(2 * np.pi * g("freq") * (coord - g("speed") * t) + g("phase"))
+    if "noise" in p and float(p["noise"][0]) > 0:                       # sensor noise, redrawn every step
+        lum = lum + torch.randn_like(lum) * g("noise")
+    return lum
 
 
 @torch.no_grad()
@@ -138,12 +145,14 @@ if __name__ == "__main__":
     M = masks.build(c)
     views = {"descending": M["descending"], "central_vnc": M["central_vnc"],
              "visual_projection": M["visual_projection"]}
-    rng = np.random.default_rng(0)
+    trial_seed = int(sys.argv[4]) if len(sys.argv) > 4 else 0
+    rng = np.random.default_rng(trial_seed)
     y, p = trial_params(rng, TASK, N)
     n_tr = int(N * 0.7)
     print(f"task={TASK} n={N} classes={len(set(y.tolist()))} train={n_tr}", flush=True)
     res = {}
-    for graph in ("real", "matched_shuffle_s0", "nobrain"):
+    graphs = sys.argv[3].split(",") if len(sys.argv) > 3 else ["real", "matched_shuffle_s0", "nobrain"]
+    for graph in graphs:
         t0 = time.time()
         F = features(graph, y, p, c, cfg, views)
         gproj = torch.Generator().manual_seed(0)
@@ -159,4 +168,4 @@ if __name__ == "__main__":
                 res[f"{graph}:{view}"] = {"acc": accs, "mean": float(np.mean(accs)), "k": k}
                 print(f"{graph:20s} {view:20s} acc {[round(a*100,1) for a in accs]} mean {np.mean(accs)*100:.2f}", flush=True)
         print(f"  ({graph} {time.time()-t0:.0f}s)", flush=True)
-    (OUT / f"{TASK}.json").write_text(json.dumps({"task": TASK, "n": N, "chance": 1/len(set(y.tolist())), "res": res}, indent=1))
+    (OUT / f"{TASK}_t{trial_seed}.json" if trial_seed else OUT / f"{TASK}.json").write_text(json.dumps({"task": TASK, "n": N, "chance": 1/len(set(y.tolist())), "res": res}, indent=1))
