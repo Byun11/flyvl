@@ -33,13 +33,13 @@ from flyvl.extract import load_graph, to_luma  # noqa: E402
 from flyvl.sim import Sim  # noqa: E402
 from flyvl.stimulus import GRAY, Retina  # noqa: E402
 
-PER_CLASS = int(sys.argv[1]) if len(sys.argv) > 1 else 100
-DRIFTS = [float(d) for d in sys.argv[2:]] or [0.2, 1.2]
 GRAPHS = ["real", "matched_shuffle_s0"]
 _g = [a for a in sys.argv if a.startswith("--graphs=")]
-if _g:
+if _g:                                     # strip flags BEFORE parsing positional args
     GRAPHS = _g[0].split("=")[1].split(",")
     sys.argv.remove(_g[0])
+PER_CLASS = int(sys.argv[1]) if len(sys.argv) > 1 else 100
+DRIFTS = [float(d) for d in sys.argv[2:]] or [0.2, 1.2]
 STEPS, KS = 25, (1024,)
 OUT = connectome.DATA_ROOT / "runs" / "p7"
 OUT.mkdir(parents=True, exist_ok=True)
@@ -121,5 +121,7 @@ if __name__ == "__main__":
                 print(f"{graph:20s} drift {drift:<5g} {view:20s} mean {np.mean(accs)*100:.2f} "
                       f"{[round(x*100,1) for x in accs]}", flush=True)
             print(f"  ({graph} drift {drift:g}: {time.time()-t0:.0f}s)", flush=True)
-            (OUT / f"drift_brain_{PER_CLASS}.json").write_text(
-                json.dumps({"per_class": PER_CLASS, "graphs": GRAPHS, "chance": 0.1, "res": res}, indent=1))
+            path = OUT / f"drift_brain_{PER_CLASS}.json"          # merge: runs cover different graphs
+            merged = json.loads(path.read_text())["res"] if path.exists() else {}
+            merged.update(res)
+            path.write_text(json.dumps({"per_class": PER_CLASS, "chance": 0.1, "res": merged}, indent=1))
