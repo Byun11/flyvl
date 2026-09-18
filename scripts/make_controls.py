@@ -1,5 +1,6 @@
 """Build control graphs from the frozen effective graph and verify their constraints.
-usage: make_controls.py global|matched SEED [SEED ...]"""
+usage: make_controls.py global|matched|ol|central SEED [SEED ...]
+  ol / central: matched rewiring restricted to optic-lobe-internal / non-optic-lobe edges."""
 import json
 import sys
 from pathlib import Path
@@ -27,7 +28,8 @@ def degrees(M):
 
 din, dout = degrees(W)
 for seed in seeds:
-    R, info = controls.rewire(W, c, seed=seed, matched=(kind == "matched"))
+    scope = kind if kind in ("ol", "central") else None
+    R, info = controls.rewire(W, c, seed=seed, matched=(kind != "global"), scope=scope)
     rin, rout = degrees(R)
     coo = R.tocoo()
     checks = {
@@ -43,7 +45,7 @@ for seed in seeds:
     info.update(checks)
     assert checks["nnz_equal"] and checks["in_degree_equal"] and checks["out_degree_equal"]
     assert checks["kc_kc_edges"] == 0 and checks["row_abs_sum_maxdiff"] < 1e-4
-    name = f"{kind}_shuffle_s{seed}"
+    name = f"shuffle_{kind}_s{seed}" if scope else f"{kind}_shuffle_s{seed}"
     sparse.save_npz(out / f"{name}.npz", R, compressed=False)
     (out / f"{name}.json").write_text(json.dumps(info, indent=1))
     print(name, json.dumps(info), flush=True)

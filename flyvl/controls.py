@@ -10,6 +10,13 @@ Rewiring keeps, relative to W_eff:
 global_shuffle: posts permuted across all edges.
 matched_shuffle: posts permuted only among edges in the same (pre group, post group) block,
   group = superclass x side, so region / superclass / side wiring statistics are preserved.
+
+`scope` restricts rewiring to a subset of edges (the rest are copied verbatim from W_eff), which gives
+partial controls that localise where the real wiring matters:
+  shuffle_ol      : only optic-lobe-internal edges are rewired (central wiring intact)
+  shuffle_central : only edges with no optic-lobe endpoint are rewired (optic lobe intact)
+Degrees stay exact under a scope, because permuting post endpoints inside the scope preserves each
+neuron's in-degree contribution from that scope and leaves every other edge untouched.
 """
 from __future__ import annotations
 
@@ -27,15 +34,27 @@ def _blocks(c: Connectome, pre: np.ndarray, post: np.ndarray, matched: bool) -> 
     return group[pre].astype(np.int64) * (group.max() + 1) + group[post]
 
 
-def rewire(W_eff: sparse.csr_matrix, c: Connectome, seed: int, matched: bool, max_iter: int = 500) -> tuple:
+def ol_scope(c: Connectome, pre: np.ndarray, post: np.ndarray, which: str) -> np.ndarray:
+    """Edge mask for the partial controls. `which` is 'ol' (optic-lobe-internal) or 'central'."""
+    ol = np.isin(c.superclass.astype(str), ("ol_intrinsic", "ol_sensory"))
+    if which == "ol":
+        return ol[pre] & ol[post]
+    if which == "central":
+        return ~ol[pre] & ~ol[post]
+    raise ValueError(which)
+
+
+def rewire(W_eff: sparse.csr_matrix, c: Connectome, seed: int, matched: bool, max_iter: int = 500,
+           scope: str | None = None) -> tuple:
     rng = np.random.default_rng(seed)
     n = W_eff.shape[0]
     coo = W_eff.tocoo()
     pre, post, w = coo.col.astype(np.int64), coo.row.astype(np.int64), coo.data.copy()
     block = _blocks(c, pre, post, matched)
+    inscope = np.ones(len(pre), bool) if scope is None else ol_scope(c, pre, post, scope)
 
-    # permute post endpoints within each block
-    order = np.argsort(block, kind="stable")
+    # permute post endpoints within each block, among in-scope edges only
+    order = np.argsort(np.where(inscope, block, -1), kind="stable")[(~inscope).sum():]
     bounds = np.flatnonzero(np.diff(block[order])) + 1
     new_post = post.copy()
     for seg in np.split(order, bounds):
@@ -46,14 +65,16 @@ def rewire(W_eff: sparse.csr_matrix, c: Connectome, seed: int, matched: bool, ma
     segs = {b: s for b, s in zip(block[order][np.r_[0, bounds]], np.split(order, bounds))}
 
     def bad_mask(post):
+        # out-of-scope edges are kept, so when an in-scope edge collides with one, the in-scope edge is
+        # the one to move: sort in-scope last within each (pre, post) key so it is flagged as the repeat.
         key = pre * n + post
-        srt = np.argsort(key, kind="stable")
+        srt = np.lexsort((inscope, key))
         dup = np.zeros(len(key), bool)
         dup[srt[1:]] = key[srt[1:]] == key[srt[:-1]]            # every repeat after the first
-        return dup | (kc[pre] & kc[post]) | (pre == post)
+        return (dup | (kc[pre] & kc[post]) | (pre == post)) & inscope
 
     history, global_phase = [], 0
-    all_edges = np.arange(len(post))
+    all_edges = np.flatnonzero(inscope)
     for it in range(max_iter + 200):
         bad = np.flatnonzero(bad_mask(post))
         history.append(len(bad))
@@ -83,7 +104,8 @@ def rewire(W_eff: sparse.csr_matrix, c: Connectome, seed: int, matched: bool, ma
     scale = np.divide(target, have, out=np.zeros_like(target), where=have > 0)
     R = (sparse.diags(scale.astype(np.float32)) @ R).tocsr()
     R.sort_indices()
-    info = {"seed": seed, "matched": matched, "fix_iterations": len(history), "bad_initial": history[0],
+    info = {"seed": seed, "matched": matched, "scope": scope or "all",
+            "edges_rewired": int(inscope.sum()), "fix_iterations": len(history), "bad_initial": history[0],
             "nnz": int(R.nnz), "nnz_eff": int(W_eff.nnz),
             "global_fallback_iterations": global_phase, "edges_violating_block": block_violations,
             "bad_before_fallback": history[min(max_iter, len(history)) - 1]}
