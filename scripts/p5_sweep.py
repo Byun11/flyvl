@@ -58,7 +58,7 @@ if __name__ == "__main__":
             t0 = time.time()
             F = P5.features(graph, y, p, c, cfg, views)
             for view, X in F.items():
-                if graph == "nobrain" and view != "photoreceptor":
+                if graph == "nobrain" and not view.startswith("photoreceptor"):
                     continue
                 gen = torch.Generator().manual_seed(hash(view) % 2**31)
                 proj = (torch.randn(P5.PROJ, X.shape[1], generator=gen) / np.sqrt(P5.PROJ)).numpy().astype(np.float32)

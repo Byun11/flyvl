@@ -110,7 +110,7 @@ def features(graph, y, p, c, cfg, views, batch=64):
     driven = r16[c.column[r16, 0] >= 0]
     eye_cfg = frozen.load()[1]
     retina = Retina(c, driven, eye_cfg, cfg.dt)
-    out = {k: [] for k in list(views) + ["photoreceptor"]}
+    out = {k: [] for k in list(views) + ["photoreceptor", "photoreceptor_series"]}
     sim = None if graph == "nobrain" else Sim(c, cfg, W=load_graph(c, graph, cfg), driven=driven)
     for s in range(0, len(y), batch):
         sl = slice(s, min(s + batch, len(y)))
@@ -120,11 +120,13 @@ def features(graph, y, p, c, cfg, views, batch=64):
         if sim is not None:
             st = sim.zero_state(B + 1)
         acc = None
-        pr = 0
+        pr, series = 0, []
         for k in range(STEPS):
             lum = torch.cat([render(retina, TASK, pb, k * cfg.dt), torch.full((len(driven), 1), GRAY, device="cuda")], 1)
             eye = retina.transduce(lum)
-            pr = pr + (eye[:, :-1] - eye[:, -1:])
+            step_evoked = eye[:, :-1] - eye[:, -1:]
+            pr = pr + step_evoked
+            series.append(step_evoked)                                 # keep time, do not average
             if sim is not None:
                 st = sim.step(st, eye)
                 x = torch.zeros(c.n, B + 1, device="cuda")
@@ -132,6 +134,9 @@ def features(graph, y, p, c, cfg, views, batch=64):
                 x[torch.as_tensor(sim.li, device="cuda")] = st.s
                 acc = x if acc is None else acc + x
         out["photoreceptor"].append((pr / STEPS).T.float().cpu())
+        # same eye signal WITHOUT the time average: the honest no-brain baseline for a motion task,
+        # since a time-averaged drifting grating cannot carry direction by construction.
+        out["photoreceptor_series"].append(torch.stack(series).permute(2, 0, 1).reshape(B, -1).float().cpu())
         if sim is not None:
             ev = (acc[:, :-1] - acc[:, -1:]) / STEPS
             for k, idx in views.items():
@@ -157,7 +162,7 @@ if __name__ == "__main__":
         F = features(graph, y, p, c, cfg, views)
         gproj = torch.Generator().manual_seed(0)
         for view, X in F.items():
-            if graph == "nobrain" and view != "photoreceptor":
+            if graph == "nobrain" and not view.startswith("photoreceptor"):
                 continue
             P = (torch.randn(PROJ, X.shape[1], generator=torch.Generator().manual_seed(hash(view) % 2**31)) /
                  np.sqrt(PROJ)).numpy().astype(np.float32)
