@@ -32,6 +32,14 @@ from flyvl.stimulus import GRAY, Retina  # noqa: E402
 TASK = sys.argv[1] if len(sys.argv) > 1 else "looming_side"
 N = int(sys.argv[2]) if len(sys.argv) > 2 else 600
 STEPS, PROJ = 25, 1024
+SERIES_VIEWS = ("optic_lobe", "visual_projection", "central_vnc")   # also read WITHOUT the time average
+# A per-step RANDOM PROJECTION destroys individual neurons' time courses, which is exactly what a
+# delay-and-multiply motion computation needs. So the series readout keeps a fixed random SUBSET of
+# neurons and their full trajectories instead: N_SUB x STEPS dims, no mixing across neurons.
+# N_SUB was first set to 400 without checking the actual limit, which put the series readout at a
+# 23x neuron disadvantage against the full-view time mean (9,201 for visual_projection). Raised: at
+# N_SUB x STEPS = 50,000 dims the 1024-d projection matrix is ~205 MB, which is comfortable.
+N_SUB = 2000
 OUT = connectome.DATA_ROOT / "runs" / "p5"
 OUT.mkdir(parents=True, exist_ok=True)
 
@@ -118,7 +126,15 @@ def features(graph, y, p, c, cfg, views, batch=64):
     driven = r16[c.column[r16, 0] >= 0]
     eye_cfg = frozen.load()[1]
     retina = Retina(c, driven, eye_cfg, cfg.dt)
-    out = {k: [] for k in list(views) + ["photoreceptor", "photoreceptor_series"]}
+    series_views = [v for v in views if v in SERIES_VIEWS] if graph != "nobrain" else []
+    # `{v}_submean` = time mean of the SAME N_SUB neurons as `{v}_series`, so that series-vs-mean is not
+    # confounded by neuron count (the full view has 9k-95k neurons, the series subset has N_SUB).
+    out = {k: [] for k in list(views) + [f"{v}_series" for v in series_views]
+           + [f"{v}_submean" for v in series_views] + ["photoreceptor", "photoreceptor_series"]}
+    sub = {v: np.random.default_rng(view_seed(v)).choice(len(views[v]),
+                                                         min(N_SUB, len(views[v])), replace=False)
+           for v in series_views}
+    vidx = {v: torch.as_tensor(views[v][sub[v]], device="cuda") for v in series_views}
     sim = None if graph == "nobrain" else Sim(c, cfg, W=load_graph(c, graph, cfg), driven=driven)
     for s in range(0, len(y), batch):
         sl = slice(s, min(s + batch, len(y)))
@@ -129,6 +145,7 @@ def features(graph, y, p, c, cfg, views, batch=64):
             st = sim.zero_state(B + 1)
         acc = None
         pr, series = 0, []
+        vseries = {v: [] for v in series_views}
         for k in range(STEPS):
             lum = torch.cat([render(retina, TASK, pb, k * cfg.dt), torch.full((len(driven), 1), GRAY, device="cuda")], 1)
             eye = retina.transduce(lum)
@@ -141,10 +158,17 @@ def features(graph, y, p, c, cfg, views, batch=64):
                 x[torch.as_tensor(sim.gi, device="cuda")] = st.x
                 x[torch.as_tensor(sim.li, device="cuda")] = st.s
                 acc = x if acc is None else acc + x
+                for v in series_views:                                 # evoked state of the SAME neurons
+                    xv = x[vidx[v]]
+                    vseries[v].append(xv[:, :-1] - xv[:, -1:])
         out["photoreceptor"].append((pr / STEPS).T.float().cpu())
         # same eye signal WITHOUT the time average: the honest no-brain baseline for a motion task,
         # since a time-averaged drifting grating cannot carry direction by construction.
         out["photoreceptor_series"].append(torch.stack(series).permute(2, 0, 1).reshape(B, -1).float().cpu())
+        for v in series_views:
+            st_v = torch.stack(vseries[v])                             # (STEPS, N_SUB, B)
+            out[f"{v}_series"].append(st_v.permute(2, 0, 1).reshape(B, -1).float().cpu())
+            out[f"{v}_submean"].append(st_v.mean(0).T.float().cpu())
         if sim is not None:
             ev = (acc[:, :-1] - acc[:, -1:]) / STEPS
             for k, idx in views.items():
