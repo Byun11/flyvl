@@ -7,6 +7,16 @@ SD of 1.3%p says nothing, and looks identical in a table to one of 15.8%p agains
 Rule used here: |difference| / SD(controls) >= 2 counts as resolved, below that is UNRESOLVED and must
 not be written as a finding. Controls with fewer than 2 graphs are skipped - they cannot be judged.
 
+Why SD and not SE = SD/sqrt(n). The claim under test is "the measured wiring is special compared with
+random rewirings", i.e. whether real is an OUTLIER of the control distribution. That is a z-score
+against the distribution, so the denominator is its SD. Using SE would instead test whether real
+differs from the control MEAN, which becomes significant for any fixed offset once enough control
+graphs are built - real would be declared special while sitting inside the control spread. SE is
+printed alongside for transparency but is not the criterion.
+
+Caveat: an SD from 3 samples is itself crude (roughly 40% relative uncertainty), so the "2 SD"
+threshold is a rough screen, not a precise test.
+
 usage: audit_claims.py
 """
 import json
@@ -37,7 +47,7 @@ def values(res, key_fmt, graph_fmt, view, seeds=range(4)):
 
 
 if __name__ == "__main__":
-    print(f"{'claim':48s}{'diff':>8s}{'SD':>7s}{'n':>3s}{'ratio':>7s}  verdict")
+    print(f"{'claim':48s}{'diff':>8s}{'SD':>7s}{'SE':>7s}{'n':>3s}{'d/SD':>7s}  verdict")
     unresolved = 0
     for task, path, key_fmt, real_fmt in TASKS:
         if not path.exists():
@@ -59,6 +69,7 @@ if __name__ == "__main__":
                 ratio = abs(d) / sd if sd > 0 else float("inf")
                 ok = ratio >= 2
                 unresolved += not ok
-                print(f"{task} {view[:12]:13s} real vs {name:13s}{d:+8.2f}{sd:7.2f}{len(v):3d}{ratio:7.1f}  "
-                      f"{'OK' if ok else '*** UNRESOLVED ***'}")
+                se = sd / np.sqrt(len(v))
+                print(f"{task} {view[:12]:13s} real vs {name:13s}{d:+8.2f}{sd:7.2f}{se:7.2f}{len(v):3d}"
+                      f"{ratio:7.1f}  {'OK' if ok else '*** UNRESOLVED ***'}")
     print(f"\n{unresolved} claim(s) below 2 SD - these must not be written as findings.")
