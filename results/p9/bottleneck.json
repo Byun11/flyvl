@@ -1,0 +1,467 @@
+{
+ "real": {
+  "optic_lobe": {
+   "mean_hop": 2.527732975848851,
+   "reach_le3": 0.9830472979340531,
+   "reach_le4": 0.9997382226364122,
+   "evoked_mean": 0.05309009924530983,
+   "frac_responding": 0.9973822263641219
+  },
+  "visual_projection": {
+   "mean_hop": 2.992391304347826,
+   "reach_le3": 0.9716335180958592,
+   "reach_le4": 0.9998913161612868,
+   "evoked_mean": 0.04037613049149513,
+   "frac_responding": 0.9942397565482013
+  },
+  "central_vnc": {
+   "mean_hop": 3.6044869624111073,
+   "reach_le3": 0.3903054313964513,
+   "reach_le4": 0.998476229175132,
+   "evoked_mean": 0.01180760283023119,
+   "frac_responding": 0.5001015847216579
+  },
+  "descending": {
+   "mean_hop": 3.426179604261796,
+   "reach_le3": 0.571537290715373,
+   "reach_le4": 1.0,
+   "evoked_mean": 0.00839195679873228,
+   "frac_responding": 0.5403348554033486
+  },
+  "attenuation_central_over_optic": 0.22240687054798294
+ },
+ "global_shuffle_s0": {
+  "optic_lobe": {
+   "mean_hop": 1.8894300257650978,
+   "reach_le3": 0.9997591648254992,
+   "reach_le4": 0.9997591648254992,
+   "evoked_mean": 0.011431562714278698,
+   "frac_responding": 0.9973089287023172
+  },
+  "visual_projection": {
+   "mean_hop": 1.837608695652174,
+   "reach_le3": 0.9998913161612868,
+   "reach_le4": 0.9998913161612868,
+   "evoked_mean": 0.012748579494655132,
+   "frac_responding": 0.9692424736441692
+  },
+  "central_vnc": {
+   "mean_hop": 1.8672028445648492,
+   "reach_le3": 0.9999322768522281,
+   "reach_le4": 0.9999322768522281,
+   "evoked_mean": 0.012897061184048653,
+   "frac_responding": 0.9613808749830692
+  },
+  "descending": {
+   "mean_hop": 1.7899543378995433,
+   "reach_le3": 1.0,
+   "reach_le4": 1.0,
+   "evoked_mean": 0.010710020549595356,
+   "frac_responding": 0.943683409436834
+  },
+  "attenuation_central_over_optic": 1.1281975619955669
+ },
+ "global_shuffle_s1": {
+  "optic_lobe": {
+   "mean_hop": 1.8879473777926743,
+   "reach_le3": 0.9997068093527817,
+   "reach_le4": 0.9997068093527817,
+   "evoked_mean": 0.012209360487759113,
+   "frac_responding": 0.9972565732295997
+  },
+  "visual_projection": {
+   "mean_hop": 1.8477173913043479,
+   "reach_le3": 0.9998913161612868,
+   "reach_le4": 0.9998913161612868,
+   "evoked_mean": 0.014383167028427124,
+   "frac_responding": 0.9813063797413325
+  },
+  "central_vnc": {
+   "mean_hop": 1.8694400704356513,
+   "reach_le3": 0.9999492076391711,
+   "reach_le4": 0.9999492076391711,
+   "evoked_mean": 0.014528903178870678,
+   "frac_responding": 0.9739435188947583
+  },
+  "descending": {
+   "mean_hop": 1.7990867579908676,
+   "reach_le3": 1.0,
+   "reach_le4": 1.0,
+   "evoked_mean": 0.013246765360236168,
+   "frac_responding": 0.9596651445966514
+  },
+  "attenuation_central_over_optic": 1.1899806868211564
+ },
+ "matched_shuffle_s0": {
+  "optic_lobe": {
+   "mean_hop": 1.858507362644268,
+   "reach_le3": 0.9997591648254992,
+   "reach_le4": 0.9998010492036733,
+   "evoked_mean": 0.06242882087826729,
+   "frac_responding": 0.9973822263641219
+  },
+  "visual_projection": {
+   "mean_hop": 2.0143478260869565,
+   "reach_le3": 0.9998913161612868,
+   "reach_le4": 0.9998913161612868,
+   "evoked_mean": 0.04242269694805145,
+   "frac_responding": 0.9984784262580154
+  },
+  "central_vnc": {
+   "mean_hop": 2.8329834067050457,
+   "reach_le3": 0.9810544494108087,
+   "reach_le4": 0.9999322768522281,
+   "evoked_mean": 0.009350315667688847,
+   "frac_responding": 0.38148449139916024
+  },
+  "descending": {
+   "mean_hop": 2.9535768645357687,
+   "reach_le3": 0.9992389649923896,
+   "reach_le4": 1.0,
+   "evoked_mean": 0.0014042285038158298,
+   "frac_responding": 0.2610350076103501
+  },
+  "attenuation_central_over_optic": 0.14977562504218106
+ },
+ "matched_shuffle_s1": {
+  "optic_lobe": {
+   "mean_hop": 1.8567792882428102,
+   "reach_le3": 0.9997696359200428,
+   "reach_le4": 0.9998010492036733,
+   "evoked_mean": 0.06240842863917351,
+   "frac_responding": 0.9973717552695783
+  },
+  "visual_projection": {
+   "mean_hop": 2.0105434782608698,
+   "reach_le3": 0.9998913161612868,
+   "reach_le4": 0.9998913161612868,
+   "evoked_mean": 0.04113399609923363,
+   "frac_responding": 0.9983697424193022
+  },
+  "central_vnc": {
+   "mean_hop": 2.826363020656959,
+   "reach_le3": 0.9850331843424083,
+   "reach_le4": 0.9999322768522281,
+   "evoked_mean": 0.008847663179039955,
+   "frac_responding": 0.3446092374373561
+  },
+  "descending": {
+   "mean_hop": 2.9398782343987824,
+   "reach_le3": 1.0,
+   "reach_le4": 1.0,
+   "evoked_mean": 0.0009889887878671288,
+   "frac_responding": 0.1963470319634703
+  },
+  "attenuation_central_over_optic": 0.141770324489252
+ },
+ "matched_shuffle_s2": {
+  "optic_lobe": {
+   "mean_hop": 1.8578789719528288,
+   "reach_le3": 0.9997696359200428,
+   "reach_le4": 0.9998010492036733,
+   "evoked_mean": 0.06444557756185532,
+   "frac_responding": 0.9973822263641219
+  },
+  "visual_projection": {
+   "mean_hop": 2.013804347826087,
+   "reach_le3": 0.9998913161612868,
+   "reach_le4": 0.9998913161612868,
+   "evoked_mean": 0.04530494287610054,
+   "frac_responding": 0.9982610585805891
+  },
+  "central_vnc": {
+   "mean_hop": 2.858279715543515,
+   "reach_le3": 0.9625998916429636,
+   "reach_le4": 0.9999322768522281,
+   "evoked_mean": 0.010677741840481758,
+   "frac_responding": 0.5107171881349045
+  },
+  "descending": {
+   "mean_hop": 2.963470319634703,
+   "reach_le3": 0.997716894977169,
+   "reach_le4": 1.0,
+   "evoked_mean": 0.002378591103479266,
+   "frac_responding": 0.5114155251141552
+  },
+  "attenuation_central_over_optic": 0.16568618428833518
+ },
+ "global_shuffle_s2": {
+  "optic_lobe": {
+   "mean_hop": 1.889295028226102,
+   "reach_le3": 0.9997591648254992,
+   "reach_le4": 0.9997696359200428,
+   "evoked_mean": 0.01183393970131874,
+   "frac_responding": 0.9973298708914042
+  },
+  "visual_projection": {
+   "mean_hop": 1.8475,
+   "reach_le3": 0.9998913161612868,
+   "reach_le4": 0.9998913161612868,
+   "evoked_mean": 0.013143034651875496,
+   "frac_responding": 0.9765242908379524
+  },
+  "central_vnc": {
+   "mean_hop": 1.868066373179817,
+   "reach_le3": 0.9999322768522281,
+   "reach_le4": 0.9999322768522281,
+   "evoked_mean": 0.013605479151010513,
+   "frac_responding": 0.9695415142895841
+  },
+  "descending": {
+   "mean_hop": 1.7990867579908676,
+   "reach_le3": 1.0,
+   "reach_le4": 1.0,
+   "evoked_mean": 0.011072583496570587,
+   "frac_responding": 0.9611872146118722
+  },
+  "attenuation_central_over_optic": 1.1496998881525784
+ },
+ "shuffle_frac0.001_s0": {
+  "optic_lobe": {
+   "mean_hop": 2.4959364068620262,
+   "reach_le3": 0.9895393765510309,
+   "reach_le4": 0.9997591648254992,
+   "evoked_mean": 0.05331359803676605,
+   "frac_responding": 0.9973822263641219
+  },
+  "visual_projection": {
+   "mean_hop": 2.8958695652173914,
+   "reach_le3": 0.9991305292902946,
+   "reach_le4": 0.9998913161612868,
+   "evoked_mean": 0.04031696543097496,
+   "frac_responding": 0.9935876535159222
+  },
+  "central_vnc": {
+   "mean_hop": 3.0580257365391126,
+   "reach_le3": 0.9050521468237843,
+   "reach_le4": 0.9999153460652851,
+   "evoked_mean": 0.011927871964871883,
+   "frac_responding": 0.5154070161181091
+  },
+  "descending": {
+   "mean_hop": 3.049467275494673,
+   "reach_le3": 0.9398782343987824,
+   "reach_le4": 1.0,
+   "evoked_mean": 0.00836282316595316,
+   "frac_responding": 0.5646879756468798
+  },
+  "attenuation_central_over_optic": 0.2237303878204994
+ },
+ "shuffle_frac0.001_s1": {
+  "optic_lobe": {
+   "mean_hop": 2.5187050962485076,
+   "reach_le3": 0.985947791122606,
+   "reach_le4": 0.9997382226364122,
+   "evoked_mean": 0.05328710749745369,
+   "frac_responding": 0.9973822263641219
+  },
+  "visual_projection": {
+   "mean_hop": 2.923369565217391,
+   "reach_le3": 0.9984784262580154,
+   "reach_le4": 0.9998913161612868,
+   "evoked_mean": 0.04025207832455635,
+   "frac_responding": 0.9945658080643408
+  },
+  "central_vnc": {
+   "mean_hop": 3.086725364036573,
+   "reach_le3": 0.8739672219964784,
+   "reach_le4": 0.9999322768522281,
+   "evoked_mean": 0.012124011293053627,
+   "frac_responding": 0.5211973452526073
+  },
+  "descending": {
+   "mean_hop": 2.9307458143074583,
+   "reach_le3": 0.9939117199391172,
+   "reach_le4": 1.0,
+   "evoked_mean": 0.00879090465605259,
+   "frac_responding": 0.571537290715373
+  },
+  "attenuation_central_over_optic": 0.22752241325226688
+ },
+ "shuffle_frac0.01_s0": {
+  "optic_lobe": {
+   "mean_hop": 2.4283006221067844,
+   "reach_le3": 0.992136207997822,
+   "reach_le4": 0.9997801070145862,
+   "evoked_mean": 0.05652645602822304,
+   "frac_responding": 0.9973717552695783
+  },
+  "visual_projection": {
+   "mean_hop": 2.596195652173913,
+   "reach_le3": 0.9998913161612868,
+   "reach_le4": 0.9998913161612868,
+   "evoked_mean": 0.044319313019514084,
+   "frac_responding": 0.9975002717095968
+  },
+  "central_vnc": {
+   "mean_hop": 2.592837792075855,
+   "reach_le3": 0.9997291074089124,
+   "reach_le4": 0.9999322768522281,
+   "evoked_mean": 0.01910732127726078,
+   "frac_responding": 0.8281355817418393
+  },
+  "descending": {
+   "mean_hop": 2.4185692541856927,
+   "reach_le3": 1.0,
+   "reach_le4": 1.0,
+   "evoked_mean": 0.013204075396060944,
+   "frac_responding": 0.8158295281582952
+  },
+  "attenuation_central_over_optic": 0.3380243981282093
+ },
+ "shuffle_frac0.01_s1": {
+  "optic_lobe": {
+   "mean_hop": 2.41011918476781,
+   "reach_le3": 0.9937068721793489,
+   "reach_le4": 0.9997696359200428,
+   "evoked_mean": 0.055623624473810196,
+   "frac_responding": 0.9973822263641219
+  },
+  "visual_projection": {
+   "mean_hop": 2.582826086956522,
+   "reach_le3": 0.9998913161612868,
+   "reach_le4": 0.9998913161612868,
+   "evoked_mean": 0.041042447090148926,
+   "frac_responding": 0.997065536354744
+  },
+  "central_vnc": {
+   "mean_hop": 2.58785980358957,
+   "reach_le3": 0.9997968305566842,
+   "reach_le4": 0.9999322768522281,
+   "evoked_mean": 0.015519845299422741,
+   "frac_responding": 0.7939861844778545
+  },
+  "descending": {
+   "mean_hop": 2.375951293759513,
+   "reach_le3": 1.0,
+   "reach_le4": 1.0,
+   "evoked_mean": 0.011692945845425129,
+   "frac_responding": 0.76103500761035
+  },
+  "attenuation_central_over_optic": 0.27901535446921655
+ },
+ "shuffle_frac0.1_s0": {
+  "optic_lobe": {
+   "mean_hop": 2.0517589886993224,
+   "reach_le3": 0.9989005350729312,
+   "reach_le4": 0.9997905781091297,
+   "evoked_mean": 0.06447917968034744,
+   "frac_responding": 0.9973717552695783
+  },
+  "visual_projection": {
+   "mean_hop": 2.0204347826086955,
+   "reach_le3": 0.9998913161612868,
+   "reach_le4": 0.9998913161612868,
+   "evoked_mean": 0.0460168682038784,
+   "frac_responding": 0.9992392131290078
+  },
+  "central_vnc": {
+   "mean_hop": 2.0577717575347103,
+   "reach_le3": 0.9999322768522281,
+   "reach_le4": 0.9999322768522281,
+   "evoked_mean": 0.04344905540347099,
+   "frac_responding": 0.971911824461601
+  },
+  "descending": {
+   "mean_hop": 2.0159817351598175,
+   "reach_le3": 1.0,
+   "reach_le4": 1.0,
+   "evoked_mean": 0.039410315454006195,
+   "frac_responding": 0.9779299847792998
+  },
+  "attenuation_central_over_optic": 0.6738462805958091
+ },
+ "shuffle_frac0.1_s1": {
+  "optic_lobe": {
+   "mean_hop": 2.046857489971827,
+   "reach_le3": 0.998795824127496,
+   "reach_le4": 0.9997905781091297,
+   "evoked_mean": 0.06600099056959152,
+   "frac_responding": 0.9973717552695783
+  },
+  "visual_projection": {
+   "mean_hop": 2.010217391304348,
+   "reach_le3": 0.9998913161612868,
+   "reach_le4": 0.9998913161612868,
+   "evoked_mean": 0.04796842485666275,
+   "frac_responding": 0.9990218454515813
+  },
+  "central_vnc": {
+   "mean_hop": 2.0627666779546225,
+   "reach_le3": 0.9999322768522281,
+   "reach_le4": 0.9999322768522281,
+   "evoked_mean": 0.0429190918803215,
+   "frac_responding": 0.9687119057293783
+  },
+  "descending": {
+   "mean_hop": 2.031202435312024,
+   "reach_le3": 1.0,
+   "reach_le4": 1.0,
+   "evoked_mean": 0.036543115973472595,
+   "frac_responding": 0.974124809741248
+  },
+  "attenuation_central_over_optic": 0.6502795111092698
+ },
+ "shuffle_frac0.3_s0": {
+  "optic_lobe": {
+   "mean_hop": 1.9179409300377042,
+   "reach_le3": 0.9997068093527817,
+   "reach_le4": 0.9997801070145862,
+   "evoked_mean": 0.07052639871835709,
+   "frac_responding": 0.9973508130804913
+  },
+  "visual_projection": {
+   "mean_hop": 1.9553260869565217,
+   "reach_le3": 0.9998913161612868,
+   "reach_le4": 0.9998913161612868,
+   "evoked_mean": 0.06266911327838898,
+   "frac_responding": 0.9998913161612868
+  },
+  "central_vnc": {
+   "mean_hop": 1.9616153064679986,
+   "reach_le3": 0.9999322768522281,
+   "reach_le4": 0.9999322768522281,
+   "evoked_mean": 0.05860660597681999,
+   "frac_responding": 0.995547203033997
+  },
+  "descending": {
+   "mean_hop": 1.9284627092846272,
+   "reach_le3": 1.0,
+   "reach_le4": 1.0,
+   "evoked_mean": 0.06072143465280533,
+   "frac_responding": 0.9984779299847792
+  },
+  "attenuation_central_over_optic": 0.8309882121000101
+ },
+ "shuffle_frac0.3_s1": {
+  "optic_lobe": {
+   "mean_hop": 1.9249492050857753,
+   "reach_le3": 0.9997068093527817,
+   "reach_le4": 0.9998010492036733,
+   "evoked_mean": 0.06967351585626602,
+   "frac_responding": 0.9973822263641219
+  },
+  "visual_projection": {
+   "mean_hop": 1.955108695652174,
+   "reach_le3": 0.9998913161612868,
+   "reach_le4": 0.9998913161612868,
+   "evoked_mean": 0.06184988096356392,
+   "frac_responding": 0.9997826323225736
+  },
+  "central_vnc": {
+   "mean_hop": 1.9624619031493395,
+   "reach_le3": 0.9999322768522281,
+   "reach_le4": 0.9999322768522281,
+   "evoked_mean": 0.05960818752646446,
+   "frac_responding": 0.9957165109034268
+  },
+  "descending": {
+   "mean_hop": 1.9254185692541856,
+   "reach_le3": 1.0,
+   "reach_le4": 1.0,
+   "evoked_mean": 0.06256753951311111,
+   "frac_responding": 0.9992389649923896
+  },
+  "attenuation_central_over_optic": 0.8555358057347648
+ }
+}
