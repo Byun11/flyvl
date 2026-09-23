@@ -51,7 +51,12 @@ def rewire(W_eff: sparse.csr_matrix, c: Connectome, seed: int, matched: bool, ma
     coo = W_eff.tocoo()
     pre, post, w = coo.col.astype(np.int64), coo.row.astype(np.int64), coo.data.copy()
     block = _blocks(c, pre, post, matched)
-    inscope = np.ones(len(pre), bool) if scope is None else ol_scope(c, pre, post, scope)
+    if scope is None:
+        inscope = np.ones(len(pre), bool)
+    elif scope.startswith("frac"):          # "frac0.01": a random 1% of edges (P9 dose-response)
+        inscope = np.random.default_rng(10_000 + seed).random(len(pre)) < float(scope[4:])
+    else:
+        inscope = ol_scope(c, pre, post, scope)
 
     # permute post endpoints within each block, among in-scope edges only
     order = np.argsort(np.where(inscope, block, -1), kind="stable")[(~inscope).sum():]

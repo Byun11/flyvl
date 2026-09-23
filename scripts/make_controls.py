@@ -1,6 +1,7 @@
 """Build control graphs from the frozen effective graph and verify their constraints.
-usage: make_controls.py global|matched|ol|central SEED [SEED ...]
-  ol / central: matched rewiring restricted to optic-lobe-internal / non-optic-lobe edges."""
+usage: make_controls.py global|matched|ol|central|fracF SEED [SEED ...]
+  ol / central: matched rewiring restricted to optic-lobe-internal / non-optic-lobe edges.
+  fracF (e.g. frac0.01): GLOBAL rewiring of a random fraction F of edges, the rest verbatim (P9)."""
 import json
 import sys
 from pathlib import Path
@@ -28,8 +29,9 @@ def degrees(M):
 
 din, dout = degrees(W)
 for seed in seeds:
-    scope = kind if kind in ("ol", "central") else None
-    R, info = controls.rewire(W, c, seed=seed, matched=(kind != "global"), scope=scope)
+    frac = kind.startswith("frac")
+    scope = kind if kind in ("ol", "central") or frac else None
+    R, info = controls.rewire(W, c, seed=seed, matched=(kind != "global" and not frac), scope=scope)
     rin, rout = degrees(R)
     coo = R.tocoo()
     checks = {
