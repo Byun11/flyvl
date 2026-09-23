@@ -422,6 +422,33 @@
    ],
    "mean": 0.28,
    "k": 449
+  },
+  "shuffle_frac0.1_s2:drift1.2:central_vnc": {
+   "acc": [
+    0.348,
+    0.348,
+    0.348
+   ],
+   "mean": 0.34800000000000003,
+   "k": 1024
+  },
+  "shuffle_frac0.1_s2:drift1.2:visual_projection": {
+   "acc": [
+    0.345,
+    0.345,
+    0.345
+   ],
+   "mean": 0.345,
+   "k": 1024
+  },
+  "shuffle_frac0.1_s2:drift1.2:photoreceptor": {
+   "acc": [
+    0.28,
+    0.28,
+    0.28
+   ],
+   "mean": 0.28,
+   "k": 449
   }
  }
 }

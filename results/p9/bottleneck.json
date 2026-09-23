@@ -463,5 +463,36 @@
    "frac_responding": 0.9992389649923896
   },
   "attenuation_central_over_optic": 0.8555358057347648
+ },
+ "shuffle_frac0.1_s2": {
+  "optic_lobe": {
+   "mean_hop": 2.0507326064871547,
+   "reach_le3": 0.9989005350729312,
+   "reach_le4": 0.9997905781091297,
+   "evoked_mean": 0.06471806764602661,
+   "frac_responding": 0.9973717552695783
+  },
+  "visual_projection": {
+   "mean_hop": 1.9979347826086957,
+   "reach_le3": 0.9998913161612868,
+   "reach_le4": 0.9998913161612868,
+   "evoked_mean": 0.04898037388920784,
+   "frac_responding": 0.9992392131290078
+  },
+  "central_vnc": {
+   "mean_hop": 2.0471046393498136,
+   "reach_le3": 0.9999322768522281,
+   "reach_le4": 0.9999322768522281,
+   "evoked_mean": 0.043287232518196106,
+   "frac_responding": 0.9688134904510362
+  },
+  "descending": {
+   "mean_hop": 2.0,
+   "reach_le3": 1.0,
+   "reach_le4": 1.0,
+   "evoked_mean": 0.03930947557091713,
+   "frac_responding": 0.9786910197869102
+  },
+  "attenuation_central_over_optic": 0.6688585443396461
  }
 }
