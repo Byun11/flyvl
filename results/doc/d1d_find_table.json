@@ -1,0 +1,24 @@
+{
+ "thumb42": [
+  0.375,
+  0.655
+ ],
+ "visual_projection": [
+  0.2025,
+  0.3525
+ ],
+ "optic_lobe": [
+  0.3525,
+  0.55
+ ],
+ "photoreceptor": [
+  0.365,
+  0.5575
+ ],
+ "n_train": 1200,
+ "n_test": 400,
+ "drift": 1.2,
+ "chance_top1": 0.0625,
+ "chance_top4": 0.25,
+ "minutes": 11.932823443412781
+}
