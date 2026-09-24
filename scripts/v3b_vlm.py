@@ -115,15 +115,23 @@ if __name__ == "__main__":
     X = np.concatenate([glimpse_energy(c, cfg, sim, retina, p, q, ol, frames=letter_frames, warm=WARM, change=CHANGE) for q in range(4)], 1)
     print(f"  fly features {(time.time()-t0)/60:.1f} min", flush=True)
 
-    # --- selector 2: pixel frame difference ---
-    fd, prev = 0, None
-    for k in range(P.STEPS):
-        fr = torch.cat([F.avg_pool2d(letter_frames({kk: v[s:s + 500] for kk, v in p.items()}, k * cfg.dt), 2).flatten(1)
-                        for s in range(0, N, 500)])
-        if prev is not None:
-            fd = fd + (fr - prev) ** 2
-        prev = fr
-    fd = (fd / P.STEPS).cpu().numpy()
+    # --- selector 2: pixel frame difference, plain and spatially blurred (V3f: stronger free baselines) ---
+    from flyvl.stimulus import _gaussian_blur
+    BLURS = (0, 1, 2, 4)
+    fds = {}
+    for blur in BLURS:
+        fd, prev = 0, None
+        for k in range(P.STEPS):
+            parts = []
+            for s in range(0, N, 500):
+                fr = letter_frames({kk: v[s:s + 500] for kk, v in p.items()}, k * cfg.dt)
+                fr = _gaussian_blur(fr, blur) if blur else fr
+                parts.append(F.avg_pool2d(fr, 2).flatten(1))
+            fr = torch.cat(parts)
+            if prev is not None:
+                fd = fd + (fr - prev) ** 2
+            prev = fr
+        fds[blur] = (fd / P.STEPS).cpu().numpy()
 
     def select(feat, name):
         Pm = torch.randn(1024, feat.shape[1], generator=torch.Generator().manual_seed(P.view_seed(name))) / np.sqrt(1024)
@@ -131,7 +139,8 @@ if __name__ == "__main__":
         (Str, Ste, _), = probe.standardize_pca(Z[:n_tr], Z[n_tr:], (1024,)).values()
         return probe.fit_probe(Str, y[:n_tr], Ste, 0)["pred"]
 
-    pick = {"fly": select(X, "v3b_fly"), "framediff": select(fd, "v3b_framediff"),
+    pick = {"fly": select(X, "v3b_fly"), "framediff": select(fds[0], "v3b_framediff"),
+            **{f"framediff_blur{b}": select(fds[b], "v3b_framediff") for b in BLURS if b},
             "random": np.random.default_rng(2).integers(0, 16, len(te)), "oracle": y[te]}
     for k, v in pick.items():
         res[f"locate_{k}"] = float((v == y[te]).mean())
