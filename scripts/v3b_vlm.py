@@ -158,6 +158,8 @@ if __name__ == "__main__":
     pred = ask(proc, model, last)
     res["vqa_whole_frame"] = float(np.mean([a == b for a, b in zip(pred, answer)]))
     print(f"VQA     whole frame {res['vqa_whole_frame']*100:.2f}", flush=True)
-    res.update({"warm": WARM, "change": CHANGE, "n": N, "n_test": len(te), "letter_contrast": L_CONTRAST, "minutes": (time.time() - t0) / 60})
-    (OUT / f"v3b_vlm_warm{WARM}{'_change' if CHANGE else ''}.json").write_text(json.dumps(res, indent=1))
+    import os
+    res.update({"mw_contrast": os.environ.get("MW_CONTRAST", "0.04,0.10"), "mw_noise": os.environ.get("MW_NOISE", "0.06"),
+                "warm": WARM, "change": CHANGE, "n": N, "n_test": len(te), "letter_contrast": L_CONTRAST, "minutes": (time.time() - t0) / 60})
+    (OUT / f"v3b_vlm_warm{WARM}{'_change' if CHANGE else ''}_c{os.environ.get('MW_CONTRAST', '0.04,0.10')}_n{os.environ.get('MW_NOISE', '0.06')}.json").write_text(json.dumps(res, indent=1))
     print(f"done in {res['minutes']:.1f} min", flush=True)

@@ -102,8 +102,10 @@ def trial_params(rng, task, n):
         p["freq"] = rng.uniform(2.0, 5.0, n)
         p["speed"] = rng.choice([-1.0, 1.0], n) * rng.uniform(0.6, 1.4, n)
         p["phase"] = rng.uniform(0, 2 * np.pi, n)
-        p["contrast"] = rng.uniform(0.04, 0.10, n)
-        p["noise"] = np.full(n, 0.06)
+        # V3g: harder regimes via env (defaults = V3a-V3f). Report every regime, never only the best one.
+        lo, hi = (float(v) for v in os.environ.get("MW_CONTRAST", "0.04,0.10").split(","))
+        p["contrast"] = rng.uniform(lo, hi, n)
+        p["noise"] = np.full(n, float(os.environ.get("MW_NOISE", "0.06")))
     elif task == "motion_where16":
         # V2: same stimulus, but the drifting patch sits in one of a 4x4 grid of locations (16 classes)
         y = rng.integers(0, 16, n)

@@ -1,0 +1,23 @@
+{
+ "locate_fly": 0.9355555555555556,
+ "locate_framediff": 0.81,
+ "locate_framediff_blur1": 0.97,
+ "locate_framediff_blur2": 0.9977777777777778,
+ "locate_framediff_blur4": 0.9911111111111112,
+ "locate_random": 0.05,
+ "locate_oracle": 1.0,
+ "vqa_fly": 0.9233333333333333,
+ "vqa_framediff": 0.8033333333333333,
+ "vqa_framediff_blur1": 0.9544444444444444,
+ "vqa_framediff_blur2": 0.9811111111111112,
+ "vqa_framediff_blur4": 0.9744444444444444,
+ "vqa_random": 0.09333333333333334,
+ "vqa_oracle": 0.9822222222222222,
+ "vqa_whole_frame": 0.11888888888888889,
+ "warm": 0,
+ "change": true,
+ "n": 3000,
+ "n_test": 900,
+ "letter_contrast": 0.3,
+ "minutes": 2.976664714018504
+}
