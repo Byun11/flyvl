@@ -20,6 +20,7 @@ Views: descending (1,314), central_vnc, visual_projection.
 usage: p5_flytask.py TASK [n_trials]
 """
 import hashlib
+import os
 import json
 import sys
 import time
@@ -46,6 +47,7 @@ SERIES_VIEWS = ("optic_lobe", "visual_projection", "central_vnc")   # also read 
 # 23x neuron disadvantage against the full-view time mean (9,201 for visual_projection). Raised: at
 # N_SUB x STEPS = 50,000 dims the 1024-d projection matrix is ~205 MB, which is comfortable.
 N_SUB = 2000
+SKIP_SERIES = os.environ.get("SKIP_SERIES") == "1"   # the per-neuron time-series probes are the heavy part
 NOISE_SEED = 777         # fixed so that photoreceptor noise is identical across runs and graphs
 OUT = connectome.DATA_ROOT / "runs" / "p5"
 OUT.mkdir(parents=True, exist_ok=True)
@@ -92,6 +94,17 @@ def trial_params(rng, task, n):
         p["phase"] = rng.uniform(0, 2 * np.pi, n)
         p["contrast"] = rng.uniform(0.25, 0.45, n) if not hard else rng.uniform(0.04, 0.10, n)
         p["noise"] = np.full(n, 0.0 if not hard else 0.06)
+    elif task == "motion_where":
+        # V1: static grating everywhere; only one quadrant's patch drifts. Low contrast + noise (P5 hard regime).
+        y = rng.integers(0, 4, n)                             # quadrant: (left/right) x (down/up)
+        p["az"] = np.where(y % 2 == 0, -1.0, 1.0) * rng.uniform(0.3, 0.6, n)
+        p["el"] = np.where(y // 2 == 0, -1.0, 1.0) * rng.uniform(0.2, 0.5, n)
+        p["rad"] = rng.uniform(0.2, 0.3, n)
+        p["freq"] = rng.uniform(2.0, 5.0, n)
+        p["speed"] = rng.choice([-1.0, 1.0], n) * rng.uniform(0.6, 1.4, n)
+        p["phase"] = rng.uniform(0, 2 * np.pi, n)
+        p["contrast"] = rng.uniform(0.04, 0.10, n)
+        p["noise"] = np.full(n, 0.06)
     elif task == "orient_static" or task.startswith("acuity_f"):
         # No drift at all: the grating is frozen. Direction-selective machinery cannot help here.
         y = rng.integers(0, 2, n)
@@ -127,6 +140,11 @@ def render(retina, task, p, t, device="cuda"):
     if task == "orient_static" or task.startswith("acuity_f"):
         coord = torch.where(g("orient") > 0.5, th.expand_as(phi + g("orient")), phi.expand_as(th + g("orient")))
         return GRAY + g("contrast") * torch.sin(2 * np.pi * g("freq") * coord + g("phase"))
+    if task == "motion_where":
+        inside = (torch.sqrt((phi - g("az")) ** 2 + ((th - g("el")) * 0.5) ** 2) < g("rad")).float()
+        lum = GRAY + g("contrast") * torch.sin(2 * np.pi * g("freq") * (phi - inside * g("speed") * t) + g("phase"))
+        gen = torch.Generator(device=lum.device).manual_seed(NOISE_SEED + int(round(t / 0.02)))
+        return lum + torch.randn(lum.shape, generator=gen, device=lum.device, dtype=lum.dtype) * g("noise")
     if task in ("position", "size"):                        # static dark disc, no expansion
         d = torch.sqrt((phi - g("az")) ** 2 + ((th - g("el")) * 0.5) ** 2)
         return torch.where(d < g("rad"), (GRAY * (1 - g("contrast"))).expand_as(d),
@@ -168,7 +186,7 @@ def features(graph, y, p, c, cfg, views, batch=64):
     # `{v}_submean` = time mean of the SAME N_SUB neurons as `{v}_series`, so that series-vs-mean is not
     # confounded by neuron count (the full view has 9k-95k neurons, the series subset has N_SUB).
     out = {k: [] for k in list(views) + [f"{v}_series" for v in series_views]
-           + [f"{v}_submean" for v in series_views] + ["photoreceptor", "photoreceptor_series"]}
+           + [f"{v}_submean" for v in series_views] + ["photoreceptor", "photoreceptor_series", "framediff"]}
     sub = {v: np.random.default_rng(view_seed(v)).choice(len(views[v]),
                                                          min(N_SUB, len(views[v])), replace=False)
            for v in series_views}
@@ -182,7 +200,7 @@ def features(graph, y, p, c, cfg, views, batch=64):
         if sim is not None:
             st = sim.zero_state(B + 1)
         acc = None
-        pr, series = 0, []
+        pr, series, fd, prev = 0, [], 0, None
         vseries = {v: [] for v in series_views}
         for k in range(STEPS):
             lum = torch.cat([render(retina, TASK, pb, k * cfg.dt), torch.full((len(driven), 1), GRAY, device="cuda")], 1)
@@ -190,6 +208,10 @@ def features(graph, y, p, c, cfg, views, batch=64):
             step_evoked = eye[:, :-1] - eye[:, -1:]
             pr = pr + step_evoked
             series.append(step_evoked)                                 # keep time, do not average
+            # classic free motion detector: per-photoreceptor energy of the frame-to-frame change
+            if prev is not None:
+                fd = fd + (step_evoked - prev) ** 2
+            prev = step_evoked
             if sim is not None:
                 st = sim.step(st, eye)
                 x = torch.zeros(c.n, B + 1, device="cuda")
@@ -200,6 +222,7 @@ def features(graph, y, p, c, cfg, views, batch=64):
                     xv = x[vidx[v]]
                     vseries[v].append(xv[:, :-1] - xv[:, -1:])
         out["photoreceptor"].append((pr / STEPS).T.float().cpu())
+        out["framediff"].append((fd / STEPS).T.float().cpu())
         # same eye signal WITHOUT the time average: the honest no-brain baseline for a motion task,
         # since a time-averaged drifting grating cannot carry direction by construction.
         out["photoreceptor_series"].append(torch.stack(series).permute(2, 0, 1).reshape(B, -1).float().cpu())
@@ -233,15 +256,17 @@ if __name__ == "__main__":
         F = features(graph, y, p, c, cfg, views)
         gproj = torch.Generator().manual_seed(0)
         for view, X in F.items():
-            if graph == "nobrain" and not view.startswith("photoreceptor"):
+            if graph == "nobrain" and not view.startswith(("photoreceptor", "framediff")):
                 continue
             # Keep the projection RATIO, not the width: a fixed 1024-d projection discards 98% of a
             # 50,000-d series but only 49% of a 2,000-d mean, which alone can make the series lose.
             width = min(int(round(X.shape[1] * PROJ / max(X.shape[1] // STEPS, 1))), X.shape[1])                 if view.endswith("_series") else PROJ
             width = min(max(width, PROJ), 32768)
-            P = (torch.randn(width, X.shape[1], generator=torch.Generator().manual_seed(view_seed(view))) /
-                 np.sqrt(width)).numpy().astype(np.float32)
-            Z = X @ P.T
+            if SKIP_SERIES and view.endswith("_series"):
+                continue
+            # same seeded CPU matrix as always (results stay reproducible); the multiply runs on the GPU
+            P = torch.randn(width, X.shape[1], generator=torch.Generator().manual_seed(view_seed(view))) / np.sqrt(width)
+            Z = (torch.as_tensor(X, device="cuda") @ P.to("cuda").T).cpu().numpy()
             # PCA K is a second bottleneck: a series' variance is dominated by phase/noise, so the
             # label-relevant direction can fall outside the top 256 PCs. Report every K, never pick on test.
             sc = probe.standardize_pca(Z[:n_tr], Z[n_tr:], (256, 1024, 2048))
