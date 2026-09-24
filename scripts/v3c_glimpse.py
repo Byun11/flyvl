@@ -16,21 +16,22 @@ from pathlib import Path
 import numpy as np
 import torch
 
-sys.argv = [sys.argv[0], "pixel_where16"] + sys.argv[1:]          # p5_flytask reads TASK from argv
+if sys.argv[1:2] != ["pixel_where16"]:
+    sys.argv = [sys.argv[0], "pixel_where16"] + sys.argv[1:]          # p5_flytask reads TASK from argv
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import p5_flytask as P  # noqa: E402
 from flyvl import connectome, frozen, probe  # noqa: E402
 from flyvl.sim import Sim  # noqa: E402
 from flyvl.stimulus import GRAY, Retina  # noqa: E402
 
-N = int(sys.argv[2]) if len(sys.argv) > 2 else 3000
 H = P.PIX // 2
 
 
 @torch.no_grad()
-def glimpse_energy(c, cfg, sim, retina, p, q, ol, batch=48):
+def glimpse_energy(c, cfg, sim, retina, p, q, ol, batch=48, frames=None):
     """Optic-lobe response energy for quadrant q of every trial's video."""
     i, j = divmod(q, 2)
+    frames = frames or P.pixel_frames
     out = []
     for s in range(0, len(p["cell"]), batch):
         pb = {k: v[s:s + batch] for k, v in p.items()}
@@ -38,7 +39,7 @@ def glimpse_energy(c, cfg, sim, retina, p, q, ol, batch=48):
         retina.reset(B + 1)
         st, en = sim.zero_state(B + 1), 0
         for k in range(P.STEPS):
-            fr = P.pixel_frames(pb, k * cfg.dt)[..., i * H:(i + 1) * H, j * H:(j + 1) * H].contiguous()
+            fr = frames(pb, k * cfg.dt)[..., i * H:(i + 1) * H, j * H:(j + 1) * H].contiguous()
             lum = retina.sample_images(fr, 0.0, "LR")
             lum = torch.cat([lum, torch.full((lum.shape[0], 1), GRAY, device="cuda")], 1)
             st = sim.step(st, retina.transduce(lum))
@@ -49,6 +50,7 @@ def glimpse_energy(c, cfg, sim, retina, p, q, ol, batch=48):
 
 
 if __name__ == "__main__":
+    N = int(sys.argv[2]) if len(sys.argv) > 2 else 3000
     t0 = time.time()
     c = connectome.load()
     cfg, eye_cfg, _ = frozen.load()
