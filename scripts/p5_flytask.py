@@ -94,6 +94,18 @@ def trial_params(rng, task, n):
         p["phase"] = rng.uniform(0, 2 * np.pi, n)
         p["contrast"] = rng.uniform(0.25, 0.45, n) if not hard else rng.uniform(0.04, 0.10, n)
         p["noise"] = np.full(n, 0.0 if not hard else 0.06)
+    elif task == "motion_where16":
+        # V2: same stimulus, but the drifting patch sits in one of a 4x4 grid of locations (16 classes)
+        y = rng.integers(0, 16, n)
+        az_c, el_c = np.array([-0.7, -0.25, 0.25, 0.7]), np.array([-0.6, -0.2, 0.2, 0.6])
+        p["az"] = az_c[y % 4] + rng.uniform(-0.05, 0.05, n)
+        p["el"] = el_c[y // 4] + rng.uniform(-0.05, 0.05, n)
+        p["rad"] = rng.uniform(0.12, 0.16, n)
+        p["freq"] = rng.uniform(2.0, 5.0, n)
+        p["speed"] = rng.choice([-1.0, 1.0], n) * rng.uniform(0.6, 1.4, n)
+        p["phase"] = rng.uniform(0, 2 * np.pi, n)
+        p["contrast"] = rng.uniform(0.04, 0.10, n)
+        p["noise"] = np.full(n, 0.06)
     elif task == "motion_where":
         # V1: static grating everywhere; only one quadrant's patch drifts. Low contrast + noise (P5 hard regime).
         y = rng.integers(0, 4, n)                             # quadrant: (left/right) x (down/up)
@@ -140,7 +152,7 @@ def render(retina, task, p, t, device="cuda"):
     if task == "orient_static" or task.startswith("acuity_f"):
         coord = torch.where(g("orient") > 0.5, th.expand_as(phi + g("orient")), phi.expand_as(th + g("orient")))
         return GRAY + g("contrast") * torch.sin(2 * np.pi * g("freq") * coord + g("phase"))
-    if task == "motion_where":
+    if task in ("motion_where", "motion_where16"):
         inside = (torch.sqrt((phi - g("az")) ** 2 + ((th - g("el")) * 0.5) ** 2) < g("rad")).float()
         lum = GRAY + g("contrast") * torch.sin(2 * np.pi * g("freq") * (phi - inside * g("speed") * t) + g("phase"))
         gen = torch.Generator(device=lum.device).manual_seed(NOISE_SEED + int(round(t / 0.02)))
