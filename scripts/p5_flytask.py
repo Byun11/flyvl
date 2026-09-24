@@ -198,11 +198,13 @@ def features(graph, y, p, c, cfg, views, batch=64):
     # `{v}_submean` = time mean of the SAME N_SUB neurons as `{v}_series`, so that series-vs-mean is not
     # confounded by neuron count (the full view has 9k-95k neurons, the series subset has N_SUB).
     out = {k: [] for k in list(views) + [f"{v}_series" for v in series_views]
-           + [f"{v}_submean" for v in series_views] + ["photoreceptor", "photoreceptor_series", "framediff"]}
+           + [f"{v}_submean" for v in series_views] + ["photoreceptor", "photoreceptor_series", "framediff"]
+           + (["optic_lobe_energy"] if graph != "nobrain" and "optic_lobe" in views else [])}
     sub = {v: np.random.default_rng(view_seed(v)).choice(len(views[v]),
                                                          min(N_SUB, len(views[v])), replace=False)
            for v in series_views}
     vidx = {v: torch.as_tensor(views[v][sub[v]], device="cuda") for v in series_views}
+    ol_idx = torch.as_tensor(views["optic_lobe"], device="cuda") if "optic_lobe" in views else None
     sim = None if graph == "nobrain" else Sim(c, cfg, W=load_graph(c, graph, cfg), driven=driven)
     for s in range(0, len(y), batch):
         sl = slice(s, min(s + batch, len(y)))
@@ -212,7 +214,7 @@ def features(graph, y, p, c, cfg, views, batch=64):
         if sim is not None:
             st = sim.zero_state(B + 1)
         acc = None
-        pr, series, fd, prev = 0, [], 0, None
+        pr, series, fd, prev, ol_en = 0, [], 0, None, 0
         vseries = {v: [] for v in series_views}
         for k in range(STEPS):
             lum = torch.cat([render(retina, TASK, pb, k * cfg.dt), torch.full((len(driven), 1), GRAY, device="cuda")], 1)
@@ -230,6 +232,11 @@ def features(graph, y, p, c, cfg, views, batch=64):
                 x[torch.as_tensor(sim.gi, device="cuda")] = st.x
                 x[torch.as_tensor(sim.li, device="cuda")] = st.s
                 acc = x if acc is None else acc + x
+                if "optic_lobe_energy" in out:
+                    # V2 fix: a signed time mean cancels oscillating motion responses; read their energy
+                    # instead, the same operation framediff applies to the eye.
+                    xo = x[ol_idx]
+                    ol_en = ol_en + (xo[:, :-1] - xo[:, -1:]) ** 2
                 for v in series_views:                                 # evoked state of the SAME neurons
                     xv = x[vidx[v]]
                     vseries[v].append(xv[:, :-1] - xv[:, -1:])
@@ -243,6 +250,8 @@ def features(graph, y, p, c, cfg, views, batch=64):
             out[f"{v}_series"].append(st_v.permute(2, 0, 1).reshape(B, -1).float().cpu())
             out[f"{v}_submean"].append(st_v.mean(0).T.float().cpu())
         if sim is not None:
+            if "optic_lobe_energy" in out:
+                out["optic_lobe_energy"].append((ol_en / STEPS).T.float().cpu())
             ev = (acc[:, :-1] - acc[:, -1:]) / STEPS
             for k, idx in views.items():
                 out[k].append(ev[torch.as_tensor(idx, device="cuda")].T.float().cpu())
