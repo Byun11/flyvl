@@ -69,6 +69,47 @@ def letter_frames(p, t, device="cuda"):
     return base - L_CONTRAST * ink
 
 
+@torch.no_grad()
+def rf_centers(c, sim, retina, driven, hops=8):
+    """Receptive-field centre (x, y in image coords) of every graded (optic-lobe) unit, estimated by
+    propagating photoreceptor view directions through |W|: each unit takes the input-weighted mean
+    position of its presynaptic partners that already have one. Only ~8% of optic-lobe units have a
+    column in the MaleCNS table (L1, R7, R8), so T4/T5 etc. need this estimate."""
+    n = c.n
+    A = abs(c.W).tocsr()
+    A = torch.sparse_csr_tensor(torch.as_tensor(A.indptr, dtype=torch.int64), torch.as_tensor(A.indices, dtype=torch.int64),
+                                torch.as_tensor(A.data, dtype=torch.float32), size=A.shape).to("cuda")
+    pos = torch.zeros(n, 2, device="cuda")
+    known = torch.zeros(n, 1, device="cuda")
+    d = torch.as_tensor(driven, device="cuda")
+    pos[d, 0], pos[d, 1] = retina.phi, -retina.theta          # image x = phi (half width 1), y = -theta
+    known[d] = 1
+    for _ in range(hops):
+        num, den = A @ (pos * known), A @ known
+        new = (den[:, 0] > 0) & (known[:, 0] == 0)
+        pos[new] = num[new] / den[new]
+        known[new] = 1
+    g = torch.as_tensor(sim.gi, device="cuda")
+    return pos[g].cpu().numpy(), known[g, 0].bool().cpu().numpy()
+
+
+def pool_cells(X, rf, has):
+    """X (N, 4*Ng) glimpse-major optic-lobe energies -> (N, 16) mean energy per page cell."""
+    Ng = len(rf)
+    cx = np.clip(((rf[:, 0] + 1) / 2 * 2).astype(int), 0, 1)
+    cy = np.clip(((rf[:, 1] + 1) / 2 * 2).astype(int), 0, 1)
+    out = np.zeros((len(X), 16), np.float32)
+    for q in range(4):
+        qi, qj = divmod(q, 2)
+        cell = (2 * qi + cy) * 4 + (2 * qj + cx)
+        E = X[:, q * Ng:(q + 1) * Ng]
+        for k in range(16):
+            m = has & (cell == k)
+            if m.any():
+                out[:, k] += E[:, m].mean(1)
+    return out
+
+
 def cell_crop(frame, cell):
     """(B, 1, PIX, PIX), (B,) -> (B, 1, C, C)"""
     r, c = cell // 4, cell % 4
@@ -139,7 +180,14 @@ if __name__ == "__main__":
         (Str, Ste, _), = probe.standardize_pca(Z[:n_tr], Z[n_tr:], (1024,)).values()
         return probe.fit_probe(Str, y[:n_tr], Ste, 0)["pred"]
 
-    pick = {"fly": select(X, "v3b_fly"), "framediff": select(fds[0], "v3b_framediff"),
+    rf, has = rf_centers(c, sim, retina, driven)
+    pooled = pool_cells(X, rf, has)
+    print(f"  rf estimated for {has.mean()*100:.0f}% of optic-lobe units", flush=True)
+    pz = (pooled - pooled[:n_tr].mean(0)) / pooled[:n_tr].std(0)
+    (Str, Ste, _), = probe.standardize_pca(pooled[:n_tr], pooled[n_tr:], (16,)).values()
+    pick = {"fly_pooled_argmax": pz[n_tr:].argmax(1),                      # training-free: the loudest cell
+            "fly_pooled": probe.fit_probe(Str, y[:n_tr], Ste, 0)["pred"],
+            "fly": select(X, "v3b_fly"), "framediff": select(fds[0], "v3b_framediff"),
             **{f"framediff_blur{b}": select(fds[b], "v3b_framediff") for b in BLURS if b},
             "random": np.random.default_rng(2).integers(0, 16, len(te)), "oracle": y[te]}
     for k, v in pick.items():
