@@ -38,9 +38,10 @@ def standardize_pca(Xtr: np.ndarray, Xte: np.ndarray, Ks, device="cuda") -> dict
     return out
 
 
-def _fit(X: torch.Tensor, y: torch.Tensor, lam: float, W0: torch.Tensor | None = None, iters: int = 150) -> torch.Tensor:
+def _fit(X: torch.Tensor, y: torch.Tensor, lam: float, W0: torch.Tensor | None = None, iters: int = 150,
+         n_cls: int = 10) -> torch.Tensor:
     n, d = X.shape
-    W = (torch.zeros(d + 1, 10, device=X.device, dtype=torch.float64) if W0 is None else W0.clone()).requires_grad_(True)
+    W = (torch.zeros(d + 1, n_cls, device=X.device, dtype=torch.float64) if W0 is None else W0.clone()).requires_grad_(True)
     Xb = torch.cat([X, torch.ones(n, 1, device=X.device, dtype=X.dtype)], 1)
     opt = torch.optim.LBFGS([W], lr=1, max_iter=iters, tolerance_grad=1e-7, tolerance_change=1e-10,
                             history_size=20, line_search_fn="strong_wolfe")
@@ -63,8 +64,9 @@ def fit_probe(Str: np.ndarray, ytr: np.ndarray, Ste: np.ndarray, seed: int, devi
     X = torch.as_tensor(Str, dtype=torch.float64, device=device)
     y = torch.as_tensor(ytr, device=device)
     rng = np.random.default_rng(seed)
+    n_cls = max(10, int(ytr.max()) + 1)      # 10 as before for <=10 classes (reproducible), more if needed
     folds = np.empty(len(ytr), np.int64)
-    for c in range(10):
+    for c in range(n_cls):
         idx = rng.permutation(np.flatnonzero(ytr == c))
         folds[idx] = np.arange(len(idx)) % 5
     acc = {lam: [] for lam in LAMBDAS}
@@ -72,13 +74,13 @@ def fit_probe(Str: np.ndarray, ytr: np.ndarray, Ste: np.ndarray, seed: int, devi
         tr, va = torch.as_tensor(folds != f, device=device), torch.as_tensor(folds == f, device=device)
         W = None
         for lam in LAMBDAS:
-            W = _fit(X[tr], y[tr], lam, W)
+            W = _fit(X[tr], y[tr], lam, W, n_cls=n_cls)
             acc[lam].append((_predict(W, X[va]) == y[va]).double().mean().item())
     cv = {lam: float(np.mean(a)) for lam, a in acc.items()}
     best = max(cv, key=cv.get)
     W = None
     for lam in LAMBDAS[:LAMBDAS.index(best) + 1]:                # same warm-start path as in CV
-        W = _fit(X, y, lam, W)
+        W = _fit(X, y, lam, W, n_cls=n_cls)
     Xte = torch.as_tensor(Ste, dtype=torch.float64, device=device)
     logits = torch.cat([Xte, torch.ones(len(Xte), 1, device=device, dtype=Xte.dtype)], 1) @ W
     return {"lambda": best, "cv": cv, "pred": logits.argmax(1).cpu().numpy(), "logits": logits.cpu().numpy()}
