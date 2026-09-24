@@ -19,6 +19,7 @@ standardize -> multinomial logistic regression (same probe code as P1). Conditio
 Views: descending (1,314), central_vnc, visual_projection.
 usage: p5_flytask.py TASK [n_trials]
 """
+import dataclasses
 import hashlib
 import os
 import json
@@ -94,6 +95,15 @@ def trial_params(rng, task, n):
         p["phase"] = rng.uniform(0, 2 * np.pi, n)
         p["contrast"] = rng.uniform(0.25, 0.45, n) if not hard else rng.uniform(0.04, 0.10, n)
         p["noise"] = np.full(n, 0.0 if not hard else 0.06)
+    elif task == "pixel_where16":
+        # V3a: the V2 stimulus as a PIXEL video (what a VLM receives) fed through the eye's image path.
+        y = rng.integers(0, 16, n)
+        p["cell"] = y
+        p["freq"] = rng.uniform(2.0, 5.0, n)
+        p["speed"] = rng.choice([-1.0, 1.0], n) * rng.uniform(0.6, 1.4, n)
+        p["phase"] = rng.uniform(0, 2 * np.pi, n)
+        p["contrast"] = rng.uniform(0.04, 0.10, n)
+        p["noise"] = np.full(n, 0.06)
     elif task == "motion_where16":
         # V2: same stimulus, but the drifting patch sits in one of a 4x4 grid of locations (16 classes)
         y = rng.integers(0, 16, n)
@@ -143,6 +153,26 @@ def trial_params(rng, task, n):
     return y, p
 
 
+PIX = 128   # V3a video frame size (4 x 4 cells of 32 px)
+
+
+def pixel_frames(p, t, device="cuda"):
+    """(B, 1, PIX, PIX) video frame at time t: static grating everywhere, the texture drifts only inside
+    one cell of a 4x4 grid, fresh pixel noise every frame (seeded per step like the eye-space tasks)."""
+    B = len(p["cell"])
+    g = lambda k: torch.as_tensor(p[k], dtype=torch.float32, device=device)[:, None, None]
+    ax = torch.linspace(-1, 1, PIX, device=device)
+    yy, xx = torch.meshgrid(ax, ax, indexing="ij")
+    cell = torch.as_tensor(p["cell"], device=device)
+    cx = ((xx + 1) / 2 * 4).clamp(max=3.999).floor()[None]
+    cy = ((yy + 1) / 2 * 4).clamp(max=3.999).floor()[None]
+    inside = ((cy * 4 + cx) == cell[:, None, None]).float()
+    lum = GRAY + g("contrast") * torch.sin(2 * np.pi * g("freq") * (xx[None] - inside * g("speed") * t) + g("phase"))
+    gen = torch.Generator(device=device).manual_seed(NOISE_SEED + int(round(t / 0.02)))
+    lum = lum + torch.randn(lum.shape, generator=gen, device=device) * g("noise")
+    return lum[:, None]
+
+
 def render(retina, task, p, t, device="cuda"):
     """Luminance (n_driven, B) at time t for all trials."""
     phi, th = retina.phi[:, None], retina.theta[:, None]
@@ -152,6 +182,8 @@ def render(retina, task, p, t, device="cuda"):
     if task == "orient_static" or task.startswith("acuity_f"):
         coord = torch.where(g("orient") > 0.5, th.expand_as(phi + g("orient")), phi.expand_as(th + g("orient")))
         return GRAY + g("contrast") * torch.sin(2 * np.pi * g("freq") * coord + g("phase"))
+    if task == "pixel_where16":
+        return retina.sample_images(pixel_frames(p, t, device), 0.0, "LR")
     if task in ("motion_where", "motion_where16"):
         inside = (torch.sqrt((phi - g("az")) ** 2 + ((th - g("el")) * 0.5) ** 2) < g("rad")).float()
         lum = GRAY + g("contrast") * torch.sin(2 * np.pi * g("freq") * (phi - inside * g("speed") * t) + g("phase"))
@@ -193,13 +225,16 @@ def features(graph, y, p, c, cfg, views, batch=64):
     r16 = c.types(["R1-6"])
     driven = r16[c.column[r16, 0] >= 0]
     eye_cfg = frozen.load()[1]
+    if TASK.startswith("pixel_"):   # spread the image over the whole field of view, no extra drift (the video moves)
+        eye_cfg = dataclasses.replace(eye_cfg, image_half_width=1.0, drift_extent=0.0)
     retina = Retina(c, driven, eye_cfg, cfg.dt)
     series_views = [v for v in views if v in SERIES_VIEWS] if graph != "nobrain" else []
     # `{v}_submean` = time mean of the SAME N_SUB neurons as `{v}_series`, so that series-vs-mean is not
     # confounded by neuron count (the full view has 9k-95k neurons, the series subset has N_SUB).
     out = {k: [] for k in list(views) + [f"{v}_series" for v in series_views]
            + [f"{v}_submean" for v in series_views] + ["photoreceptor", "photoreceptor_series", "framediff"]
-           + (["optic_lobe_energy"] if graph != "nobrain" and "optic_lobe" in views else [])}
+           + (["optic_lobe_energy"] if graph != "nobrain" and "optic_lobe" in views else [])
+           + (["pixel_framediff"] if TASK.startswith("pixel_") and graph == "nobrain" else [])}
     sub = {v: np.random.default_rng(view_seed(v)).choice(len(views[v]),
                                                          min(N_SUB, len(views[v])), replace=False)
            for v in series_views}
@@ -215,6 +250,7 @@ def features(graph, y, p, c, cfg, views, batch=64):
             st = sim.zero_state(B + 1)
         acc = None
         pr, series, fd, prev, ol_en = 0, [], 0, None, 0
+        pfd, pprev = 0, None
         vseries = {v: [] for v in series_views}
         for k in range(STEPS):
             lum = torch.cat([render(retina, TASK, pb, k * cfg.dt), torch.full((len(driven), 1), GRAY, device="cuda")], 1)
@@ -226,6 +262,11 @@ def features(graph, y, p, c, cfg, views, batch=64):
             if prev is not None:
                 fd = fd + (step_evoked - prev) ** 2
             prev = step_evoked
+            if "pixel_framediff" in out:   # the free detector a VLM pipeline could run on the video itself
+                fr = torch.nn.functional.avg_pool2d(pixel_frames(pb, k * cfg.dt), 2).flatten(1)
+                if pprev is not None:
+                    pfd = pfd + (fr - pprev) ** 2
+                pprev = fr
             if sim is not None:
                 st = sim.step(st, eye)
                 x = torch.zeros(c.n, B + 1, device="cuda")
@@ -242,6 +283,8 @@ def features(graph, y, p, c, cfg, views, batch=64):
                     vseries[v].append(xv[:, :-1] - xv[:, -1:])
         out["photoreceptor"].append((pr / STEPS).T.float().cpu())
         out["framediff"].append((fd / STEPS).T.float().cpu())
+        if "pixel_framediff" in out:
+            out["pixel_framediff"].append((pfd / STEPS).float().cpu())
         # same eye signal WITHOUT the time average: the honest no-brain baseline for a motion task,
         # since a time-averaged drifting grating cannot carry direction by construction.
         out["photoreceptor_series"].append(torch.stack(series).permute(2, 0, 1).reshape(B, -1).float().cpu())
@@ -277,7 +320,7 @@ if __name__ == "__main__":
         F = features(graph, y, p, c, cfg, views)
         gproj = torch.Generator().manual_seed(0)
         for view, X in F.items():
-            if graph == "nobrain" and not view.startswith(("photoreceptor", "framediff")):
+            if graph == "nobrain" and not view.startswith(("photoreceptor", "framediff", "pixel_framediff")):
                 continue
             # Keep the projection RATIO, not the width: a fixed 1024-d projection discards 98% of a
             # 50,000-d series but only 49% of a 2,000-d mean, which alone can make the series lose.
