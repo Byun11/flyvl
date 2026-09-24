@@ -79,8 +79,9 @@ def fit_probe(Str: np.ndarray, ytr: np.ndarray, Ste: np.ndarray, seed: int, devi
     W = None
     for lam in LAMBDAS[:LAMBDAS.index(best) + 1]:                # same warm-start path as in CV
         W = _fit(X, y, lam, W)
-    pred = _predict(W, torch.as_tensor(Ste, dtype=torch.float64, device=device)).cpu().numpy()
-    return {"lambda": best, "cv": cv, "pred": pred}
+    Xte = torch.as_tensor(Ste, dtype=torch.float64, device=device)
+    logits = torch.cat([Xte, torch.ones(len(Xte), 1, device=device, dtype=Xte.dtype)], 1) @ W
+    return {"lambda": best, "cv": cv, "pred": logits.argmax(1).cpu().numpy(), "logits": logits.cpu().numpy()}
 
 
 def paired_bootstrap(correct_a: np.ndarray, correct_b: np.ndarray, n_boot: int = 1000, seed: int = 0) -> dict:
