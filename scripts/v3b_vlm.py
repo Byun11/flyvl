@@ -14,7 +14,7 @@ Selectors (each hands the VLM ONE 32 x 32 cell of the last frame, 1/16 of the pa
   oracle    - the true moving cell (reading upper bound)
 Reference: the whole last frame (one still image cannot show which part moves).
 
-usage: v3b_vlm.py [n]
+usage: v3b_vlm.py [n] [warm]   warm = static adaptation steps before motion (V3d)
 """
 import dataclasses
 import json
@@ -94,6 +94,7 @@ def ask(proc, model, imgs, batch=32):
 
 if __name__ == "__main__":
     N = int(sys.argv[2]) if len(sys.argv) > 2 else 3000
+    WARM = int(sys.argv[3]) if len(sys.argv) > 3 else 0
     t0 = time.time()
     rng = np.random.default_rng(0)
     y, p = P.trial_params(rng, "pixel_where16", N)                          # same motion trials as V3a/V3c
@@ -110,7 +111,7 @@ if __name__ == "__main__":
     driven = r16[c.column[r16, 0] >= 0]
     sim, retina = Sim(c, cfg, driven=driven), Retina(c, driven, eye_cfg, cfg.dt)
     ol = torch.as_tensor(np.arange(sim.Ng), device="cuda")
-    X = np.concatenate([glimpse_energy(c, cfg, sim, retina, p, q, ol, frames=letter_frames) for q in range(4)], 1)
+    X = np.concatenate([glimpse_energy(c, cfg, sim, retina, p, q, ol, frames=letter_frames, warm=WARM) for q in range(4)], 1)
     print(f"  fly features {(time.time()-t0)/60:.1f} min", flush=True)
 
     # --- selector 2: pixel frame difference ---
@@ -147,6 +148,6 @@ if __name__ == "__main__":
     pred = ask(proc, model, last)
     res["vqa_whole_frame"] = float(np.mean([a == b for a, b in zip(pred, answer)]))
     print(f"VQA     whole frame {res['vqa_whole_frame']*100:.2f}", flush=True)
-    res.update({"n": N, "n_test": len(te), "letter_contrast": L_CONTRAST, "minutes": (time.time() - t0) / 60})
-    (OUT / "v3b_vlm.json").write_text(json.dumps(res, indent=1))
+    res.update({"warm": WARM, "n": N, "n_test": len(te), "letter_contrast": L_CONTRAST, "minutes": (time.time() - t0) / 60})
+    (OUT / f"v3b_vlm_warm{WARM}.json").write_text(json.dumps(res, indent=1))
     print(f"done in {res['minutes']:.1f} min", flush=True)

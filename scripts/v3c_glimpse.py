@@ -28,7 +28,7 @@ H = P.PIX // 2
 
 
 @torch.no_grad()
-def glimpse_energy(c, cfg, sim, retina, p, q, ol, batch=48, frames=None):
+def glimpse_energy(c, cfg, sim, retina, p, q, ol, batch=48, frames=None, warm=0):
     """Optic-lobe response energy for quadrant q of every trial's video."""
     i, j = divmod(q, 2)
     frames = frames or P.pixel_frames
@@ -38,6 +38,10 @@ def glimpse_energy(c, cfg, sim, retina, p, q, ol, batch=48, frames=None):
         B = len(pb["cell"])
         retina.reset(B + 1)
         st, en = sim.zero_state(B + 1), 0
+        for _ in range(warm):   # V3d: adapt to the static first frame so onset transients are not counted
+            fr = frames(pb, 0.0)[..., i * H:(i + 1) * H, j * H:(j + 1) * H].contiguous()
+            lum = retina.sample_images(fr, 0.0, "LR")
+            st = sim.step(st, retina.transduce(torch.cat([lum, torch.full((lum.shape[0], 1), GRAY, device="cuda")], 1)))
         for k in range(P.STEPS):
             fr = frames(pb, k * cfg.dt)[..., i * H:(i + 1) * H, j * H:(j + 1) * H].contiguous()
             lum = retina.sample_images(fr, 0.0, "LR")
