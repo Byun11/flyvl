@@ -1,0 +1,13 @@
+{
+ "pixels": 0.9975,
+ "visual_projection": 1.0,
+ "central_vnc": 0.9725,
+ "optic_lobe": 0.9975,
+ "photoreceptor": 0.9899999999999999,
+ "n_train": 1200,
+ "n_test": 400,
+ "drift": 1.2,
+ "size": 96,
+ "chance": 0.25,
+ "minutes": 5.9994871060053505
+}

@@ -23,10 +23,7 @@ from flyvl import connectome, frozen, masks, probe  # noqa: E402
 from flyvl.sim import Sim  # noqa: E402
 from flyvl.stimulus import GRAY, Retina  # noqa: E402
 
-N_TR = int(sys.argv[1]) if len(sys.argv) > 1 else 1200
-N_TE = int(sys.argv[2]) if len(sys.argv) > 2 else 400
-DRIFT = float(sys.argv[3]) if len(sys.argv) > 3 else 1.2
-SIZE = int(sys.argv[4]) if len(sys.argv) > 4 else 96
+SIZE = 96
 STEPS, K = 25, 1024
 CLASSES = ["blank", "text", "table", "figure"]
 OUT = connectome.DATA_ROOT / "runs" / "doc"
@@ -103,6 +100,9 @@ def score(Ftr, Fte, ytr, yte):
 
 
 if __name__ == "__main__":
+    N_TR = int(sys.argv[1]) if len(sys.argv) > 1 else 1200
+    N_TE = int(sys.argv[2]) if len(sys.argv) > 2 else 400
+    DRIFT = float(sys.argv[3]) if len(sys.argv) > 3 else 1.2
     t0 = time.time()
     c = connectome.load()
     cfg, eye_cfg, _ = frozen.load()
