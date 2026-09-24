@@ -1,0 +1,61 @@
+c=0.04,0.10 n=0.06   rf estimated for 100% of optic-lobe units
+c=0.04,0.10 n=0.06 locate  fly_pooled_argmax 25.44
+c=0.04,0.10 n=0.06 locate  fly_pooled 42.56
+c=0.04,0.10 n=0.06 locate  fly        93.56
+c=0.04,0.10 n=0.06 locate  framediff  81.00
+c=0.04,0.10 n=0.06 locate  framediff_blur1 97.00
+c=0.04,0.10 n=0.06 locate  framediff_blur2 99.78
+c=0.04,0.10 n=0.06 locate  framediff_blur4 99.11
+c=0.04,0.10 n=0.06 locate  random     5.00
+c=0.04,0.10 n=0.06 locate  oracle     100.00
+c=0.04,0.10 n=0.06 VQA     fly_pooled_argmax 27.67
+c=0.04,0.10 n=0.06 VQA     fly_pooled 43.78
+c=0.04,0.10 n=0.06 VQA     fly        92.33
+c=0.04,0.10 n=0.06 VQA     framediff  80.33
+c=0.04,0.10 n=0.06 VQA     framediff_blur1 95.44
+c=0.04,0.10 n=0.06 VQA     framediff_blur2 98.11
+c=0.04,0.10 n=0.06 VQA     framediff_blur4 97.44
+c=0.04,0.10 n=0.06 VQA     random     9.33
+c=0.04,0.10 n=0.06 VQA     oracle     98.22
+c=0.04,0.10 n=0.06 VQA     whole frame 11.89
+c=0.02,0.05 n=0.06   rf estimated for 100% of optic-lobe units
+c=0.02,0.05 n=0.06 locate  fly_pooled_argmax 10.67
+c=0.02,0.05 n=0.06 locate  fly_pooled 14.33
+c=0.02,0.05 n=0.06 locate  fly        66.00
+c=0.02,0.05 n=0.06 locate  framediff  50.33
+c=0.02,0.05 n=0.06 locate  framediff_blur1 77.44
+c=0.02,0.05 n=0.06 locate  framediff_blur2 89.22
+c=0.02,0.05 n=0.06 locate  framediff_blur4 84.00
+c=0.02,0.05 n=0.06 locate  random     5.00
+c=0.02,0.05 n=0.06 locate  oracle     100.00
+c=0.02,0.05 n=0.06 VQA     fly_pooled_argmax 14.00
+c=0.02,0.05 n=0.06 VQA     fly_pooled 16.89
+c=0.02,0.05 n=0.06 VQA     fly        65.44
+c=0.02,0.05 n=0.06 VQA     framediff  51.78
+c=0.02,0.05 n=0.06 VQA     framediff_blur1 76.56
+c=0.02,0.05 n=0.06 VQA     framediff_blur2 87.78
+c=0.02,0.05 n=0.06 VQA     framediff_blur4 83.11
+c=0.02,0.05 n=0.06 VQA     random     9.22
+c=0.02,0.05 n=0.06 VQA     oracle     98.00
+c=0.02,0.05 n=0.06 VQA     whole frame 11.44
+c=0.02,0.05 n=0.12   rf estimated for 100% of optic-lobe units
+c=0.02,0.05 n=0.12 locate  fly_pooled_argmax 10.22
+c=0.02,0.05 n=0.12 locate  fly_pooled 10.78
+c=0.02,0.05 n=0.12 locate  fly        53.00
+c=0.02,0.05 n=0.12 locate  framediff  24.11
+c=0.02,0.05 n=0.12 locate  framediff_blur1 43.78
+c=0.02,0.05 n=0.12 locate  framediff_blur2 60.56
+c=0.02,0.05 n=0.12 locate  framediff_blur4 53.56
+c=0.02,0.05 n=0.12 locate  random     5.00
+c=0.02,0.05 n=0.12 locate  oracle     100.00
+c=0.02,0.05 n=0.12 VQA     fly_pooled_argmax 10.78
+c=0.02,0.05 n=0.12 VQA     fly_pooled 11.33
+c=0.02,0.05 n=0.12 VQA     fly        43.22
+c=0.02,0.05 n=0.12 VQA     framediff  21.89
+c=0.02,0.05 n=0.12 VQA     framediff_blur1 35.78
+c=0.02,0.05 n=0.12 VQA     framediff_blur2 46.89
+c=0.02,0.05 n=0.12 VQA     framediff_blur4 41.89
+c=0.02,0.05 n=0.12 VQA     random     8.22
+c=0.02,0.05 n=0.12 VQA     oracle     75.33
+c=0.02,0.05 n=0.12 VQA     whole frame 11.44
+ALL DONE

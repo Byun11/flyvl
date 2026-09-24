@@ -1,0 +1,61 @@
+c=0.02,0.05 n=0.06 locate  fly        66.00
+c=0.02,0.05 n=0.06 locate  framediff  50.33
+c=0.02,0.05 n=0.06 locate  framediff_blur1 77.44
+c=0.02,0.05 n=0.06 locate  framediff_blur2 89.22
+c=0.02,0.05 n=0.06 locate  framediff_blur4 84.00
+c=0.02,0.05 n=0.06 locate  random     5.00
+c=0.02,0.05 n=0.06 locate  oracle     100.00
+c=0.02,0.05 n=0.06 VQA     fly        65.44
+c=0.02,0.05 n=0.06 VQA     framediff  51.78
+c=0.02,0.05 n=0.06 VQA     framediff_blur1 76.56
+c=0.02,0.05 n=0.06 VQA     framediff_blur2 87.78
+c=0.02,0.05 n=0.06 VQA     framediff_blur4 83.11
+c=0.02,0.05 n=0.06 VQA     random     9.22
+c=0.02,0.05 n=0.06 VQA     oracle     98.00
+c=0.02,0.05 n=0.06 VQA     whole frame 11.44
+c=0.04,0.10 n=0.12 locate  fly        86.44
+c=0.04,0.10 n=0.12 locate  framediff  50.33
+c=0.04,0.10 n=0.12 locate  framediff_blur1 77.44
+c=0.04,0.10 n=0.12 locate  framediff_blur2 89.22
+c=0.04,0.10 n=0.12 locate  framediff_blur4 84.00
+c=0.04,0.10 n=0.12 locate  random     5.00
+c=0.04,0.10 n=0.12 locate  oracle     100.00
+c=0.04,0.10 n=0.12 VQA     fly        59.44
+c=0.04,0.10 n=0.12 VQA     framediff  35.44
+c=0.04,0.10 n=0.12 VQA     framediff_blur1 53.33
+c=0.04,0.10 n=0.12 VQA     framediff_blur2 61.22
+c=0.04,0.10 n=0.12 VQA     framediff_blur4 58.33
+c=0.04,0.10 n=0.12 VQA     random     7.89
+c=0.04,0.10 n=0.12 VQA     oracle     69.22
+c=0.04,0.10 n=0.12 VQA     whole frame 10.44
+c=0.02,0.05 n=0.12 locate  fly        53.00
+c=0.02,0.05 n=0.12 locate  framediff  24.11
+c=0.02,0.05 n=0.12 locate  framediff_blur1 43.78
+c=0.02,0.05 n=0.12 locate  framediff_blur2 60.56
+c=0.02,0.05 n=0.12 locate  framediff_blur4 53.56
+c=0.02,0.05 n=0.12 locate  random     5.00
+c=0.02,0.05 n=0.12 locate  oracle     100.00
+c=0.02,0.05 n=0.12 VQA     fly        43.22
+c=0.02,0.05 n=0.12 VQA     framediff  21.89
+c=0.02,0.05 n=0.12 VQA     framediff_blur1 35.78
+c=0.02,0.05 n=0.12 VQA     framediff_blur2 46.89
+c=0.02,0.05 n=0.12 VQA     framediff_blur4 41.89
+c=0.02,0.05 n=0.12 VQA     random     8.22
+c=0.02,0.05 n=0.12 VQA     oracle     75.33
+c=0.02,0.05 n=0.12 VQA     whole frame 11.44
+c=0.01,0.03 n=0.12 locate  fly        18.11
+c=0.01,0.03 n=0.12 locate  framediff  17.67
+c=0.01,0.03 n=0.12 locate  framediff_blur1 24.33
+c=0.01,0.03 n=0.12 locate  framediff_blur2 34.56
+c=0.01,0.03 n=0.12 locate  framediff_blur4 29.78
+c=0.01,0.03 n=0.12 locate  random     5.00
+c=0.01,0.03 n=0.12 locate  oracle     100.00
+c=0.01,0.03 n=0.12 VQA     fly        16.44
+c=0.01,0.03 n=0.12 VQA     framediff  16.89
+c=0.01,0.03 n=0.12 VQA     framediff_blur1 22.67
+c=0.01,0.03 n=0.12 VQA     framediff_blur2 29.33
+c=0.01,0.03 n=0.12 VQA     framediff_blur4 26.56
+c=0.01,0.03 n=0.12 VQA     random     8.11
+c=0.01,0.03 n=0.12 VQA     oracle     76.89
+c=0.01,0.03 n=0.12 VQA     whole frame 11.78
+ALL DONE
