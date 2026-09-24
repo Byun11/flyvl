@@ -1,0 +1,16 @@
+{
+ "locate_fly": 0.39444444444444443,
+ "locate_framediff": 0.81,
+ "locate_random": 0.05,
+ "locate_oracle": 1.0,
+ "vqa_fly": 0.4066666666666667,
+ "vqa_framediff": 0.8033333333333333,
+ "vqa_random": 0.09333333333333334,
+ "vqa_oracle": 0.9822222222222222,
+ "vqa_whole_frame": 0.11888888888888889,
+ "warm": 10,
+ "n": 3000,
+ "n_test": 900,
+ "letter_contrast": 0.3,
+ "minutes": 2.0265574057896933
+}
