@@ -95,6 +95,20 @@ def trial_params(rng, task, n):
         p["phase"] = rng.uniform(0, 2 * np.pi, n)
         p["contrast"] = rng.uniform(0.25, 0.45, n) if not hard else rng.uniform(0.04, 0.10, n)
         p["noise"] = np.full(n, 0.0 if not hard else 0.06)
+    elif task == "pixel_mix16":
+        # M1: one cell moves in a random direction (L/R/U/D), another cell only FLICKERS (counterphase:
+        # changes every frame, no net motion). The label is the moving cell. Frame difference is fooled by
+        # flicker; a direction-opponent detector is not; a single-axis detector misses vertical motion.
+        y = rng.integers(0, 16, n)
+        p["cell"], p["cell2"] = y, (y + rng.integers(1, 16, n)) % 16
+        p["dir"] = rng.integers(0, 4, n)                          # 0 right, 1 left, 2 down, 3 up
+        p["freq"] = rng.uniform(2.0, 5.0, n)
+        p["speed"] = rng.uniform(0.6, 1.4, n)
+        p["flick"] = rng.uniform(4.0, 8.0, n)                     # flicker temporal frequency (Hz)
+        p["phase"] = rng.uniform(0, 2 * np.pi, n)
+        lo, hi = (float(v) for v in os.environ.get("MW_CONTRAST", "0.04,0.10").split(","))
+        p["contrast"] = rng.uniform(lo, hi, n)
+        p["noise"] = np.full(n, float(os.environ.get("MW_NOISE", "0.06")))
     elif task == "pixel_dir16":
         # S1 selectivity: TWO cells move in opposite directions; the label is the one moving LEFT.
         y = rng.integers(0, 16, n)
@@ -181,6 +195,19 @@ def pixel_frames(p, t, device="cuda"):
     cx = ((xx + 1) / 2 * 4).clamp(max=3.999).floor()[None]
     cy = ((yy + 1) / 2 * 4).clamp(max=3.999).floor()[None]
     inside = ((cy * 4 + cx) == cell[:, None, None]).float()
+    if "flick" in p:                                  # M1: moving cell with random direction + a flickering cell
+        d = torch.as_tensor(p["dir"], device=device)[:, None, None]
+        vertical = (d >= 2).float()
+        sign = torch.where((d == 1) | (d == 3), -1.0, 1.0)
+        coord = xx[None] * (1 - vertical) + yy[None] * vertical
+        tex_m = torch.sin(2 * np.pi * g("freq") * (coord - sign * g("speed") * t) + g("phase"))
+        tex_s = torch.sin(2 * np.pi * g("freq") * xx[None] + g("phase"))
+        inside2 = ((cy * 4 + cx) == torch.as_tensor(p["cell2"], device=device)[:, None, None]).float()
+        flick = torch.cos(2 * np.pi * g("flick") * t)
+        tex = inside * tex_m + inside2 * tex_s * flick + (1 - inside - inside2) * tex_s
+        lum = GRAY + g("contrast") * tex
+        gen = torch.Generator(device=device).manual_seed(NOISE_SEED + int(round(t / 0.02)))
+        return (lum + torch.randn(lum.shape, generator=gen, device=device) * g("noise"))[:, None]
     shift = inside * g("speed") * t
     if "cell2" in p:                                  # S1: a second cell drifting the other way
         inside2 = ((cy * 4 + cx) == torch.as_tensor(p["cell2"], device=device)[:, None, None]).float()
