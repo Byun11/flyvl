@@ -1,0 +1,20 @@
+[2026-09-26 14:47:49] network_view:122 Initialized network view at D:\flyvl_data\flyvis\results\flow\0000\000
+[2026-09-26 14:47:49] logging_utils:23 epe not in D:\flyvl_data\flyvis\results\flow\0000\000\validation, but 'loss' is. Falling back to 'loss'. You can rerun the ensemble validation to make appropriate recordings of the losses.
+[2026-09-26 14:47:52] network:222 Initialized network with NumberOfParams(free=734, fixed=2959) parameters.
+[2026-09-26 14:47:52] chkpt_utils:36 Recovered network state.
+[2026-09-26 14:48:53] network_view:122 Initialized network view at D:\flyvl_data\flyvis\results\flow\0000\000
+[2026-09-26 14:48:56] network:222 Initialized network with NumberOfParams(free=734, fixed=2959) parameters.
+[2026-09-26 14:48:56] chkpt_utils:36 Recovered network state.
+  features ready 2.8 min
+n=   50  flyvis_pooled  11.3  hr_pooled  22.4  framediff_pooled   7.6  cnn3d   7.1
+n=  100  flyvis_pooled  14.3  hr_pooled  31.7  framediff_pooled   7.1  cnn3d  11.8
+n=  300  flyvis_pooled  35.8  hr_pooled  74.4  framediff_pooled   8.7  cnn3d  27.1
+n= 1000  flyvis_pooled  79.8  hr_pooled  98.2  framediff_pooled  31.6  cnn3d   7.2
+n= 2100  flyvis_pooled  94.0  hr_pooled  99.9  framediff_pooled  40.9  cnn3d 100.0
+Loading weights:   0%|          | 0/733 [00:00<?, ?it/s]Loading weights:   2%|2         | 17/733 [00:00<00:06, 112.97it/s]Loading weights:   4%|3         | 29/733 [00:00<00:09, 77.84it/s] Loading weights:   6%|6         | 47/733 [00:00<00:06, 103.26it/s]Loading weights:   8%|8         | 60/733 [00:00<00:06, 109.32it/s]Loading weights: 100%|##########| 733/733 [00:00<00:00, 1097.44it/s]
+[transformers] The tied weights mapping and config for this model specifies to tie model.language_model.embed_tokens.weight to lm_head.weight, but both are present in the checkpoints with different values, so we will NOT tie them. You should update the config with `tie_word_embeddings=False` to silence this warning.
+VQA flyvis_pooled 92.89
+VQA hr_pooled  98.56
+VQA cnn3d      98.67
+VQA framediff_pooled 42.22
+done in 5.2 min
