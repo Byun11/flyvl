@@ -104,6 +104,12 @@ if __name__ == "__main__":
     ol = torch.as_tensor(np.arange(sim.Ng), device="cuda")
     feats = {"fly": np.concatenate([glimpse_energy(c, cfg, sim, retina, p, q, ol, frames=V.letter_frames, change=True)
                                     for q in range(4)], 1)}
+    # flyvis: the published connectome-constrained optic lobe with trained, direction-selective T4/T5
+    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+    from flyvl.flyvis_encoder import FlyvisEncoder, features as fv_features
+    fv = fv_features(FlyvisEncoder(), V.letter_frames, p, N, P.STEPS, cfg.dt)
+    feats["flyvis_mean"], feats["flyvis_energy"] = fv["mean"], fv["energy"]
+    feats["flyvis"] = np.concatenate([fv["mean"], fv["energy"]], 1)
     vb = video(p, N, cfg, blur=2)                                   # blurred, pooled video (N, T, 64, 64)
     d = (vb[:, 1:].float() - vb[:, :-1].float())
     feats["framediff"] = (d ** 2).mean(1).flatten(1).cpu().numpy()
@@ -132,7 +138,7 @@ if __name__ == "__main__":
     pt = {k: v[te] for k, v in p.items()}
     last = V.letter_frames(pt, (P.STEPS - 1) * cfg.dt)
     answer = [V.LETTERS[i] for i in p["letters"][te, y[te]]]
-    for k in ("fly", "hr_bank", "hr_signed", "cnn3d", "framediff"):
+    for k in ("fly", "flyvis", "hr_bank", "hr_signed", "cnn3d", "framediff"):
         pred = V.ask(proc, model, V.cell_crop(last, torch.as_tensor(picks[(k, 2100)], device="cuda")))
         res[f"vqa_{k}"] = float(np.mean([a == b for a, b in zip(pred, answer)]))
         print(f"VQA {k:10s} {res[f'vqa_{k}']*100:.2f}", flush=True)
