@@ -35,7 +35,7 @@ from flyvl.sim import Sim  # noqa: E402
 from flyvl.stimulus import Retina, _gaussian_blur  # noqa: E402
 
 P = V.P
-BUDGETS = (50, 100, 300, 1000, 2100)
+BUDGETS = tuple(int(b) for b in os.environ.get("BUDGETS", "50,100,300,1000,2100").split(","))
 OUT = connectome.DATA_ROOT / "runs" / "mix"
 OUT.mkdir(parents=True, exist_ok=True)
 
@@ -123,6 +123,15 @@ if __name__ == "__main__":
     y, p = P.trial_params(np.random.default_rng(0), TASK, N)
     p["letters"] = np.random.default_rng(1).integers(0, 26, (N, 16))
     te = np.arange(2100, N)
+    # OOD="speed" / "freq": TEST videos use values outside the training range (training rows unchanged)
+    OOD = os.environ.get("OOD", "")
+    g_ood = np.random.default_rng(7)
+    if OOD == "speed":
+        p["speed"][te] = g_ood.uniform(2.5, 4.0, len(te))
+    elif OOD == "freq":
+        p["freq"][te] = g_ood.uniform(8.0, 12.0, len(te))
+    elif OOD == "slowfreq":
+        p["freq"][te] = g_ood.uniform(0.8, 1.6, len(te))
     c = connectome.load()
     cfg, eye_cfg, _ = frozen.load()
     eye_cfg = dataclasses.replace(eye_cfg, image_half_width=1.0, drift_extent=0.0)
@@ -182,5 +191,5 @@ if __name__ == "__main__":
         res[f"vqa_{k}"] = float(np.mean([a == b for a, b in zip(pred, answer)]))
         print(f"VQA {k:10s} {res[f'vqa_{k}']*100:.2f}", flush=True)
     res.update({"n": N, "budgets": BUDGETS, "minutes": (time.time() - t0) / 60})
-    (OUT / f"{TASK}_budget_{READOUT}{'_pool' if os.environ.get('POOL') == '1' else ''}.json").write_text(json.dumps(res, indent=1))
+    (OUT / f"{TASK}_budget_{READOUT}{'_pool' if os.environ.get('POOL') == '1' else ''}{'_ood' + OOD if OOD else ''}.json").write_text(json.dumps(res, indent=1))
     print(f"done in {res['minutes']:.1f} min", flush=True)
