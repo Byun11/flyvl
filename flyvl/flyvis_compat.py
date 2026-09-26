@@ -35,4 +35,10 @@ import datamate.directory as _dir  # noqa: E402
 if hasattr(_dir, "_write_h5"):
     _dir._write_h5 = _write_h5
 
+import torch  # noqa: E402
+
 import flyvis  # noqa: E402,F401
+
+# flyvis calls torch.set_default_device("cuda") at import, which breaks every CPU-seeded generator in this
+# project. Restore CPU as the default; flyvis calls are wrapped in `with torch.device("cuda")` instead.
+torch.set_default_device("cpu")

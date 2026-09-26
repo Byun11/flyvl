@@ -19,8 +19,9 @@ T45 = ("T4a", "T4b", "T4c", "T4d", "T5a", "T5b", "T5c", "T5d")
 
 class FlyvisEncoder:
     def __init__(self, model: str = "flow/0000/000", device: str = "cuda"):
-        self.net = NetworkView(model).init_network().to(device)
-        self.eye = BoxEye()
+        with torch.device(device):
+            self.net = NetworkView(model).init_network().to(device)
+            self.eye = BoxEye()
         types = np.asarray([t.decode() if isinstance(t, bytes) else t for t in self.net.connectome.nodes.type[:]])
         self.idx = {t: np.flatnonzero(types == t) for t in T45}                     # all columns of each type
         self.device = device
@@ -29,8 +30,9 @@ class FlyvisEncoder:
     def run(self, frames: torch.Tensor, dt: float) -> dict:
         """frames (B, T, H, W) in [0, 1] -> {"mean": (B, 8*721), "energy": (B, 8*721)}"""
         B, T = frames.shape[:2]
-        movie = self.eye(frames.float().to(self.device))                     # (B, T, 1, 721)
-        r = self.net.simulate(movie, dt=dt)                                          # (B, T, n_cells)
+        with torch.device(self.device):
+            movie = self.eye(frames.float().to(self.device))                     # (B, T, 1, 721)
+            r = self.net.simulate(movie, dt=dt)                                      # (B, T, n_cells)
         sel = torch.cat([r[..., torch.as_tensor(self.idx[t], device=r.device)] for t in T45], -1)
         base = sel[:, :1]                                                            # response to the first frame
         ev = sel - base
