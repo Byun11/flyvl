@@ -1,0 +1,10 @@
+  features ready 0.6 min
+n=   50  fly   8.3  framediff  11.0  hr_bank   7.8  hr_signed   8.9  cnn3d   7.1
+n=  100  fly   7.0  framediff  23.8  hr_bank   8.9  hr_signed  10.3  cnn3d  11.8
+n=  300  fly   7.8  framediff  36.9  hr_bank  13.7  hr_signed  12.9  cnn3d  27.1
+n= 1000  fly   6.7  framediff  60.6  hr_bank  35.4  hr_signed  20.0  cnn3d   7.2
+n= 2100  fly   9.2  framediff  70.2  hr_bank  44.9  hr_signed  20.0  cnn3d 100.0
+Loading weights:   0%|          | 0/733 [00:00<?, ?it/s]Loading weights:   4%|3         | 28/733 [00:00<00:02, 278.18it/s]Loading weights: 100%|##########| 733/733 [00:00<00:00, 3798.03it/s]
+[transformers] The tied weights mapping and config for this model specifies to tie model.language_model.embed_tokens.weight to lm_head.weight, but both are present in the checkpoints with different values, so we will NOT tie them. You should update the config with `tie_word_embeddings=False` to silence this warning.
+VQA fly        12.33
+VQA hr_bank    45.78
