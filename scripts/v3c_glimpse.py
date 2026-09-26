@@ -16,7 +16,7 @@ from pathlib import Path
 import numpy as np
 import torch
 
-if sys.argv[1:2] != ["pixel_where16"]:
+if not sys.argv[1:2] or not sys.argv[1].startswith("pixel_"):
     sys.argv = [sys.argv[0], "pixel_where16"] + sys.argv[1:]          # p5_flytask reads TASK from argv
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import p5_flytask as P  # noqa: E402
