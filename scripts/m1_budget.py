@@ -110,7 +110,7 @@ def mlp_select(Z, y, tr, te, seed=0):
 
 def probe_select(feat, y, tr, te, name):
     Pm = torch.randn(1024, feat.shape[1], generator=torch.Generator().manual_seed(P.view_seed(name))) / np.sqrt(1024)
-    Z = (torch.as_tensor(feat, device="cuda") @ Pm.to("cuda").T).cpu().numpy()
+    Z = (torch.as_tensor(feat, device="cuda") @ Pm.to("cuda").T).cpu().numpy() if feat.shape[1] > 1024 else feat
     if READOUT == "mlp":
         return mlp_select(Z, y, tr, te)
     (Str, Ste, _), = probe.standardize_pca(Z[tr], Z[te], (1024,)).values()
@@ -138,6 +138,10 @@ if __name__ == "__main__":
     fv = fv_features(FlyvisEncoder(), V.letter_frames, p, N, P.STEPS, cfg.dt)
     feats["flyvis_mean"], feats["flyvis_energy"] = fv["mean"], fv["energy"]
     feats["flyvis"] = np.concatenate([fv["mean"], fv["energy"]], 1)
+    if os.environ.get("POOL") == "1":
+        # every arm pooled to the 16 page cells by its true geometry, so the readout sees the same structure
+        from flyvl.flyvis_encoder import pooled_features
+        feats = {"flyvis_pooled": pooled_features(FlyvisEncoder(), V.letter_frames, p, N, P.STEPS, cfg.dt)}
     vb = video(p, N, cfg, blur=2)                                   # blurred, pooled video (N, T, 64, 64)
     d = (vb[:, 1:].float() - vb[:, :-1].float())
     feats["framediff"] = (d ** 2).mean(1).flatten(1).cpu().numpy()
@@ -148,6 +152,13 @@ if __name__ == "__main__":
     feats["hr_bank"] = (F.pad(rx, (0, D)) ** 2 + F.pad(ry, (0, 0, 0, D)) ** 2).flatten(1).cpu().numpy()
     # signed opponent maps too: with them a linear readout can find "the cell whose direction differs"
     feats["hr_signed"] = torch.cat([F.pad(rx, (0, D)).flatten(1), F.pad(ry, (0, 0, 0, D)).flatten(1)], 1).cpu().numpy()
+    if os.environ.get("POOL") == "1":
+        cellpool = lambda m: F.avg_pool2d(m[:, None], m.shape[-1] // 4).flatten(1)   # (N, 16)
+        rxp, ryp = F.pad(rx, (0, D)), F.pad(ry, (0, 0, 0, D))
+        feats["hr_pooled"] = torch.cat([cellpool(rxp), cellpool(ryp), cellpool(rxp ** 2 + ryp ** 2)], 1).cpu().numpy()
+        feats["framediff_pooled"] = cellpool((d ** 2).mean(1)).cpu().numpy()
+        for k in ("framediff", "hr_bank", "hr_signed"):
+            feats.pop(k)
     del b0, b1, d, rx, ry
     vid = video(p, N, cfg)                                          # unblurred pooled video for the CNN
     print(f"  features ready {(time.time()-t0)/60:.1f} min", flush=True)
@@ -166,10 +177,10 @@ if __name__ == "__main__":
     pt = {k: v[te] for k, v in p.items()}
     last = V.letter_frames(pt, (P.STEPS - 1) * cfg.dt)
     answer = [V.LETTERS[i] for i in p["letters"][te, y[te]]]
-    for k in ("fly", "flyvis", "hr_bank", "hr_signed", "cnn3d", "framediff"):
+    for k in [a for a in ("fly", "flyvis", "flyvis_pooled", "hr_bank", "hr_signed", "hr_pooled", "cnn3d", "framediff", "framediff_pooled") if (a, 2100) in picks]:
         pred = V.ask(proc, model, V.cell_crop(last, torch.as_tensor(picks[(k, 2100)], device="cuda")))
         res[f"vqa_{k}"] = float(np.mean([a == b for a, b in zip(pred, answer)]))
         print(f"VQA {k:10s} {res[f'vqa_{k}']*100:.2f}", flush=True)
     res.update({"n": N, "budgets": BUDGETS, "minutes": (time.time() - t0) / 60})
-    (OUT / f"{TASK}_budget_{READOUT}.json").write_text(json.dumps(res, indent=1))
+    (OUT / f"{TASK}_budget_{READOUT}{'_pool' if os.environ.get('POOL') == '1' else ''}.json").write_text(json.dumps(res, indent=1))
     print(f"done in {res['minutes']:.1f} min", flush=True)

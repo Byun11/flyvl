@@ -52,3 +52,44 @@ def features(enc: FlyvisEncoder, frames_fn, p: dict, N: int, steps: int, dt: flo
         for k in out:
             out[k].append(torch.cat([r[k] for r in res], 1))
     return {k: torch.cat(v).numpy() for k, v in out.items()}
+
+
+def hexal_xy(enc: FlyvisEncoder, size: int = 64) -> np.ndarray:
+    """(721, 2) x, y in [0, 1] that each eye column samples, measured by feeding coordinate ramps."""
+    ax = torch.linspace(0, 1, size)
+    with torch.device(enc.device):
+        x = enc.eye(ax[None, :].repeat(size, 1)[None, None].to(enc.device))[0, 0, 0]
+        y = enc.eye(ax[:, None].repeat(1, size)[None, None].to(enc.device))[0, 0, 0]
+    return torch.stack([x, y], 1).cpu().numpy()
+
+
+@torch.no_grad()
+def pooled_features(enc: FlyvisEncoder, frames_fn, p: dict, N: int, steps: int, dt: float, batch: int = 32) -> np.ndarray:
+    """4 quadrant glimpses; T4a-d/T5a-d responses averaged over the columns that look at each page cell.
+    Returns (N, 16 cells x 8 types x 2) = signed late mean and change energy. The per-type columns are in
+    hexal order (checked: T4a cell i sits on hexal i)."""
+    xy = hexal_xy(enc)
+    sub = (xy[:, 1] >= 0.5).astype(int) * 2 + (xy[:, 0] >= 0.5).astype(int)      # which quarter of the glimpse
+    masks = torch.as_tensor(np.stack([sub == k for k in range(4)]), dtype=torch.float32)
+    masks = (masks / masks.sum(1, keepdim=True)).to(enc.device)                     # (4, 721) averaging weights
+    out = []
+    for s in range(0, N, batch):
+        pb = {k: v[s:s + batch] for k, v in p.items()}
+        video = torch.stack([frames_fn(pb, k * dt)[:, 0] for k in range(steps)], 1).clamp(0, 1)
+        B, H = video.shape[0], video.shape[-1] // 2
+        feat = torch.zeros(B, 16, len(T45), 2, device=enc.device)
+        for q in range(4):
+            qi, qj = divmod(q, 2)
+            with torch.device(enc.device):
+                r = enc.net.simulate(enc.eye(video[..., qi * H:(qi + 1) * H, qj * H:(qj + 1) * H].float().to(enc.device)), dt=dt)
+            for ti, t in enumerate(T45):
+                x = r[..., torch.as_tensor(enc.idx[t], device=r.device)]                  # (B, T, 721)
+                ev = x - x[:, :1]
+                sm, en = ev[:, 5:].mean(1), (ev[:, 1:] - ev[:, :-1]).pow(2).mean(1)      # (B, 721)
+                for k in range(4):
+                    cy, cx = divmod(k, 2)
+                    cell = (2 * qi + cy) * 4 + (2 * qj + cx)
+                    feat[:, cell, ti, 0] = sm @ masks[k]
+                    feat[:, cell, ti, 1] = en @ masks[k]
+        out.append(feat.flatten(1).cpu())
+    return torch.cat(out).numpy()
