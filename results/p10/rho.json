@@ -1,0 +1,20 @@
+{
+ "real": 0.914939284324646,
+ "matched_shuffle_s0": 0.5321974754333496,
+ "matched_shuffle_s1": 0.49878326058387756,
+ "matched_shuffle_s2": 0.5137926340103149,
+ "global_shuffle_s0": 0.2683666944503784,
+ "shuffle_ol_s0": 0.4777618944644928,
+ "shuffle_central_s0": 0.914939284324646,
+ "matched_shuffle_s0_rho": 0.9149392247200012,
+ "matched_shuffle_s1_rho": 0.9149391055107117,
+ "matched_shuffle_s2_rho": 0.914939284324646,
+ "shuffle_ol_s0_rho": 0.9149392247200012,
+ "shuffle_ol_s1": 0.47188714146614075,
+ "shuffle_ol_s1_rho": 0.9149393439292908,
+ "global_shuffle_s0_rho": 0.9149391055107117,
+ "global_shuffle_s1": 0.30530229210853577,
+ "global_shuffle_s1_rho": 0.9149392247200012,
+ "global_shuffle_s2": 0.2674976587295532,
+ "global_shuffle_s2_rho": 0.9149394035339355
+}
