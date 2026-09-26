@@ -1,0 +1,19 @@
+[2026-09-26 14:23:48] network_view:122 Initialized network view at D:\flyvl_data\flyvis\results\flow\0000\000
+[2026-09-26 14:23:48] logging_utils:23 epe not in D:\flyvl_data\flyvis\results\flow\0000\000\validation, but 'loss' is. Falling back to 'loss'. You can rerun the ensemble validation to make appropriate recordings of the losses.
+[2026-09-26 14:23:51] network:222 Initialized network with NumberOfParams(free=734, fixed=2959) parameters.
+[2026-09-26 14:23:51] chkpt_utils:36 Recovered network state.
+  features ready 1.7 min
+n=   50  fly   8.3  flyvis_mean   6.3  flyvis_energy   7.8  flyvis   6.8  framediff  11.0  hr_bank   7.8  hr_signed   8.9  cnn3d   7.1
+n=  100  fly   7.0  flyvis_mean   5.2  flyvis_energy   9.6  flyvis   5.3  framediff  23.8  hr_bank   8.9  hr_signed  10.3  cnn3d  11.8
+n=  300  fly   7.8  flyvis_mean   6.2  flyvis_energy   9.8  flyvis   6.3  framediff  36.9  hr_bank  13.7  hr_signed  12.9  cnn3d  27.1
+n= 1000  fly   6.7  flyvis_mean   6.2  flyvis_energy  12.9  flyvis   6.1  framediff  60.6  hr_bank  35.4  hr_signed  20.0  cnn3d   7.2
+n= 2100  fly   9.2  flyvis_mean   6.8  flyvis_energy  17.9  flyvis   6.4  framediff  70.2  hr_bank  44.9  hr_signed  20.0  cnn3d 100.0
+Loading weights:   0%|          | 0/733 [00:00<?, ?it/s]Loading weights:   2%|1         | 11/733 [00:00<00:09, 73.40it/s]Loading weights:   3%|3         | 25/733 [00:00<00:06, 105.62it/s]Loading weights:   5%|5         | 37/733 [00:00<00:06, 106.22it/s]Loading weights:   7%|6         | 50/733 [00:00<00:06, 101.33it/s]Loading weights:  38%|###8      | 282/733 [00:00<00:00, 791.70it/s]Loading weights: 100%|##########| 733/733 [00:00<00:00, 1162.00it/s]
+[transformers] The tied weights mapping and config for this model specifies to tie model.language_model.embed_tokens.weight to lm_head.weight, but both are present in the checkpoints with different values, so we will NOT tie them. You should update the config with `tie_word_embeddings=False` to silence this warning.
+VQA fly        12.33
+VQA flyvis     9.44
+VQA hr_bank    45.78
+VQA hr_signed  22.44
+VQA cnn3d      98.67
+VQA framediff  71.00
+done in 15.6 min

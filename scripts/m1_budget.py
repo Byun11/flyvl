@@ -82,9 +82,37 @@ def train_cnn(X, y, tr, te, epochs=60, seed=0):
         return torch.cat([m(X[te[s:s + 100]]).argmax(1) for s in range(0, len(te), 100)]).cpu().numpy()
 
 
+READOUT = os.environ.get("READOUT", "linear")      # "mlp": the same small nonlinear readout for every feature arm
+
+
+def mlp_select(Z, y, tr, te, seed=0):
+    """Same 2-layer MLP for every arm. Needed when the answer is a nonlinear function of the features,
+    e.g. |local direction - global direction| in figure-ground (a linear readout cannot flip signs)."""
+    torch.manual_seed(seed)
+    Z = torch.as_tensor(Z, device="cuda", dtype=torch.float32)
+    mu, sd = Z[tr].mean(0), Z[tr].std(0) + 1e-6
+    Z = (Z - mu) / sd
+    m = torch.nn.Sequential(torch.nn.Linear(Z.shape[1], 256), torch.nn.ReLU(), torch.nn.Dropout(0.3),
+                            torch.nn.Linear(256, 16)).cuda()
+    opt = torch.optim.Adam(m.parameters(), 1e-3, weight_decay=1e-4)
+    yt = torch.as_tensor(y, device="cuda")
+    g = torch.Generator().manual_seed(seed)
+    for _ in range(max(60 * len(tr) // 32, 300)):
+        b = torch.as_tensor(tr)[torch.randint(0, len(tr), (32,), generator=g)]
+        loss = F.cross_entropy(m(Z[b]), yt[b])
+        opt.zero_grad()
+        loss.backward()
+        opt.step()
+    m.eval()
+    with torch.no_grad():
+        return m(Z[torch.as_tensor(te)]).argmax(1).cpu().numpy()
+
+
 def probe_select(feat, y, tr, te, name):
     Pm = torch.randn(1024, feat.shape[1], generator=torch.Generator().manual_seed(P.view_seed(name))) / np.sqrt(1024)
     Z = (torch.as_tensor(feat, device="cuda") @ Pm.to("cuda").T).cpu().numpy()
+    if READOUT == "mlp":
+        return mlp_select(Z, y, tr, te)
     (Str, Ste, _), = probe.standardize_pca(Z[tr], Z[te], (1024,)).values()
     return probe.fit_probe(Str, y[tr], Ste, 0)["pred"]
 
@@ -143,5 +171,5 @@ if __name__ == "__main__":
         res[f"vqa_{k}"] = float(np.mean([a == b for a, b in zip(pred, answer)]))
         print(f"VQA {k:10s} {res[f'vqa_{k}']*100:.2f}", flush=True)
     res.update({"n": N, "budgets": BUDGETS, "minutes": (time.time() - t0) / 60})
-    (OUT / f"{TASK}_budget.json").write_text(json.dumps(res, indent=1))
+    (OUT / f"{TASK}_budget_{READOUT}.json").write_text(json.dumps(res, indent=1))
     print(f"done in {res['minutes']:.1f} min", flush=True)
