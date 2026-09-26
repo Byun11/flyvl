@@ -27,8 +27,10 @@ import torch
 import torch.nn.functional as F
 from PIL import Image, ImageDraw, ImageFont
 
-if sys.argv[1:2] != ["pixel_where16"]:
-    sys.argv = [sys.argv[0], "pixel_where16"] + sys.argv[1:]
+import os
+TASK = os.environ.get("V3_TASK", "pixel_where16")   # pixel_dir16 = S1 (which cell moves LEFT)
+if sys.argv[1:2] != [TASK]:
+    sys.argv = [sys.argv[0], TASK] + sys.argv[1:]
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import p5_flytask as P  # noqa: E402
 from v3c_glimpse import glimpse_energy  # noqa: E402
@@ -139,7 +141,7 @@ if __name__ == "__main__":
     CHANGE = len(sys.argv) > 4 and sys.argv[4] == "change"
     t0 = time.time()
     rng = np.random.default_rng(0)
-    y, p = P.trial_params(rng, "pixel_where16", N)                          # same motion trials as V3a/V3c
+    y, p = P.trial_params(rng, TASK, N)                          # same motion trials as V3a/V3c
     p["letters"] = np.random.default_rng(1).integers(0, 26, (N, 16))
     n_tr = int(N * 0.7)
     te = np.arange(n_tr, N)
@@ -185,10 +187,22 @@ if __name__ == "__main__":
     print(f"  rf estimated for {has.mean()*100:.0f}% of optic-lobe units", flush=True)
     pz = (pooled - pooled[:n_tr].mean(0)) / pooled[:n_tr].std(0)
     (Str, Ste, _), = probe.standardize_pca(pooled[:n_tr], pooled[n_tr:], (16,)).values()
+    # --- selector 3 (S1): direction-selective classical baseline = Hassenstein-Reichardt array on blurred
+    # pixels (equivalent to Adelson-Bergen motion energy; van Santen & Sperling 1985). Signed: + right, - left.
+    hr, prev, D = 0, None, 2
+    for k in range(P.STEPS):
+        fr = torch.cat([_gaussian_blur(letter_frames({kk: v[s:s + 500] for kk, v in p.items()}, k * cfg.dt), 2)
+                        for s in range(0, N, 500)])[:, 0]
+        if prev is not None:
+            hr = hr + prev[..., :-D] * fr[..., D:] - prev[..., D:] * fr[..., :-D]
+        prev = fr
+    hr = F.avg_pool2d((hr / P.STEPS)[:, None], 2).flatten(1).cpu().numpy()
+
     pick = {"fly_pooled_argmax": pz[n_tr:].argmax(1),                      # training-free: the loudest cell
             "fly_pooled": probe.fit_probe(Str, y[:n_tr], Ste, 0)["pred"],
             "fly": select(X, "v3b_fly"), "framediff": select(fds[0], "v3b_framediff"),
             **{f"framediff_blur{b}": select(fds[b], "v3b_framediff") for b in BLURS if b},
+            "hr_pixels_blur2": select(hr, "v3b_hr"),
             "random": np.random.default_rng(2).integers(0, 16, len(te)), "oracle": y[te]}
     for k, v in pick.items():
         res[f"locate_{k}"] = float((v == y[te]).mean())
@@ -209,5 +223,5 @@ if __name__ == "__main__":
     import os
     res.update({"mw_contrast": os.environ.get("MW_CONTRAST", "0.04,0.10"), "mw_noise": os.environ.get("MW_NOISE", "0.06"),
                 "warm": WARM, "change": CHANGE, "n": N, "n_test": len(te), "letter_contrast": L_CONTRAST, "minutes": (time.time() - t0) / 60})
-    (OUT / f"v3b_vlm_warm{WARM}{'_change' if CHANGE else ''}_c{os.environ.get('MW_CONTRAST', '0.04,0.10')}_n{os.environ.get('MW_NOISE', '0.06')}.json").write_text(json.dumps(res, indent=1))
+    (OUT / f"{TASK}_warm{WARM}{'_change' if CHANGE else ''}_c{os.environ.get('MW_CONTRAST', '0.04,0.10')}_n{os.environ.get('MW_NOISE', '0.06')}.json").write_text(json.dumps(res, indent=1))
     print(f"done in {res['minutes']:.1f} min", flush=True)

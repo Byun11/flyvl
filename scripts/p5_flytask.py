@@ -95,6 +95,18 @@ def trial_params(rng, task, n):
         p["phase"] = rng.uniform(0, 2 * np.pi, n)
         p["contrast"] = rng.uniform(0.25, 0.45, n) if not hard else rng.uniform(0.04, 0.10, n)
         p["noise"] = np.full(n, 0.0 if not hard else 0.06)
+    elif task == "pixel_dir16":
+        # S1 selectivity: TWO cells move in opposite directions; the label is the one moving LEFT.
+        y = rng.integers(0, 16, n)
+        other = (y + rng.integers(1, 16, n)) % 16                  # a different cell, moving right
+        p["cell"], p["cell2"] = y, other
+        p["freq"] = rng.uniform(2.0, 5.0, n)
+        p["speed"] = -rng.uniform(0.6, 1.4, n)                    # target: leftward drift
+        p["speed2"] = rng.uniform(0.6, 1.4, n)                    # distractor: rightward drift
+        p["phase"] = rng.uniform(0, 2 * np.pi, n)
+        lo, hi = (float(v) for v in os.environ.get("MW_CONTRAST", "0.04,0.10").split(","))
+        p["contrast"] = rng.uniform(lo, hi, n)
+        p["noise"] = np.full(n, float(os.environ.get("MW_NOISE", "0.06")))
     elif task == "pixel_where16":
         # V3a: the V2 stimulus as a PIXEL video (what a VLM receives) fed through the eye's image path.
         y = rng.integers(0, 16, n)
@@ -169,7 +181,11 @@ def pixel_frames(p, t, device="cuda"):
     cx = ((xx + 1) / 2 * 4).clamp(max=3.999).floor()[None]
     cy = ((yy + 1) / 2 * 4).clamp(max=3.999).floor()[None]
     inside = ((cy * 4 + cx) == cell[:, None, None]).float()
-    lum = GRAY + g("contrast") * torch.sin(2 * np.pi * g("freq") * (xx[None] - inside * g("speed") * t) + g("phase"))
+    shift = inside * g("speed") * t
+    if "cell2" in p:                                  # S1: a second cell drifting the other way
+        inside2 = ((cy * 4 + cx) == torch.as_tensor(p["cell2"], device=device)[:, None, None]).float()
+        shift = shift + inside2 * g("speed2") * t
+    lum = GRAY + g("contrast") * torch.sin(2 * np.pi * g("freq") * (xx[None] - shift) + g("phase"))
     gen = torch.Generator(device=device).manual_seed(NOISE_SEED + int(round(t / 0.02)))
     lum = lum + torch.randn(lum.shape, generator=gen, device=device) * g("noise")
     return lum[:, None]
