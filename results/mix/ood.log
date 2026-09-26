@@ -1,0 +1,19 @@
+ood=speed n=  300  flyvis_pooled  10.1  hr_pooled  79.8  framediff_pooled  10.9  cnn3d  12.6
+ood=speed n= 2100  flyvis_pooled  41.7  hr_pooled 100.0  framediff_pooled  54.8  cnn3d  86.9
+ood=speed VQA flyvis_pooled 43.67
+ood=speed VQA hr_pooled  98.00
+ood=speed VQA cnn3d      85.33
+ood=speed VQA framediff_pooled 54.89
+ood=freq n=  300  flyvis_pooled  13.1  hr_pooled  20.9  framediff_pooled   3.1  cnn3d   8.4
+ood=freq n= 2100  flyvis_pooled  39.1  hr_pooled  62.7  framediff_pooled   0.4  cnn3d  11.3
+ood=freq VQA flyvis_pooled 39.11
+ood=freq VQA hr_pooled  62.33
+ood=freq VQA cnn3d      15.00
+ood=freq VQA framediff_pooled 4.56
+ood=slowfreq n=  300  flyvis_pooled   7.0  hr_pooled  21.6  framediff_pooled   4.8  cnn3d   9.2
+ood=slowfreq n= 2100  flyvis_pooled  12.7  hr_pooled  59.2  framediff_pooled  19.8  cnn3d  72.9
+ood=slowfreq VQA flyvis_pooled 15.89
+ood=slowfreq VQA hr_pooled  59.33
+ood=slowfreq VQA cnn3d      72.67
+ood=slowfreq VQA framediff_pooled 22.44
+ALL DONE
