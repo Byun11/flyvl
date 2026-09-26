@@ -1,0 +1,26 @@
+  fly features 0.5 min
+  rf estimated for 100% of optic-lobe units
+locate  fly_pooled_argmax 20.44
+locate  fly_pooled 27.67
+locate  fly        70.78
+locate  framediff  40.67
+locate  framediff_blur1 46.22
+locate  framediff_blur2 45.89
+locate  framediff_blur4 47.33
+locate  hr_pixels_blur2 100.00
+locate  random     5.00
+locate  oracle     100.00
+Loading weights:   0%|          | 0/733 [00:00<?, ?it/s]Loading weights:   2%|2         | 15/733 [00:00<00:06, 113.25it/s]Loading weights:   4%|3         | 27/733 [00:00<00:06, 109.17it/s]Loading weights:   5%|5         | 38/733 [00:00<00:06, 103.04it/s]Loading weights:   7%|6         | 51/733 [00:00<00:07, 95.69it/s] Loading weights: 100%|##########| 733/733 [00:00<00:00, 1308.69it/s]
+[transformers] The tied weights mapping and config for this model specifies to tie model.language_model.embed_tokens.weight to lm_head.weight, but both are present in the checkpoints with different values, so we will NOT tie them. You should update the config with `tie_word_embeddings=False` to silence this warning.
+VQA     fly_pooled_argmax 23.00
+VQA     fly_pooled 29.00
+VQA     fly        70.11
+VQA     framediff  41.78
+VQA     framediff_blur1 46.78
+VQA     framediff_blur2 46.33
+VQA     framediff_blur4 47.89
+VQA     hr_pixels_blur2 98.33
+VQA     random     9.33
+VQA     oracle     98.33
+VQA     whole frame 11.44
+done in 4.6 min
