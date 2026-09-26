@@ -24,8 +24,9 @@ import numpy as np
 import torch
 import torch.nn.functional as F
 
-os.environ.setdefault("V3_TASK", "pixel_mix16")
-sys.argv = [sys.argv[0], "pixel_mix16"] + sys.argv[1:]
+os.environ.setdefault("V3_TASK", "pixel_mix16")          # pixel_fg16 = M2 figure-ground
+TASK = os.environ["V3_TASK"]
+sys.argv = [sys.argv[0], TASK] + sys.argv[1:]
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import v3b_vlm as V  # noqa: E402
 from v3c_glimpse import glimpse_energy  # noqa: E402
@@ -91,7 +92,7 @@ def probe_select(feat, y, tr, te, name):
 if __name__ == "__main__":
     N = int(sys.argv[2]) if len(sys.argv) > 2 else 3000
     t0 = time.time()
-    y, p = P.trial_params(np.random.default_rng(0), "pixel_mix16", N)
+    y, p = P.trial_params(np.random.default_rng(0), TASK, N)
     p["letters"] = np.random.default_rng(1).integers(0, 26, (N, 16))
     te = np.arange(2100, N)
     c = connectome.load()
@@ -111,6 +112,8 @@ if __name__ == "__main__":
     rx = (b0[..., :-D] * b1[..., D:] - b0[..., D:] * b1[..., :-D]).mean(1)          # horizontal opponent
     ry = (b0[..., :-D, :] * b1[..., D:, :] - b0[..., D:, :] * b1[..., :-D, :]).mean(1)  # vertical opponent
     feats["hr_bank"] = (F.pad(rx, (0, D)) ** 2 + F.pad(ry, (0, 0, 0, D)) ** 2).flatten(1).cpu().numpy()
+    # signed opponent maps too: with them a linear readout can find "the cell whose direction differs"
+    feats["hr_signed"] = torch.cat([F.pad(rx, (0, D)).flatten(1), F.pad(ry, (0, 0, 0, D)).flatten(1)], 1).cpu().numpy()
     del b0, b1, d, rx, ry
     vid = video(p, N, cfg)                                          # unblurred pooled video for the CNN
     print(f"  features ready {(time.time()-t0)/60:.1f} min", flush=True)
@@ -129,10 +132,10 @@ if __name__ == "__main__":
     pt = {k: v[te] for k, v in p.items()}
     last = V.letter_frames(pt, (P.STEPS - 1) * cfg.dt)
     answer = [V.LETTERS[i] for i in p["letters"][te, y[te]]]
-    for k in ("fly", "hr_bank", "cnn3d", "framediff"):
+    for k in ("fly", "hr_bank", "hr_signed", "cnn3d", "framediff"):
         pred = V.ask(proc, model, V.cell_crop(last, torch.as_tensor(picks[(k, 2100)], device="cuda")))
         res[f"vqa_{k}"] = float(np.mean([a == b for a, b in zip(pred, answer)]))
         print(f"VQA {k:10s} {res[f'vqa_{k}']*100:.2f}", flush=True)
     res.update({"n": N, "budgets": BUDGETS, "minutes": (time.time() - t0) / 60})
-    (OUT / "m1_budget.json").write_text(json.dumps(res, indent=1))
+    (OUT / f"{TASK}_budget.json").write_text(json.dumps(res, indent=1))
     print(f"done in {res['minutes']:.1f} min", flush=True)

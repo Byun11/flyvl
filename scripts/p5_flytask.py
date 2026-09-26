@@ -95,6 +95,19 @@ def trial_params(rng, task, n):
         p["phase"] = rng.uniform(0, 2 * np.pi, n)
         p["contrast"] = rng.uniform(0.25, 0.45, n) if not hard else rng.uniform(0.04, 0.10, n)
         p["noise"] = np.full(n, 0.0 if not hard else 0.06)
+    elif task == "pixel_fg16":
+        # M2 figure-ground: the whole background drifts (ego-motion / camera pan) in a random direction;
+        # ONE cell moves differently (opposite direction or perpendicular). Target = the odd cell.
+        y = rng.integers(0, 16, n)
+        p["cell"] = y
+        p["bgdir"] = rng.integers(0, 4, n)                        # 0 right, 1 left, 2 down, 3 up
+        p["odd"] = rng.integers(1, 4, n)                          # target dir = (bgdir + odd) % 4, never equal
+        p["freq"] = rng.uniform(2.0, 5.0, n)
+        p["speed"] = rng.uniform(0.6, 1.4, n)
+        p["phase"] = rng.uniform(0, 2 * np.pi, n)
+        lo, hi = (float(v) for v in os.environ.get("MW_CONTRAST", "0.04,0.10").split(","))
+        p["contrast"] = rng.uniform(lo, hi, n)
+        p["noise"] = np.full(n, float(os.environ.get("MW_NOISE", "0.06")))
     elif task == "pixel_mix16":
         # M1: one cell moves in a random direction (L/R/U/D), another cell only FLICKERS (counterphase:
         # changes every frame, no net motion). The label is the moving cell. Frame difference is fooled by
@@ -195,6 +208,17 @@ def pixel_frames(p, t, device="cuda"):
     cx = ((xx + 1) / 2 * 4).clamp(max=3.999).floor()[None]
     cy = ((yy + 1) / 2 * 4).clamp(max=3.999).floor()[None]
     inside = ((cy * 4 + cx) == cell[:, None, None]).float()
+    if "bgdir" in p:                                  # M2: drifting background, one cell moving differently
+        def tex(dirs):
+            d = torch.as_tensor(dirs, device=device)[:, None, None]
+            vertical = (d >= 2).float()
+            sign = torch.where((d == 1) | (d == 3), -1.0, 1.0)
+            coord = xx[None] * (1 - vertical) + yy[None] * vertical
+            return torch.sin(2 * np.pi * g("freq") * (coord - sign * g("speed") * t) + g("phase"))
+        tdir = (np.asarray(p["bgdir"]) + np.asarray(p["odd"])) % 4
+        lum = GRAY + g("contrast") * (inside * tex(tdir) + (1 - inside) * tex(p["bgdir"]))
+        gen = torch.Generator(device=device).manual_seed(NOISE_SEED + int(round(t / 0.02)))
+        return (lum + torch.randn(lum.shape, generator=gen, device=device) * g("noise"))[:, None]
     if "flick" in p:                                  # M1: moving cell with random direction + a flickering cell
         d = torch.as_tensor(p["dir"], device=device)[:, None, None]
         vertical = (d >= 2).float()
