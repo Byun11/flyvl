@@ -5,7 +5,8 @@ import sys
 import numpy as np
 
 c = sys.argv[1] if len(sys.argv) > 1 else "0.03"
-r = json.load(open(rf"D:\flyvl_data\runs\e5\e5_c{c}_n0.06_s0_grid_e5g.json"))
+seed = sys.argv[2] if len(sys.argv) > 2 else "0"
+r = json.load(open(rf"D:\flyvl_data\runs\e5\e5_c{c}_n0.06_s{seed}_grid_e5g.json"))
 arms = [k for k in r if k.startswith(("hrg_", "fly_m")) and not k.endswith(("_sem", "_episodes", "_train"))]
 for k in sorted(arms, key=lambda k: r[k + "_train"]):
     print(f"  {k:12s} train {r[k + '_train']:.3f}  test {r[k]:.3f}")
