@@ -115,6 +115,30 @@ class HRObs:
         return out
 
 
+class HRBankObs:
+    """E5c: HR matched to the fly's 16 features - 8 detectors (spacing D in {1, 2, 4, 8} px x horizontal /
+    vertical) on 2 px-blurred, 3-frame-smoothed frames; signed global output and its energy each."""
+    dim = 16
+
+    def reset(self, B):
+        self.sm, self.prev = None, None
+
+    @torch.no_grad()
+    def __call__(self, img):
+        b = _gaussian_blur(img[:, None], 2)[:, 0]
+        self.sm = b if self.sm is None else b / 3 + self.sm * (2 / 3)
+        out = torch.zeros(img.shape[0], 16, device=dev)
+        if self.prev is not None:
+            a, c, fs = self.prev, self.sm, []
+            for D in (1, 2, 4, 8):
+                fs.append((a[..., :-D] * c[..., D:] - a[..., D:] * c[..., :-D]).mean((1, 2)))
+                fs.append((a[..., :-D, :] * c[..., D:, :] - a[..., D:, :] * c[..., :-D, :]).mean((1, 2)))
+            f = torch.stack(fs, 1)
+            out = torch.cat([f, f ** 2], 1) * 100
+        self.prev = self.sm
+        return out
+
+
 class BlindObs:
     dim = 0
 
@@ -195,7 +219,11 @@ if __name__ == "__main__":
     te = torch.arange(n_test, device=dev)
     res["no_control"] = float(w_te["wd"].abs().mean())
     res["oracle"] = float(rollout(BlindObs(), None, w_te, te, oracle=True).mean())
-    for name, obs in (("blind", BlindObs()), ("hr", HRObs()), ("flyvis", FlyObs())):
+    import os
+    arms = [("blind", BlindObs()), ("hr", HRObs()), ("flyvis", FlyObs())]
+    if os.environ.get("HR_BANK") == "1":                 # E5c: add the 16-feature HR bank, skip blind
+        arms = [("hr_bank", HRBankObs()), ("hr", HRObs()), ("flyvis", FlyObs())]
+    for name, obs in arms:
         print(f"arm {name}", flush=True)
         if obs.dim:
             calibrate(obs, w_tr, n_train)
@@ -206,4 +234,4 @@ if __name__ == "__main__":
         res[f"{name}_episodes"] = s.cpu().tolist()          # per test episode, for paired comparisons
         print(f"  {name:7s} test slip {res[name]:.3f} +- {res[name + '_sem']:.3f}  ({(time.time()-t0)/60:.1f} min)", flush=True)
     print(f"no control {res['no_control']:.3f}  oracle {res['oracle']:.3f}", flush=True)
-    (OUT / f"e5_c{CONTRAST:g}_n{NOISE:g}_s{CEM_SEED}.json").write_text(json.dumps(res, indent=1))
+    (OUT / f"e5_c{CONTRAST:g}_n{NOISE:g}_s{CEM_SEED}{'_bank' if os.environ.get('HR_BANK') == '1' else ''}.json").write_text(json.dumps(res, indent=1))
