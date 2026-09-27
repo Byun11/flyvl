@@ -12,7 +12,7 @@ Arms (all with a LINEAR policy u = w . f + b trained by the same CEM, same budge
   blind   f = [] (only the bias; cannot see)
   oracle  u = -w_d (reference floor: 0 slip)
 
-usage: e5_arena.py [contrast] [noise] [generations]
+usage: e5_arena.py [contrast] [noise] [generations] [cem_seed]
 """
 import json
 import sys
@@ -32,6 +32,7 @@ from flyvl.stimulus import _gaussian_blur  # noqa: E402
 CONTRAST = float(sys.argv[1]) if len(sys.argv) > 1 else 0.1
 NOISE = float(sys.argv[2]) if len(sys.argv) > 2 else 0.06
 GENS = int(sys.argv[3]) if len(sys.argv) > 3 else 25
+CEM_SEED = int(sys.argv[4]) if len(sys.argv) > 4 else 0      # E5b: independent CEM runs
 DT, T, PIX, FOV = 0.02, 50, 64, 2.0          # 1 s episodes, 2 rad field of view
 POP, ELITE = 48, 8
 OUT = connectome.DATA_ROOT / "runs" / "e5"
@@ -198,10 +199,11 @@ if __name__ == "__main__":
         print(f"arm {name}", flush=True)
         if obs.dim:
             calibrate(obs, w_tr, n_train)
-        mu = cem(obs, w_tr, n_train)
+        mu = cem(obs, w_tr, n_train, seed=CEM_SEED)
         s = rollout(obs, mu[None].expand(n_test, -1), w_te, te)
         res[name] = float(s.mean())
         res[f"{name}_sem"] = float(s.std() / np.sqrt(n_test))
+        res[f"{name}_episodes"] = s.cpu().tolist()          # per test episode, for paired comparisons
         print(f"  {name:7s} test slip {res[name]:.3f} +- {res[name + '_sem']:.3f}  ({(time.time()-t0)/60:.1f} min)", flush=True)
     print(f"no control {res['no_control']:.3f}  oracle {res['oracle']:.3f}", flush=True)
-    (OUT / f"e5_c{CONTRAST:g}_n{NOISE:g}.json").write_text(json.dumps(res, indent=1))
+    (OUT / f"e5_c{CONTRAST:g}_n{NOISE:g}_s{CEM_SEED}.json").write_text(json.dumps(res, indent=1))
