@@ -21,7 +21,7 @@ import torch.nn.functional as F
 os.environ["V3_TASK"] = "pixel_fg16"
 N_TRAIN = int(sys.argv[1]) if len(sys.argv) > 1 else 300
 EPOCHS = int(sys.argv[2]) if len(sys.argv) > 2 else 20
-LR_FLY = float(sys.argv[3]) if len(sys.argv) > 3 else 1e-4
+LR_FLY = float(sys.argv[3]) if len(sys.argv) > 3 else 1e-5   # 1e-4 collapsed the features (loss stuck at ln 16)
 sys.argv = [sys.argv[0], "pixel_fg16"]
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
@@ -118,12 +118,16 @@ if __name__ == "__main__":
                 loss = F.cross_entropy(model(make_video(p, b)), yt[b])
                 opt.zero_grad()
                 loss.backward()
+                torch.nn.utils.clip_grad_norm_(fly_params, 1.0)      # flyvis parameters are stiff; keep steps small
                 opt.step()
                 losses.append(loss.item())
             if ep % 2 == 1 or ep == EPOCHS - 1:
                 acc, _ = evaluate()
-                log.append({"epoch": ep, "loss": float(np.mean(losses)), "test": acc})
-                print(f"epoch {ep:3d} loss {np.mean(losses):.3f} test {acc*100:.1f} ({(time.time()-t0)/60:.0f} min)", flush=True)
+                with torch.no_grad():                                 # feature health: collapse shows as sd -> 0
+                    fh = model.features(make_video(p, tr[:32]))
+                fsd = float(((fh - model.mu) / model.sd).std(0).mean())
+                log.append({"epoch": ep, "loss": float(np.mean(losses)), "test": acc, "feat_sd": fsd})
+                print(f"epoch {ep:3d} loss {np.mean(losses):.3f} test {acc*100:.1f} feat_sd {fsd:.2f} ({(time.time()-t0)/60:.0f} min)", flush=True)
         acc, pred = evaluate()
     res = {"n_train": N_TRAIN, "epochs": EPOCHS, "lr_fly": LR_FLY, "test": acc, "log": log,
            "ref_frozen": {"300": {"flyvis": 0.358, "hr": 0.744, "cnn": 0.271}, "1000": {"flyvis": 0.798, "hr": 0.982}},
