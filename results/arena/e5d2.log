@@ -1,0 +1,43 @@
+tuned2 c=0.03 seed=0     tune blur 1 tau 6: train slip 1.067
+tuned2 c=0.03 seed=0     tune blur 1 tau 12: train slip 1.022
+tuned2 c=0.03 seed=0     tune blur 1 tau 24: train slip 1.001
+tuned2 c=0.03 seed=0     tune blur 1 tau 48: train slip 1.004
+tuned2 c=0.03 seed=0     tune blur 2 tau 6: train slip 1.083
+tuned2 c=0.03 seed=0     tune blur 2 tau 12: train slip 1.008
+tuned2 c=0.03 seed=0     tune blur 2 tau 24: train slip 0.974
+tuned2 c=0.03 seed=0     tune blur 2 tau 48: train slip 1.013
+tuned2 c=0.03 seed=0     tune blur 4 tau 6: train slip 1.128
+tuned2 c=0.03 seed=0     tune blur 4 tau 12: train slip 1.022
+tuned2 c=0.03 seed=0     tune blur 4 tau 24: train slip 0.974
+tuned2 c=0.03 seed=0     tune blur 4 tau 48: train slip 0.997
+tuned2 c=0.03 seed=0 arm hr_tuned
+tuned2 c=0.03 seed=0   hr_tuned test slip 0.951 +- 0.070  (21.8 min)
+tuned2 c=0.03 seed=1     tune blur 1 tau 6: train slip 1.067
+tuned2 c=0.03 seed=1     tune blur 1 tau 12: train slip 1.022
+tuned2 c=0.03 seed=1     tune blur 1 tau 24: train slip 1.001
+tuned2 c=0.03 seed=1     tune blur 1 tau 48: train slip 1.007
+tuned2 c=0.03 seed=1     tune blur 2 tau 6: train slip 1.083
+tuned2 c=0.03 seed=1     tune blur 2 tau 12: train slip 1.007
+tuned2 c=0.03 seed=1     tune blur 2 tau 24: train slip 0.974
+tuned2 c=0.03 seed=1     tune blur 2 tau 48: train slip 1.001
+tuned2 c=0.03 seed=1     tune blur 4 tau 6: train slip 1.127
+tuned2 c=0.03 seed=1     tune blur 4 tau 12: train slip 1.022
+tuned2 c=0.03 seed=1     tune blur 4 tau 24: train slip 0.976
+tuned2 c=0.03 seed=1     tune blur 4 tau 48: train slip 0.998
+tuned2 c=0.03 seed=1 arm hr_tuned
+tuned2 c=0.03 seed=1   hr_tuned test slip 0.967 +- 0.067  (22.2 min)
+tuned2 c=0.03 seed=2     tune blur 1 tau 6: train slip 1.067
+tuned2 c=0.03 seed=2     tune blur 1 tau 12: train slip 1.022
+tuned2 c=0.03 seed=2     tune blur 1 tau 24: train slip 1.001
+tuned2 c=0.03 seed=2     tune blur 1 tau 48: train slip 1.005
+tuned2 c=0.03 seed=2     tune blur 2 tau 6: train slip 1.083
+tuned2 c=0.03 seed=2     tune blur 2 tau 12: train slip 1.006
+tuned2 c=0.03 seed=2     tune blur 2 tau 24: train slip 0.974
+tuned2 c=0.03 seed=2     tune blur 2 tau 48: train slip 1.001
+tuned2 c=0.03 seed=2     tune blur 4 tau 6: train slip 1.128
+tuned2 c=0.03 seed=2     tune blur 4 tau 12: train slip 1.021
+tuned2 c=0.03 seed=2     tune blur 4 tau 24: train slip 0.973
+tuned2 c=0.03 seed=2     tune blur 4 tau 48: train slip 0.998
+tuned2 c=0.03 seed=2 arm hr_tuned
+tuned2 c=0.03 seed=2   hr_tuned test slip 0.953 +- 0.069  (21.8 min)
+ALL DONE
