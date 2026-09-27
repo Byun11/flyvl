@@ -33,7 +33,9 @@ CONTRAST = float(sys.argv[1]) if len(sys.argv) > 1 else 0.1
 NOISE = float(sys.argv[2]) if len(sys.argv) > 2 else 0.06
 GENS = int(sys.argv[3]) if len(sys.argv) > 3 else 25
 CEM_SEED = int(sys.argv[4]) if len(sys.argv) > 4 else 0      # E5b: independent CEM runs
-DT, T, PIX, FOV = 0.02, 50, 64, 2.0          # 1 s episodes, 2 rad field of view
+import os
+NONSTAT = os.environ.get("NONSTAT") == "1"     # G2: contrast and luminance switch within the episode
+DT, T, PIX, FOV = 0.02, (100 if NONSTAT else 50), 64, 2.0          # 1 s episodes (2 s in G2), 2 rad field of view
 POP, ELITE = 48, 8
 OUT = connectome.DATA_ROOT / "runs" / "e5"
 OUT.mkdir(parents=True, exist_ok=True)
@@ -52,7 +54,18 @@ def world(n, seed):
     t = np.arange(T) * DT
     wd = w0[:, None] + w1[:, None] * np.sin(2 * np.pi * wf[:, None] * t + wp[:, None])
     f = lambda a: torch.as_tensor(a, dtype=torch.float32, device=dev)
-    return {"k": f(k), "amp": f(amp), "ph": f(ph), "wd": f(wd), "seed": seed}
+    out = {"k": f(k), "amp": f(amp), "ph": f(ph), "wd": f(wd), "seed": seed}
+    if NONSTAT:
+        # contrast 0.1 <-> 0.03 and luminance 1 <-> 0.2 switch at independent random times
+        steps = np.arange(T)
+        c_first = g.choice([0.1, 0.03], n)
+        c_sw = g.integers(25, 75, n)
+        cont = np.where(steps[None] < c_sw[:, None], c_first[:, None], 0.13 - c_first[:, None])
+        l_first = g.choice([1.0, 0.2], n)
+        l_sw = g.integers(25, 75, n)
+        lum = np.where(steps[None] < l_sw[:, None], l_first[:, None], 1.2 - l_first[:, None])
+        out.update({"cont": f(cont), "lumlev": f(lum)})
+    return out
 
 
 def frame(w, idx, heading, step):
@@ -61,7 +74,12 @@ def frame(w, idx, heading, step):
     az = heading[:, None] + ax[None]                                                  # (B, PIX)
     tex = (w["amp"][idx][:, :, None] * torch.sin(w["k"][None, :, None] * az[:, None] + w["ph"][idx][:, :, None])).sum(1)
     elev = torch.cos(3 * torch.linspace(-1, 1, PIX, device=dev))[None, :, None]          # mild vertical structure
-    lum = 0.5 + CONTRAST * tex[:, None, :] * (0.7 + 0.3 * elev)
+    if NONSTAT:
+        c_ = w["cont"][idx, step][:, None, None]
+        L_ = w["lumlev"][idx, step][:, None, None]
+        lum = L_ * (0.5 + c_ * tex[:, None, :] * (0.7 + 0.3 * elev))
+    else:
+        lum = 0.5 + CONTRAST * tex[:, None, :] * (0.7 + 0.3 * elev)
     gen = torch.Generator(device=dev).manual_seed(777 + 1000 * w["seed"] + step)
     return lum + NOISE * torch.randn(lum.shape, generator=gen, device=dev)
 
@@ -98,14 +116,19 @@ class FlyObs:
 class HRObs:
     dim = 4
 
-    def __init__(self, blur=2, tau=3):
+    def __init__(self, blur=2, tau=3, norm=False):
         self.blur, self.tau = blur, tau                    # E5d: tunable spatial blur (px) and smoothing (frames)
+        self.norm = norm                                   # G2: divide by a running mean luminance (contrast signal)
 
     def reset(self, B):
-        self.sm, self.prev = None, None
+        self.sm, self.prev, self.mean = None, None, None
 
     @torch.no_grad()
     def __call__(self, img):
+        if self.norm:
+            m = img.mean((1, 2), keepdim=True)
+            self.mean = m if self.mean is None else 0.1 * m + 0.9 * self.mean
+            img = img / self.mean.clamp(min=1e-3) - 1
         b = _gaussian_blur(img[:, None], self.blur)[:, 0]
         a_ = 1.0 / self.tau
         self.sm = b if self.sm is None else a_ * b + (1 - a_) * self.sm                        # tau-frame smoothing
@@ -246,6 +269,8 @@ if __name__ == "__main__":
         # G1: every HR setting in the grid, each trained by CEM and scored on the test episodes
         blurs, taus = ([int(v) for v in part.split(",")] for part in os.environ["HR_GRID"].split(":"))
         arms = [(f"hrg_b{b}_t{t}", HRObs(b, t)) for b in blurs for t in taus]
+        if os.environ.get("HR_NORM") == "1":
+            arms += [(f"hrgn_b{b}_t{t}", HRObs(b, t, norm=True)) for b in blurs for t in taus]
         if os.environ.get("SKIP_FLY") != "1":
             arms.append(("flyvis", FlyObs()))
     for name, obs in arms:
@@ -257,6 +282,7 @@ if __name__ == "__main__":
         res[name] = float(s.mean())
         res[f"{name}_sem"] = float(s.std() / np.sqrt(n_test))
         res[f"{name}_episodes"] = s.cpu().tolist()          # per test episode, for paired comparisons
+        res[f"{name}_train"] = float(rollout(obs, mu[None].expand(n_train, -1), w_tr, torch.arange(n_train, device=dev)).mean())
         print(f"  {name:7s} test slip {res[name]:.3f} +- {res[name + '_sem']:.3f}  ({(time.time()-t0)/60:.1f} min)", flush=True)
     print(f"no control {res['no_control']:.3f}  oracle {res['oracle']:.3f}", flush=True)
-    (OUT / f"e5_c{CONTRAST:g}_n{NOISE:g}_s{CEM_SEED}{'_bank' if os.environ.get('HR_BANK') == '1' else ''}{'_tuned' if os.environ.get('HR_TUNE') == '1' else ''}{'_grid' if os.environ.get('HR_GRID') else ''}.json").write_text(json.dumps(res, indent=1))
+    (OUT / f"e5_c{CONTRAST:g}_n{NOISE:g}_s{CEM_SEED}{'_bank' if os.environ.get('HR_BANK') == '1' else ''}{'_tuned' if os.environ.get('HR_TUNE') == '1' else ''}{'_grid' if os.environ.get('HR_GRID') else ''}{'_nonstat' if NONSTAT else ''}.json").write_text(json.dumps(res, indent=1))
