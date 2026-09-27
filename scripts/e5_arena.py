@@ -230,8 +230,9 @@ if __name__ == "__main__":
     if os.environ.get("HR_TUNE") == "1":
         # E5d: choose HR's blur and smoothing on TRAINING episodes only, then test the winner (fly untuned)
         best = None
-        for blur in (1, 2, 4, 8):
-            for tau in (1, 3, 6, 12):
+        # the first grid (tau 1-12) chose its edge (tau 12; slip fell monotonically with tau), so it is widened
+        for blur in [int(b) for b in os.environ.get("HR_TUNE_BLURS", "1,2,4").split(",")]:
+            for tau in [int(t) for t in os.environ.get("HR_TUNE_TAUS", "6,12,24,48").split(",")]:
                 o = HRObs(blur, tau)
                 calibrate(o, w_tr, n_train)
                 mu_ = cem(o, w_tr, n_train, seed=CEM_SEED)
