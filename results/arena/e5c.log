@@ -1,0 +1,10 @@
+bank c=0.03 seed=0   hr_bank test slip 1.063 +- 0.049  (2.5 min)
+bank c=0.03 seed=0   hr      test slip 1.065 +- 0.052  (4.2 min)
+bank c=0.03 seed=0   flyvis  test slip 0.983 +- 0.049  (15.3 min)
+bank c=0.03 seed=1   hr_bank test slip 1.069 +- 0.049  (2.5 min)
+bank c=0.03 seed=1   hr      test slip 1.066 +- 0.051  (4.2 min)
+bank c=0.03 seed=1   flyvis  test slip 0.930 +- 0.049  (15.3 min)
+bank c=0.03 seed=2   hr_bank test slip 1.083 +- 0.049  (2.5 min)
+bank c=0.03 seed=2   hr      test slip 1.067 +- 0.051  (4.2 min)
+bank c=0.03 seed=2   flyvis  test slip 0.919 +- 0.047  (15.2 min)
+ALL DONE
