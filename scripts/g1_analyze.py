@@ -15,15 +15,19 @@ import numpy as np
 R = Path(r"D:\flyvl_data\runs")
 tasks = {}
 
-for name in ("loc", "fg", "photon"):
-    r = json.load(open(R / "mix" / f"g1_{name}.json"))
+import glob
+for f_ in sorted(glob.glob(str(R / "mix" / "g1_*.json"))):
+    name = Path(f_).stem[3:]
+    r = json.load(open(f_))
     s = {k.split(":")[0]: v for k, v in r.items() if k.endswith(":n2100")}
     tasks[name] = {"fly": s["flyvis_pooled"], **{k: v for k, v in s.items() if k.startswith("hrg_")}}
     tasks[name]["_chance"] = 1 / 16
 
-for c, fly_file in (("0.03", "e5_c0.03_n0.06_s0_bank.json"), ("0.1", "e5_c0.1_n0.06.json")):
-    g = json.load(open(R / "e5" / f"e5_c{c}_n0.06_s0_grid.json"))
-    f = json.load(open(R / "e5" / fly_file))
+FLY_FILES = {"0.03": "e5_c0.03_n0.06_s0_bank.json", "0.1": "e5_c0.1_n0.06.json"}   # fly measured before G1
+for f_ in sorted(glob.glob(str(R / "e5" / "e5_c*_n0.06_s0_grid.json"))):
+    c = Path(f_).name.split("_")[1][1:]
+    g = json.load(open(f_))
+    f = g if "flyvis" in g else json.load(open(R / "e5" / FLY_FILES[c]))
     nc = g["no_control"]
     # arena: lower slip is better -> score = no_control - slip, so higher is better and 0 = no control
     tasks[f"arena{c}"] = {"fly": nc - f["flyvis"], **{k: nc - v for k, v in g.items() if k.startswith("hrg_") and
