@@ -127,6 +127,23 @@ class BlindObs:
 CHUNK = 64      # flyvis carries (batch x 1.5M edges) tensors; larger batches run out of GPU memory
 
 
+def calibrate(obs, w, n):
+    """Feature mean/sd under a random policy (same for every arm), so CEM searches weights on one scale."""
+    obs.mu_f, obs.sd_f = None, None
+    feats = []
+    g = torch.Generator(device=dev).manual_seed(123)
+    B = min(n, CHUNK)
+    obs.reset(B)
+    idx = torch.arange(B, device=dev)
+    heading = torch.zeros(B, device=dev)
+    for s in range(T):
+        f = obs(frame(w, idx, heading, s))
+        feats.append(f)
+        heading = heading + (w["wd"][idx, s] + torch.randn(B, generator=g, device=dev)) * DT
+    F_ = torch.cat(feats)
+    obs.mu_f, obs.sd_f = F_.mean(0), F_.std(0) + 1e-8
+
+
 def rollout(obs, W, w, idx, oracle=False):
     """W (B, dim + 1) policies, one per episode in idx. Returns mean |slip| per episode (chunked)."""
     if len(idx) > CHUNK:
@@ -139,6 +156,8 @@ def rollout(obs, W, w, idx, oracle=False):
     u = torch.zeros(B, device=dev)
     for s in range(T):
         f = obs(frame(w, idx, heading, s))
+        if getattr(obs, "mu_f", None) is not None:
+            f = (f - obs.mu_f) / obs.sd_f
         if oracle:
             u = -w["wd"][idx, s]
         else:
@@ -169,7 +188,7 @@ def cem(obs, w_train, n_train, seed=0):
 
 if __name__ == "__main__":
     t0 = time.time()
-    n_train, n_test = 16, 64
+    n_train, n_test = 64, 64          # 16 training episodes let a constant bias fit their spin imbalance
     w_tr, w_te = world(n_train, seed=1), world(n_test, seed=2)
     res = {"contrast": CONTRAST, "noise": NOISE, "generations": GENS}
     te = torch.arange(n_test, device=dev)
@@ -177,6 +196,8 @@ if __name__ == "__main__":
     res["oracle"] = float(rollout(BlindObs(), None, w_te, te, oracle=True).mean())
     for name, obs in (("blind", BlindObs()), ("hr", HRObs()), ("flyvis", FlyObs())):
         print(f"arm {name}", flush=True)
+        if obs.dim:
+            calibrate(obs, w_tr, n_train)
         mu = cem(obs, w_tr, n_train)
         s = rollout(obs, mu[None].expand(n_test, -1), w_te, te)
         res[name] = float(s.mean())
