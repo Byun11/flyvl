@@ -107,6 +107,9 @@ class FlyObs:
             x = self.state.nodes.activity[:, self.idx]                                     # (B, 8, 721)
         if self.base is None:
             self.base = x
+        elif os.environ.get("FLY_RUNBASE") == "1":
+            # G2b: the same running-mean treatment HR gets (0.1 update), instead of a baseline frozen at frame 0
+            self.base = 0.9 * self.base + 0.1 * x
         ev = x - self.base
         en = torch.zeros_like(ev) if self.prev is None else (ev - self.prev) ** 2
         self.prev = ev
@@ -285,4 +288,4 @@ if __name__ == "__main__":
         res[f"{name}_train"] = float(rollout(obs, mu[None].expand(n_train, -1), w_tr, torch.arange(n_train, device=dev)).mean())
         print(f"  {name:7s} test slip {res[name]:.3f} +- {res[name + '_sem']:.3f}  ({(time.time()-t0)/60:.1f} min)", flush=True)
     print(f"no control {res['no_control']:.3f}  oracle {res['oracle']:.3f}", flush=True)
-    (OUT / f"e5_c{CONTRAST:g}_n{NOISE:g}_s{CEM_SEED}{'_bank' if os.environ.get('HR_BANK') == '1' else ''}{'_tuned' if os.environ.get('HR_TUNE') == '1' else ''}{'_grid' if os.environ.get('HR_GRID') else ''}{'_nonstat' if NONSTAT else ''}.json").write_text(json.dumps(res, indent=1))
+    (OUT / f"e5_c{CONTRAST:g}_n{NOISE:g}_s{CEM_SEED}{'_bank' if os.environ.get('HR_BANK') == '1' else ''}{'_tuned' if os.environ.get('HR_TUNE') == '1' else ''}{'_grid' if os.environ.get('HR_GRID') else ''}{'_nonstat' if NONSTAT else ''}{'_runbase' if os.environ.get('FLY_RUNBASE') == '1' else ''}.json").write_text(json.dumps(res, indent=1))
