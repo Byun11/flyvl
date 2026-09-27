@@ -1,0 +1,13 @@
+m=001 c=0.03   hrg_b2_t3 test slip 1.065 +- 0.052  (1.8 min)
+m=001 c=0.03   flyvis  test slip 0.834 +- 0.047  (13.0 min)
+m=001 c=0.05   hrg_b2_t3 test slip 0.908 +- 0.051  (1.8 min)
+m=001 c=0.05   flyvis  test slip 0.775 +- 0.038  (12.8 min)
+m=002 c=0.03   hrg_b2_t3 test slip 1.065 +- 0.052  (1.8 min)
+m=002 c=0.03   flyvis  test slip 1.006 +- 0.061  (12.9 min)
+m=002 c=0.05   hrg_b2_t3 test slip 0.908 +- 0.051  (1.8 min)
+m=002 c=0.05   flyvis  test slip 0.843 +- 0.043  (12.9 min)
+m=003 c=0.03   hrg_b2_t3 test slip 1.065 +- 0.052  (1.8 min)
+m=003 c=0.03   flyvis  test slip 0.795 +- 0.030  (13.0 min)
+m=003 c=0.05   hrg_b2_t3 test slip 0.908 +- 0.051  (1.8 min)
+m=003 c=0.05   flyvis  test slip 0.708 +- 0.031  (12.8 min)
+ALL DONE

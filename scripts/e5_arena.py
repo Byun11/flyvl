@@ -85,8 +85,8 @@ def frame(w, idx, heading, step):
 
 
 class FlyObs:
-    def __init__(self):
-        self.enc = FlyvisEncoder(model=os.environ.get("FLY_MODEL", "flow/0000/000"))   # E5f: other ensemble members
+    def __init__(self, model=None):
+        self.enc = FlyvisEncoder(model=model or os.environ.get("FLY_MODEL", "flow/0000/000"))   # E5f: ensemble members
         self.idx = torch.as_tensor(np.stack([self.enc.idx[t] for t in T45]), device=dev)   # (8, 721)
         self.dim = 16
 
@@ -274,7 +274,10 @@ if __name__ == "__main__":
         arms = [(f"hrg_b{b}_t{t}", HRObs(b, t)) for b in blurs for t in taus]
         if os.environ.get("HR_NORM") == "1":
             arms += [(f"hrgn_b{b}_t{t}", HRObs(b, t, norm=True)) for b in blurs for t in taus]
-        if os.environ.get("SKIP_FLY") != "1":
+        if os.environ.get("FLY_MODELS"):
+            # E5g: several flyvis ensemble members, each with train and test slips (selection on train, like HR)
+            arms += [(f"fly_m{m}", FlyObs(f"flow/0000/{m}")) for m in os.environ["FLY_MODELS"].split(",")]
+        elif os.environ.get("SKIP_FLY") != "1":
             arms.append(("flyvis", FlyObs()))
     for name, obs in arms:
         print(f"arm {name}", flush=True)
@@ -288,4 +291,4 @@ if __name__ == "__main__":
         res[f"{name}_train"] = float(rollout(obs, mu[None].expand(n_train, -1), w_tr, torch.arange(n_train, device=dev)).mean())
         print(f"  {name:7s} test slip {res[name]:.3f} +- {res[name + '_sem']:.3f}  ({(time.time()-t0)/60:.1f} min)", flush=True)
     print(f"no control {res['no_control']:.3f}  oracle {res['oracle']:.3f}", flush=True)
-    (OUT / f"e5_c{CONTRAST:g}_n{NOISE:g}_s{CEM_SEED}{'_bank' if os.environ.get('HR_BANK') == '1' else ''}{'_tuned' if os.environ.get('HR_TUNE') == '1' else ''}{'_grid' if os.environ.get('HR_GRID') else ''}{'_nonstat' if NONSTAT else ''}{'_runbase' if os.environ.get('FLY_RUNBASE') == '1' else ''}{'_m' + os.environ['FLY_MODEL'][-3:] if os.environ.get('FLY_MODEL') else ''}.json").write_text(json.dumps(res, indent=1))
+    (OUT / f"e5_c{CONTRAST:g}_n{NOISE:g}_s{CEM_SEED}{'_bank' if os.environ.get('HR_BANK') == '1' else ''}{'_tuned' if os.environ.get('HR_TUNE') == '1' else ''}{'_grid' if os.environ.get('HR_GRID') else ''}{'_nonstat' if NONSTAT else ''}{'_runbase' if os.environ.get('FLY_RUNBASE') == '1' else ''}{'_m' + os.environ['FLY_MODEL'][-3:] if os.environ.get('FLY_MODEL') else ''}{'_e5g' if os.environ.get('FLY_MODELS') else ''}.json").write_text(json.dumps(res, indent=1))
