@@ -242,6 +242,12 @@ if __name__ == "__main__":
                     best = (tr_slip, blur, tau)
         res["hr_tuned_choice"] = {"blur": best[1], "tau": best[2], "train_slip": best[0]}
         arms = [("hr_tuned", HRObs(best[1], best[2]))]
+    if os.environ.get("HR_GRID"):
+        # G1: every HR setting in the grid, each trained by CEM and scored on the test episodes
+        blurs, taus = ([int(v) for v in part.split(",")] for part in os.environ["HR_GRID"].split(":"))
+        arms = [(f"hrg_b{b}_t{t}", HRObs(b, t)) for b in blurs for t in taus]
+        if os.environ.get("SKIP_FLY") != "1":
+            arms.append(("flyvis", FlyObs()))
     for name, obs in arms:
         print(f"arm {name}", flush=True)
         if obs.dim:
@@ -253,4 +259,4 @@ if __name__ == "__main__":
         res[f"{name}_episodes"] = s.cpu().tolist()          # per test episode, for paired comparisons
         print(f"  {name:7s} test slip {res[name]:.3f} +- {res[name + '_sem']:.3f}  ({(time.time()-t0)/60:.1f} min)", flush=True)
     print(f"no control {res['no_control']:.3f}  oracle {res['oracle']:.3f}", flush=True)
-    (OUT / f"e5_c{CONTRAST:g}_n{NOISE:g}_s{CEM_SEED}{'_bank' if os.environ.get('HR_BANK') == '1' else ''}{'_tuned' if os.environ.get('HR_TUNE') == '1' else ''}.json").write_text(json.dumps(res, indent=1))
+    (OUT / f"e5_c{CONTRAST:g}_n{NOISE:g}_s{CEM_SEED}{'_bank' if os.environ.get('HR_BANK') == '1' else ''}{'_tuned' if os.environ.get('HR_TUNE') == '1' else ''}{'_grid' if os.environ.get('HR_GRID') else ''}.json").write_text(json.dumps(res, indent=1))

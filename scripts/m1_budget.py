@@ -140,8 +140,8 @@ if __name__ == "__main__":
     driven = r16[c.column[r16, 0] >= 0]
     sim, retina = Sim(c, cfg, driven=driven), Retina(c, driven, eye_cfg, cfg.dt)
     ol = torch.as_tensor(np.arange(sim.Ng), device="cuda")
-    feats = {"fly": np.concatenate([glimpse_energy(c, cfg, sim, retina, p, q, ol, frames=V.letter_frames, change=True)
-                                    for q in range(4)], 1)}
+    feats = {} if os.environ.get("SKIP_V1") == "1" else         {"fly": np.concatenate([glimpse_energy(c, cfg, sim, retina, p, q, ol, frames=V.letter_frames, change=True)
+                                for q in range(4)], 1)}
     # flyvis: the published connectome-constrained optic lobe with trained, direction-selective T4/T5
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
     from flyvl.flyvis_encoder import FlyvisEncoder, features as fv_features
@@ -182,6 +182,22 @@ if __name__ == "__main__":
                 del v, c0, c1, qx, qy
         for k in ("framediff", "hr_bank", "hr_signed"):
             feats.pop(k)
+        # G1: HR over a grid of spatial blur x temporal smoothing (exponential, tau frames), pooled the same way
+        grid = os.environ.get("HR_GRID", "")
+        if grid:
+            blurs, taus = ([int(v) for v in part.split(",")] for part in grid.split(":"))
+            for hb in blurs:
+                vb_ = video(p, N, cfg, blur=hb).float()
+                for tau in taus:
+                    v = vb_.clone()
+                    for k in range(1, v.shape[1]):
+                        v[:, k] = v[:, k] / tau + v[:, k - 1] * (1 - 1 / tau)
+                    c0, c1 = v[:, :-1], v[:, 1:]
+                    qx = F.pad((c0[..., :-D] * c1[..., D:] - c0[..., D:] * c1[..., :-D]).mean(1), (0, D))
+                    qy = F.pad((c0[..., :-D, :] * c1[..., D:, :] - c0[..., D:, :] * c1[..., :-D, :]).mean(1), (0, 0, 0, D))
+                    feats[f"hrg_b{hb}_t{tau}"] = torch.cat([cellpool(qx), cellpool(qy), cellpool(qx ** 2 + qy ** 2)], 1).cpu().numpy()
+                    del v, c0, c1, qx, qy
+                del vb_
     del b0, b1, d, rx, ry
     vid = video(p, N, cfg)                                          # unblurred pooled video for the CNN
     print(f"  features ready {(time.time()-t0)/60:.1f} min", flush=True)
@@ -191,11 +207,19 @@ if __name__ == "__main__":
         tr = np.arange(n)
         for k, f in feats.items():
             picks[(k, n)] = probe_select(f, y, tr, te, f"m1_{k}")
-        picks[("cnn3d", n)] = train_cnn(vid, y, tr, te)
-        for k in list(feats) + ["cnn3d"]:
+        arms_ = list(feats)
+        if os.environ.get("SKIP_CNN") != "1":
+            picks[("cnn3d", n)] = train_cnn(vid, y, tr, te)
+            arms_ = arms_ + ["cnn3d"]
+        for k in arms_:
             res[f"{k}:n{n}"] = float((picks[(k, n)] == y[te]).mean())
-        print(f"n={n:5d}  " + "  ".join(f"{k} {res[f'{k}:n{n}']*100:5.1f}" for k in list(feats) + ["cnn3d"]), flush=True)
+        print(f"n={n:5d}  " + "  ".join(f"{k} {res[f'{k}:n{n}']*100:5.1f}" for k in arms_), flush=True)
 
+    if os.environ.get("SKIP_VQA") == "1":
+        res.update({"n": N, "budgets": BUDGETS, "minutes": (time.time() - t0) / 60})
+        (OUT / f"g1_{os.environ.get('G1_NAME', TASK)}.json").write_text(json.dumps(res, indent=1))
+        print(f"done in {res['minutes']:.1f} min", flush=True)
+        sys.exit(0)
     proc, model = teacher.load()
     pt = {k: v[te] for k, v in p.items()}
     if os.environ.get("PHOTON_FLUX"):
