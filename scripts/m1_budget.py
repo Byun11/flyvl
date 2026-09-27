@@ -191,5 +191,5 @@ if __name__ == "__main__":
         res[f"vqa_{k}"] = float(np.mean([a == b for a, b in zip(pred, answer)]))
         print(f"VQA {k:10s} {res[f'vqa_{k}']*100:.2f}", flush=True)
     res.update({"n": N, "budgets": BUDGETS, "minutes": (time.time() - t0) / 60})
-    (OUT / f"{TASK}_budget_{READOUT}{'_pool' if os.environ.get('POOL') == '1' else ''}{'_ood' + OOD if OOD else ''}.json").write_text(json.dumps(res, indent=1))
+    (OUT / f"{TASK}_budget_{READOUT}{'_pool' if os.environ.get('POOL') == '1' else ''}{'_ood' + OOD if OOD else ''}{'_flux' + os.environ['PHOTON_FLUX'] if os.environ.get('PHOTON_FLUX') else ''}.json").write_text(json.dumps(res, indent=1))
     print(f"done in {res['minutes']:.1f} min", flush=True)

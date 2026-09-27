@@ -60,15 +60,23 @@ def glyphs():
 GLYPH = None
 
 
+PHOTON_FLUX = float(os.environ.get("PHOTON_FLUX", "0"))   # E2: mean photons per pixel per frame at luminance 1 (0 = off)
+
+
 def letter_frames(p, t, device="cuda"):
-    """V3c video plus a static letter in every cell."""
+    """V3c video plus a static letter in every cell. With PHOTON_FLUX > 0 each frame is a Poisson photon
+    count (low-light camera): lum -> Poisson(lum * flux) / flux, seeded per frame like the other noise."""
     global GLYPH
     GLYPH = glyphs() if GLYPH is None else GLYPH
     base = P.pixel_frames(p, t, device)                                     # (B, 1, PIX, PIX)
     let = torch.as_tensor(p["letters"], device=device)                      # (B, 16)
     B = len(let)
     ink = GLYPH[let].view(B, 4, 4, C, C).permute(0, 1, 3, 2, 4).reshape(B, 1, P.PIX, P.PIX)
-    return base - L_CONTRAST * ink
+    lum = base - L_CONTRAST * ink
+    if PHOTON_FLUX > 0:
+        gen = torch.Generator(device=device).manual_seed(P.NOISE_SEED + 5000 + int(round(t / 0.02)))
+        lum = torch.poisson(lum.clamp(min=0) * PHOTON_FLUX, generator=gen) / PHOTON_FLUX
+    return lum
 
 
 @torch.no_grad()
