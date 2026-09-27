@@ -1,0 +1,39 @@
+dir n= 2100  flyvis_pooled  95.6  hr_pooled  99.8  framediff_pooled  47.8  hrg_b1_t1  99.2  hrg_b1_t3  99.2  hrg_b1_t12  75.6  hrg_b1_t24  57.6  hrg_b2_t1  99.8  hrg_b2_t3  99.0  hrg_b2_t12  70.1  hrg_b2_t24  52.1  hrg_b4_t1  92.0  hrg_b4_t3  78.8  hrg_b4_t12  46.7  hrg_b4_t24  39.0
+dir done in 3.6 min
+flicker n= 2100  flyvis_pooled  80.1  hr_pooled  99.6  framediff_pooled  55.2  hrg_b1_t1  99.7  hrg_b1_t3  99.3  hrg_b1_t12  69.7  hrg_b1_t24  63.9  hrg_b2_t1  99.6  hrg_b2_t3  99.3  hrg_b2_t12  68.3  hrg_b2_t24  60.6  hrg_b4_t1  91.7  hrg_b4_t3  78.4  hrg_b4_t12  49.6  hrg_b4_t24  49.6
+flicker done in 3.7 min
+fg_fast n= 2100  flyvis_pooled  35.2  hr_pooled 100.0  framediff_pooled  54.8  hrg_b1_t1 100.0  hrg_b1_t3  95.4  hrg_b1_t12  52.6  hrg_b1_t24  49.8  hrg_b2_t1 100.0  hrg_b2_t3  93.0  hrg_b2_t12  51.3  hrg_b2_t24  51.2  hrg_b4_t1  99.3  hrg_b4_t3  69.1  hrg_b4_t12  51.1  hrg_b4_t24  53.7
+fg_fast done in 3.7 min
+photon03 n= 2100  flyvis_pooled  13.7  hr_pooled   7.0  framediff_pooled   6.0  hrg_b1_t1   5.9  hrg_b1_t3   8.6  hrg_b1_t12   6.9  hrg_b1_t24   6.6  hrg_b2_t1   7.0  hrg_b2_t3  14.7  hrg_b2_t12   6.1  hrg_b2_t24   6.9  hrg_b4_t1   7.4  hrg_b4_t3   8.0  hrg_b4_t12   6.2  hrg_b4_t24   7.1
+photon03 done in 3.6 min
+photon1 n= 2100  flyvis_pooled  36.0  hr_pooled  42.8  framediff_pooled   7.2  hrg_b1_t1  19.0  hrg_b1_t3  49.2  hrg_b1_t12   6.6  hrg_b1_t24   5.7  hrg_b2_t1  42.8  hrg_b2_t3  55.1  hrg_b2_t12   8.8  hrg_b2_t24   7.3  hrg_b4_t1  25.9  hrg_b4_t3  26.0  hrg_b4_t12   9.2  hrg_b4_t24   7.3
+photon1 done in 3.6 min
+photon3 n= 2100  flyvis_pooled  73.0  hr_pooled  80.3  framediff_pooled  15.6  hrg_b1_t1  66.0  hrg_b1_t3  77.9  hrg_b1_t12  12.6  hrg_b1_t24   9.3  hrg_b2_t1  80.3  hrg_b2_t3  82.1  hrg_b2_t12  28.8  hrg_b2_t24  20.9  hrg_b4_t1  61.7  hrg_b4_t3  51.1  hrg_b4_t12  19.9  hrg_b4_t24  13.2
+photon3 done in 3.6 min
+arena0.02   hrg_b1_t1 test slip 1.157 +- 0.061  (1.8 min)
+arena0.02   hrg_b1_t3 test slip 1.121 +- 0.059  (3.5 min)
+arena0.02   hrg_b1_t12 test slip 1.083 +- 0.069  (5.2 min)
+arena0.02   hrg_b1_t24 test slip 1.059 +- 0.066  (6.9 min)
+arena0.02   hrg_b2_t1 test slip 1.159 +- 0.061  (8.6 min)
+arena0.02   hrg_b2_t3 test slip 1.114 +- 0.060  (10.3 min)
+arena0.02   hrg_b2_t12 test slip 1.083 +- 0.067  (12.0 min)
+arena0.02   hrg_b2_t24 test slip 1.038 +- 0.074  (13.7 min)
+arena0.02   hrg_b4_t1 test slip 1.153 +- 0.064  (15.4 min)
+arena0.02   hrg_b4_t3 test slip 1.071 +- 0.079  (17.1 min)
+arena0.02   hrg_b4_t12 test slip 1.064 +- 0.068  (18.8 min)
+arena0.02   hrg_b4_t24 test slip 1.047 +- 0.068  (20.5 min)
+arena0.02   flyvis  test slip 1.084 +- 0.063  (31.6 min)
+arena0.05   hrg_b1_t1 test slip 1.067 +- 0.051  (1.8 min)
+arena0.05   hrg_b1_t3 test slip 0.910 +- 0.046  (3.5 min)
+arena0.05   hrg_b1_t12 test slip 0.828 +- 0.053  (5.2 min)
+arena0.05   hrg_b1_t24 test slip 0.839 +- 0.066  (6.9 min)
+arena0.05   hrg_b2_t1 test slip 1.051 +- 0.063  (8.6 min)
+arena0.05   hrg_b2_t3 test slip 0.908 +- 0.051  (10.3 min)
+arena0.05   hrg_b2_t12 test slip 0.821 +- 0.055  (11.9 min)
+arena0.05   hrg_b2_t24 test slip 0.815 +- 0.067  (13.6 min)
+arena0.05   hrg_b4_t1 test slip 1.072 +- 0.069  (15.3 min)
+arena0.05   hrg_b4_t3 test slip 1.018 +- 0.049  (17.0 min)
+arena0.05   hrg_b4_t12 test slip 0.844 +- 0.068  (18.7 min)
+arena0.05   hrg_b4_t24 test slip 0.832 +- 0.073  (20.4 min)
+arena0.05   flyvis  test slip 0.796 +- 0.036  (31.5 min)
+ALL DONE
