@@ -1,0 +1,31 @@
+loc n= 2100  flyvis_pooled  92.3  hr_pooled  99.7  framediff_pooled  99.9  hrg_b1_t1  98.8  hrg_b1_t3  99.0  hrg_b1_t12  93.8  hrg_b1_t24  91.9  hrg_b2_t1  99.7  hrg_b2_t3  99.3  hrg_b2_t12  92.0  hrg_b2_t24  87.0  hrg_b4_t1  92.9  hrg_b4_t3  84.8  hrg_b4_t12  78.3  hrg_b4_t24  77.9
+loc done in 3.7 min
+fg n= 2100  flyvis_pooled  94.9  hr_pooled  99.9  framediff_pooled  40.9  hrg_b1_t1  99.8  hrg_b1_t3  99.7  hrg_b1_t12  79.4  hrg_b1_t24  59.8  hrg_b2_t1  99.9  hrg_b2_t3  99.4  hrg_b2_t12  77.0  hrg_b2_t24  60.0  hrg_b4_t1  93.9  hrg_b4_t3  83.3  hrg_b4_t12  63.1  hrg_b4_t24  56.9
+fg done in 3.7 min
+photon n= 2100  flyvis_pooled  19.1  hr_pooled  12.9  framediff_pooled   7.0  hrg_b1_t1   7.6  hrg_b1_t3  16.2  hrg_b1_t12   5.8  hrg_b1_t24   6.1  hrg_b2_t1  12.9  hrg_b2_t3  30.8  hrg_b2_t12   7.0  hrg_b2_t24   6.9  hrg_b4_t1   9.3  hrg_b4_t3  13.8  hrg_b4_t12   7.1  hrg_b4_t24   6.9
+photon done in 3.7 min
+arena003   hrg_b1_t1 test slip 1.139 +- 0.056  (1.8 min)
+arena003   hrg_b1_t3 test slip 1.067 +- 0.049  (3.5 min)
+arena003   hrg_b1_t12 test slip 0.995 +- 0.057  (5.2 min)
+arena003   hrg_b1_t24 test slip 0.984 +- 0.066  (6.9 min)
+arena003   hrg_b2_t1 test slip 1.127 +- 0.060  (8.5 min)
+arena003   hrg_b2_t3 test slip 1.065 +- 0.052  (10.2 min)
+arena003   hrg_b2_t12 test slip 0.989 +- 0.061  (11.9 min)
+arena003   hrg_b2_t24 test slip 0.968 +- 0.067  (13.6 min)
+arena003   hrg_b4_t1 test slip 1.120 +- 0.069  (15.3 min)
+arena003   hrg_b4_t3 test slip 1.051 +- 0.069  (17.0 min)
+arena003   hrg_b4_t12 test slip 1.010 +- 0.061  (18.7 min)
+arena003   hrg_b4_t24 test slip 0.951 +- 0.070  (20.4 min)
+arena01   hrg_b1_t1 test slip 0.938 +- 0.044  (1.8 min)
+arena01   hrg_b1_t3 test slip 0.671 +- 0.029  (3.5 min)
+arena01   hrg_b1_t12 test slip 0.538 +- 0.043  (5.2 min)
+arena01   hrg_b1_t24 test slip 0.586 +- 0.060  (6.9 min)
+arena01   hrg_b2_t1 test slip 0.966 +- 0.042  (8.5 min)
+arena01   hrg_b2_t3 test slip 0.677 +- 0.032  (10.2 min)
+arena01   hrg_b2_t12 test slip 0.587 +- 0.046  (11.9 min)
+arena01   hrg_b2_t24 test slip 0.591 +- 0.067  (13.6 min)
+arena01   hrg_b4_t1 test slip 1.020 +- 0.051  (15.3 min)
+arena01   hrg_b4_t3 test slip 0.801 +- 0.046  (17.0 min)
+arena01   hrg_b4_t12 test slip 0.669 +- 0.057  (18.7 min)
+arena01   hrg_b4_t24 test slip 0.686 +- 0.065  (20.4 min)
+ALL DONE
