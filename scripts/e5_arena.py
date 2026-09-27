@@ -98,13 +98,17 @@ class FlyObs:
 class HRObs:
     dim = 4
 
+    def __init__(self, blur=2, tau=3):
+        self.blur, self.tau = blur, tau                    # E5d: tunable spatial blur (px) and smoothing (frames)
+
     def reset(self, B):
         self.sm, self.prev = None, None
 
     @torch.no_grad()
     def __call__(self, img):
-        b = _gaussian_blur(img[:, None], 2)[:, 0]
-        self.sm = b if self.sm is None else b / 3 + self.sm * (2 / 3)                       # 3-frame smoothing
+        b = _gaussian_blur(img[:, None], self.blur)[:, 0]
+        a_ = 1.0 / self.tau
+        self.sm = b if self.sm is None else a_ * b + (1 - a_) * self.sm                        # tau-frame smoothing
         out = torch.zeros(img.shape[0], 4, device=dev)
         if self.prev is not None:
             a, c = self.prev, self.sm
@@ -223,6 +227,20 @@ if __name__ == "__main__":
     arms = [("blind", BlindObs()), ("hr", HRObs()), ("flyvis", FlyObs())]
     if os.environ.get("HR_BANK") == "1":                 # E5c: add the 16-feature HR bank, skip blind
         arms = [("hr_bank", HRBankObs()), ("hr", HRObs()), ("flyvis", FlyObs())]
+    if os.environ.get("HR_TUNE") == "1":
+        # E5d: choose HR's blur and smoothing on TRAINING episodes only, then test the winner (fly untuned)
+        best = None
+        for blur in (1, 2, 4, 8):
+            for tau in (1, 3, 6, 12):
+                o = HRObs(blur, tau)
+                calibrate(o, w_tr, n_train)
+                mu_ = cem(o, w_tr, n_train, seed=CEM_SEED)
+                tr_slip = float(rollout(o, mu_[None].expand(n_train, -1), w_tr, torch.arange(n_train, device=dev)).mean())
+                print(f"    tune blur {blur} tau {tau}: train slip {tr_slip:.3f}", flush=True)
+                if best is None or tr_slip < best[0]:
+                    best = (tr_slip, blur, tau)
+        res["hr_tuned_choice"] = {"blur": best[1], "tau": best[2], "train_slip": best[0]}
+        arms = [("hr_tuned", HRObs(best[1], best[2]))]
     for name, obs in arms:
         print(f"arm {name}", flush=True)
         if obs.dim:
@@ -234,4 +252,4 @@ if __name__ == "__main__":
         res[f"{name}_episodes"] = s.cpu().tolist()          # per test episode, for paired comparisons
         print(f"  {name:7s} test slip {res[name]:.3f} +- {res[name + '_sem']:.3f}  ({(time.time()-t0)/60:.1f} min)", flush=True)
     print(f"no control {res['no_control']:.3f}  oracle {res['oracle']:.3f}", flush=True)
-    (OUT / f"e5_c{CONTRAST:g}_n{NOISE:g}_s{CEM_SEED}{'_bank' if os.environ.get('HR_BANK') == '1' else ''}.json").write_text(json.dumps(res, indent=1))
+    (OUT / f"e5_c{CONTRAST:g}_n{NOISE:g}_s{CEM_SEED}{'_bank' if os.environ.get('HR_BANK') == '1' else ''}{'_tuned' if os.environ.get('HR_TUNE') == '1' else ''}.json").write_text(json.dumps(res, indent=1))
