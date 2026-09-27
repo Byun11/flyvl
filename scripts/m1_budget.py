@@ -120,8 +120,9 @@ def probe_select(feat, y, tr, te, name):
 if __name__ == "__main__":
     N = int(sys.argv[2]) if len(sys.argv) > 2 else 3000
     t0 = time.time()
-    y, p = P.trial_params(np.random.default_rng(0), TASK, N)
-    p["letters"] = np.random.default_rng(1).integers(0, 26, (N, 16))
+    TRIAL_SEED = int(os.environ.get("TRIAL_SEED", "0"))                 # E2b replication: independent trials
+    y, p = P.trial_params(np.random.default_rng(TRIAL_SEED), TASK, N)
+    p["letters"] = np.random.default_rng(1 + 100 * TRIAL_SEED).integers(0, 26, (N, 16))
     te = np.arange(2100, N)
     # OOD="speed" / "freq": TEST videos use values outside the training range (training rows unchanged)
     OOD = os.environ.get("OOD", "")
@@ -166,6 +167,19 @@ if __name__ == "__main__":
         rxp, ryp = F.pad(rx, (0, D)), F.pad(ry, (0, 0, 0, D))
         feats["hr_pooled"] = torch.cat([cellpool(rxp), cellpool(ryp), cellpool(rxp ** 2 + ryp ** 2)], 1).cpu().numpy()
         feats["framediff_pooled"] = cellpool((d ** 2).mean(1)).cpu().numpy()
+        # E2b: support-matched classical baselines - larger spatial blur and temporal smoothing before HR
+        for hb in [int(b) for b in os.environ.get("HR_BLURS", "").split(",") if b]:
+            for ts in (0, 3):
+                v = video(p, N, cfg, blur=hb).float()
+                if ts:                                   # causal exponential smoothing over ~ts frames
+                    a = 1.0 / ts
+                    for k in range(1, v.shape[1]):
+                        v[:, k] = a * v[:, k] + (1 - a) * v[:, k - 1]
+                c0, c1 = v[:, :-1], v[:, 1:]
+                qx = F.pad((c0[..., :-D] * c1[..., D:] - c0[..., D:] * c1[..., :-D]).mean(1), (0, D))
+                qy = F.pad((c0[..., :-D, :] * c1[..., D:, :] - c0[..., D:, :] * c1[..., :-D, :]).mean(1), (0, 0, 0, D))
+                feats[f"hr_b{hb}_t{ts}"] = torch.cat([cellpool(qx), cellpool(qy), cellpool(qx ** 2 + qy ** 2)], 1).cpu().numpy()
+                del v, c0, c1, qx, qy
         for k in ("framediff", "hr_bank", "hr_signed"):
             feats.pop(k)
     del b0, b1, d, rx, ry
@@ -184,12 +198,18 @@ if __name__ == "__main__":
 
     proc, model = teacher.load()
     pt = {k: v[te] for k, v in p.items()}
-    last = V.letter_frames(pt, (P.STEPS - 1) * cfg.dt)
+    if os.environ.get("PHOTON_FLUX"):
+        # photon-limited: one frame is unreadable (VQA ~3% even from the oracle cell), so every selector hands
+        # the VLM the clip's time average - letters are static, so averaging only removes shot noise
+        last = torch.stack([V.letter_frames(pt, k * cfg.dt) for k in range(P.STEPS)]).mean(0)
+    else:
+        last = V.letter_frames(pt, (P.STEPS - 1) * cfg.dt)
     answer = [V.LETTERS[i] for i in p["letters"][te, y[te]]]
-    for k in [a for a in ("fly", "flyvis", "flyvis_pooled", "hr_bank", "hr_signed", "hr_pooled", "cnn3d", "framediff", "framediff_pooled") if (a, 2100) in picks]:
+    for k in [a for a in ["fly", "flyvis", "flyvis_pooled", "hr_bank", "hr_signed", "hr_pooled", "cnn3d", "framediff", "framediff_pooled"]
+              + sorted(x for x in feats if x.startswith("hr_b")) if (a, 2100) in picks]:
         pred = V.ask(proc, model, V.cell_crop(last, torch.as_tensor(picks[(k, 2100)], device="cuda")))
         res[f"vqa_{k}"] = float(np.mean([a == b for a, b in zip(pred, answer)]))
         print(f"VQA {k:10s} {res[f'vqa_{k}']*100:.2f}", flush=True)
     res.update({"n": N, "budgets": BUDGETS, "minutes": (time.time() - t0) / 60})
-    (OUT / f"{TASK}_budget_{READOUT}{'_pool' if os.environ.get('POOL') == '1' else ''}{'_ood' + OOD if OOD else ''}{'_flux' + os.environ['PHOTON_FLUX'] if os.environ.get('PHOTON_FLUX') else ''}.json").write_text(json.dumps(res, indent=1))
+    (OUT / f"{TASK}_budget_{READOUT}{'_pool' if os.environ.get('POOL') == '1' else ''}{'_ood' + OOD if OOD else ''}{'_flux' + os.environ['PHOTON_FLUX'] if os.environ.get('PHOTON_FLUX') else ''}{'_seed' + str(TRIAL_SEED) if TRIAL_SEED else ''}.json").write_text(json.dumps(res, indent=1))
     print(f"done in {res['minutes']:.1f} min", flush=True)
