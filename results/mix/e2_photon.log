@@ -1,0 +1,31 @@
+flux=100 n=  300  flyvis_pooled  62.8  hr_pooled  78.1  framediff_pooled  99.8  cnn3d  97.8
+flux=100 n= 2100  flyvis_pooled  91.9  hr_pooled  99.8  framediff_pooled  99.7  cnn3d 100.0
+flux=100 VQA flyvis_pooled 91.78
+flux=100 VQA hr_pooled  99.22
+flux=100 VQA cnn3d      99.33
+flux=100 VQA framediff_pooled 99.00
+flux=10 n=  300  flyvis_pooled  59.7  hr_pooled  67.8  framediff_pooled  52.8  cnn3d  96.6
+flux=10 n= 2100  flyvis_pooled  85.8  hr_pooled  95.8  framediff_pooled  56.4  cnn3d 100.0
+flux=10 VQA flyvis_pooled 16.67
+flux=10 VQA hr_pooled  18.22
+flux=10 VQA cnn3d      19.44
+flux=10 VQA framediff_pooled 12.11
+flux=3 n=  300  flyvis_pooled  33.0  hr_pooled  48.7  framediff_pooled  15.3  cnn3d  61.4
+flux=3 n= 2100  flyvis_pooled  73.3  hr_pooled  80.3  framediff_pooled  15.6  cnn3d  99.8
+flux=3 VQA flyvis_pooled 3.00
+flux=3 VQA hr_pooled  3.11
+flux=3 VQA cnn3d      3.00
+flux=3 VQA framediff_pooled 2.67
+flux=1 n=  300  flyvis_pooled  10.7  hr_pooled  15.9  framediff_pooled   7.0  cnn3d   7.8
+flux=1 n= 2100  flyvis_pooled  36.3  hr_pooled  42.8  framediff_pooled   7.2  cnn3d   5.1
+flux=1 VQA flyvis_pooled 3.11
+flux=1 VQA hr_pooled  2.78
+flux=1 VQA cnn3d      3.11
+flux=1 VQA framediff_pooled 3.00
+flux=0.3 n=  300  flyvis_pooled   6.8  hr_pooled   6.6  framediff_pooled   7.7  cnn3d   7.8
+flux=0.3 n= 2100  flyvis_pooled  14.2  hr_pooled   7.0  framediff_pooled   6.0  cnn3d   5.1
+flux=0.3 VQA flyvis_pooled 2.89
+flux=0.3 VQA hr_pooled  3.00
+flux=0.3 VQA cnn3d      2.56
+flux=0.3 VQA framediff_pooled 3.00
+ALL DONE

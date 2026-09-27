@@ -1,0 +1,45 @@
+flux=0.3 seed=0 n= 2100  flyvis_pooled  14.3  hr_pooled   7.0  framediff_pooled   6.0  hr_b2_t0   7.0  hr_b2_t3  14.7  hr_b4_t0   7.4  hr_b4_t3   8.0  hr_b8_t0   6.0  hr_b8_t3   6.4  cnn3d   5.1
+flux=0.3 seed=0 VQA flyvis_pooled 3.89
+flux=0.3 seed=0 VQA hr_pooled  3.56
+flux=0.3 seed=0 VQA cnn3d      3.67
+flux=0.3 seed=0 VQA framediff_pooled 2.78
+flux=0.3 seed=0 VQA hr_b2_t0   3.56
+flux=0.3 seed=0 VQA hr_b2_t3   4.22
+flux=0.3 seed=0 VQA hr_b4_t0   3.56
+flux=0.3 seed=0 VQA hr_b4_t3   3.33
+flux=0.3 seed=0 VQA hr_b8_t0   3.33
+flux=0.3 seed=0 VQA hr_b8_t3   3.78
+flux=0.3 seed=1 n= 2100  flyvis_pooled  14.3  hr_pooled   8.1  framediff_pooled   7.4  hr_b2_t0   8.1  hr_b2_t3  14.1  hr_b4_t0   6.7  hr_b4_t3   8.1  hr_b8_t0   6.2  hr_b8_t3   5.3  cnn3d   6.2
+flux=0.3 seed=1 VQA flyvis_pooled 3.44
+flux=0.3 seed=1 VQA hr_pooled  3.00
+flux=0.3 seed=1 VQA cnn3d      3.78
+flux=0.3 seed=1 VQA framediff_pooled 3.11
+flux=0.3 seed=1 VQA hr_b2_t0   3.00
+flux=0.3 seed=1 VQA hr_b2_t3   3.78
+flux=0.3 seed=1 VQA hr_b4_t0   3.22
+flux=0.3 seed=1 VQA hr_b4_t3   3.22
+flux=0.3 seed=1 VQA hr_b8_t0   3.33
+flux=0.3 seed=1 VQA hr_b8_t3   3.22
+flux=0.5 seed=0 n= 2100  flyvis_pooled  18.4  hr_pooled  12.9  framediff_pooled   7.0  hr_b2_t0  12.9  hr_b2_t3  30.8  hr_b4_t0   9.3  hr_b4_t3  13.8  hr_b8_t0   4.9  hr_b8_t3   6.2  cnn3d  89.0
+flux=0.5 seed=0 VQA flyvis_pooled 10.00
+flux=0.5 seed=0 VQA hr_pooled  6.78
+flux=0.5 seed=0 VQA cnn3d      33.22
+flux=0.5 seed=0 VQA framediff_pooled 6.11
+flux=0.5 seed=0 VQA hr_b2_t0   6.78
+flux=0.5 seed=0 VQA hr_b2_t3   13.67
+flux=0.5 seed=0 VQA hr_b4_t0   5.56
+flux=0.5 seed=0 VQA hr_b4_t3   8.33
+flux=0.5 seed=0 VQA hr_b8_t0   5.22
+flux=0.5 seed=0 VQA hr_b8_t3   5.78
+flux=0.5 seed=1 n= 2100  flyvis_pooled  19.8  hr_pooled  14.9  framediff_pooled   6.2  hr_b2_t0  14.9  hr_b2_t3  27.7  hr_b4_t0  10.9  hr_b4_t3  13.1  hr_b8_t0   4.9  hr_b8_t3   5.7  cnn3d   6.0
+flux=0.5 seed=1 VQA flyvis_pooled 9.22
+flux=0.5 seed=1 VQA hr_pooled  8.44
+flux=0.5 seed=1 VQA cnn3d      5.00
+flux=0.5 seed=1 VQA framediff_pooled 5.56
+flux=0.5 seed=1 VQA hr_b2_t0   8.44
+flux=0.5 seed=1 VQA hr_b2_t3   12.44
+flux=0.5 seed=1 VQA hr_b4_t0   6.00
+flux=0.5 seed=1 VQA hr_b4_t3   7.56
+flux=0.5 seed=1 VQA hr_b8_t0   5.00
+flux=0.5 seed=1 VQA hr_b8_t3   5.00
+ALL DONE
