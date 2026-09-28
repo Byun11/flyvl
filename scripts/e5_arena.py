@@ -35,7 +35,7 @@ GENS = int(sys.argv[3]) if len(sys.argv) > 3 else 25
 CEM_SEED = int(sys.argv[4]) if len(sys.argv) > 4 else 0      # E5b: independent CEM runs
 import os
 NONSTAT = os.environ.get("NONSTAT") == "1"     # G2: contrast and luminance switch within the episode
-DT, T, PIX, FOV = 0.02, (100 if NONSTAT else 50), 64, 2.0          # 1 s episodes (2 s in G2), 2 rad field of view
+DT, T, PIX, FOV = 0.02, int(os.environ.get("EP_T", 100 if NONSTAT else 50)), 64, 2.0   # 1 s episodes (2 s in G2), E7: EP_T frames
 POP, ELITE = 48, 8
 OUT = connectome.DATA_ROOT / "runs" / "e5"
 OUT.mkdir(parents=True, exist_ok=True)
@@ -302,4 +302,4 @@ if __name__ == "__main__":
         res[f"{name}_train"] = float(rollout(obs, mu[None].expand(n_train, -1), w_tr, torch.arange(n_train, device=dev)).mean())
         print(f"  {name:7s} test slip {res[name]:.3f} +- {res[name + '_sem']:.3f}  ({(time.time()-t0)/60:.1f} min)", flush=True)
     print(f"no control {res['no_control']:.3f}  oracle {res['oracle']:.3f}", flush=True)
-    (OUT / f"e5_c{CONTRAST:g}_n{NOISE:g}_s{CEM_SEED}{'_bank' if os.environ.get('HR_BANK') == '1' else ''}{'_tuned' if os.environ.get('HR_TUNE') == '1' else ''}{'_grid' if os.environ.get('HR_GRID') else ''}{'_nonstat' if NONSTAT else ''}{'_runbase' if os.environ.get('FLY_RUNBASE') == '1' else ''}{'_m' + os.environ['FLY_MODEL'][-3:] if os.environ.get('FLY_MODEL') else ''}{'_e5g' if os.environ.get('FLY_MODELS') else ''}{'_tau' + os.environ['FLY_TAU_FROM'] if os.environ.get('FLY_TAU_FROM') else ''}{'_tauX' + os.environ['FLY_TAU_SCALE'] if os.environ.get('FLY_TAU_SCALE') else ''}.json").write_text(json.dumps(res, indent=1))
+    (OUT / f"e5_c{CONTRAST:g}_n{NOISE:g}_s{CEM_SEED}{'_bank' if os.environ.get('HR_BANK') == '1' else ''}{'_tuned' if os.environ.get('HR_TUNE') == '1' else ''}{'_grid' if os.environ.get('HR_GRID') else ''}{'_nonstat' if NONSTAT else ''}{'_runbase' if os.environ.get('FLY_RUNBASE') == '1' else ''}{'_m' + os.environ['FLY_MODEL'][-3:] if os.environ.get('FLY_MODEL') else ''}{'_e5g' if os.environ.get('FLY_MODELS') else ''}{'_tau' + os.environ['FLY_TAU_FROM'] if os.environ.get('FLY_TAU_FROM') else ''}{'_tauX' + os.environ['FLY_TAU_SCALE'] if os.environ.get('FLY_TAU_SCALE') else ''}{'_T' + os.environ['EP_T'] if os.environ.get('EP_T') else ''}.json").write_text(json.dumps(res, indent=1))
