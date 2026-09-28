@@ -87,7 +87,9 @@ class BN(nn.GroupNorm):
     input has not reached yet) get ~0 running variance, and at eval time tiny deviations blow up (smoke test)."""
 
     def __init__(self, C):
-        super().__init__(C // PER, C)
+        # eps = 1: a near-constant group is passed through (x - mean) instead of being blown up by 1/sqrt(eps);
+        # with eps 1e-5 those groups multiplied gradients by ~316 per norm and the norm overflowed (smoke test)
+        super().__init__(C // PER, C, eps=1.0)
 
     def forward(self, x):
         return super().forward(x.transpose(1, 2)).transpose(1, 2)
