@@ -23,6 +23,8 @@ P4 = connectome.DATA_ROOT / "p4"
 RUNS = connectome.DATA_ROOT / "runs" / "p4"
 RUNS.mkdir(parents=True, exist_ok=True)
 EPOCHS, BATCH, LR, WD, D_MODEL = 150, 64, 3e-4, 0.05, 256
+import os
+LINEAR = os.environ.get("ALIGN_LINEAR") == "1"                 # D2: can the fly features alone be mapped to tokens?
 
 
 def rgb_patches(split):
@@ -78,6 +80,8 @@ class Aligner(nn.Module):
         self.out = nn.Sequential(nn.LayerNorm(D_MODEL), nn.Linear(D_MODEL, 896))
 
     def forward(self, x):
+        if LINEAR:                                             # D2: per-token linear map only, no mixing layers
+            return self.out(self.enc(x))
         if self.rep == "cnn":
             h = self.enc(x).flatten(2).transpose(1, 2)
         else:
