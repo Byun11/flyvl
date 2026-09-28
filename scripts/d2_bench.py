@@ -35,7 +35,7 @@ D2 = connectome.DATA_ROOT / "d2"
 D2.mkdir(parents=True, exist_ok=True)
 SIZE, TILE, NTOK, NTRAIN, NVAL = 448, 28, 256, 5000, 500
 VIEW = float(os.environ.get("D2_VIEW", "1.0"))
-DT, FLYB = 0.02, 64
+DT, FLYB = 0.02, int(os.environ.get("D2_FLYB", "32"))          # 64 flies ~11 GB of GPU memory
 STEPS = int(round(VIEW / DT))
 TAG = f"v{VIEW:g}"
 SETS = ("train", "val", "pope", "mme")
@@ -124,17 +124,23 @@ def fly_cmd():
     cen = torch.arange(16, device=dev, dtype=torch.float32) * TILE + TILE / 2 - 0.5
     cy, cx = torch.meshgrid(cen, cen, indexing="ij")
     centers = torch.stack([cx.flatten(), cy.flatten()], 1)                                # (256, 2) row-major
-    gen = torch.Generator().manual_seed(0)
     for s in SETS:
         pf = D2 / f"{s}_fly_{TAG}.npy"
         if pf.exists():
             continue
         X = np.load(D2 / f"{s}_img.npy", mmap_mode="r")
-        fo = np.lib.format.open_memmap(D2 / f"{s}_fly_{TAG}.part.npy", "w+", np.float16, (len(X), NTOK, DF))
-        po = np.lib.format.open_memmap(D2 / f"{s}_pix_{TAG}.part.npy", "w+", np.float16, (len(X), NTOK, DP))
+        part = D2 / f"{s}_fly_{TAG}.part.npy"
+        mode = "r+" if part.exists() else "w+"                                            # resume a killed run
+        fo = np.lib.format.open_memmap(part, mode, np.float16, (len(X), NTOK, DF))
+        po = np.lib.format.open_memmap(D2 / f"{s}_pix_{TAG}.part.npy", mode, np.float16, (len(X), NTOK, DP))
+        start = 0
+        while mode == "r+" and start < len(X) and np.any(fo[start, -1, :8]):
+            start += 1
+        start = max(start - 1, 0)                                                         # redo the last, maybe partial, image
         t0 = time.time()
-        for i in range(len(X)):
+        for i in range(start, len(X)):
             img = torch.as_tensor(np.asarray(X[i]), device=dev).float().div(255) @ torch.tensor([0.299, 0.587, 0.114], device=dev)
+            gen = torch.Generator().manual_seed(SETS.index(s) * 10**6 + i)                   # per-image jitter, resumable
             walk = torch.randn(NTOK, STEPS, 2, generator=gen).mul(0.5).cumsum(1).clamp(-3, 3).to(dev)
             for b in range(0, NTOK, FLYB):
                 c = centers[b:b + FLYB]
@@ -157,7 +163,7 @@ def fly_cmd():
                 fo[i, b:b + FLYB] = (acc @ Pm).permute(1, 0, 2).reshape(FLYB, -1).half().cpu().numpy()
                 po[i, b:b + FLYB] = pacc.permute(1, 0, 2, 3).reshape(FLYB, -1).half().cpu().numpy()
             if i % 50 == 0:
-                print(s, i, len(X), f"{(time.time() - t0) / (i + 1):.1f} s/img", flush=True)
+                print(s, i, len(X), f"{(time.time() - t0) / (i - start + 1):.1f} s/img", flush=True)
         fo.flush(), po.flush()
         del fo, po
         for a in ("fly", "pix"):
