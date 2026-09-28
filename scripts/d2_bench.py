@@ -9,6 +9,8 @@ scoring; the same training images, the same per-token linear adapter, the same s
              3x3 eye region x 2 time bins -> linear adapter
   pix        the SAME jittered grey frames, 2 time bins x 28x28 px -> the same linear adapter (the key control)
   mean       mean training token (floor)
+Heads (D2_HEAD, same for every arm): linear = per-token linear map, each token sees only its own fly/block;
+mixer = all 256 tokens mixed by an MLP-Mixer (token-mixing across the grid + channel MLP), linear head as skip.
 Adapter training: Flickr30k (no COCO, so no overlap with POPE's COCO val2014 images), 5000 train / 500 val.
 Benchmarks: POPE (9000 yes/no, 500 images), MME (yes/no).
 usage: d2_bench.py prep | teacher | fly | merge | align ARM | eval ARM
@@ -42,6 +44,8 @@ STEPS = int(round(VIEW / DT))
 SHARD = os.environ.get("D2_SHARD", "")                                  # "k/m": this machine does the k-th of m image ranges
 SUF = f".s{SHARD.replace('/', 'of')}" if SHARD else ""
 TAG = f"v{VIEW:g}"
+HEAD = os.environ.get("D2_HEAD", "linear")                              # linear | mixer (align/eval)
+HSUF = "" if HEAD == "linear" else f"_{HEAD}"
 SETS = ("train", "val", "pope", "mme")
 PROMPT = "\nAnswer the question using a single word or phrase."
 dev = "cuda"
@@ -215,6 +219,35 @@ class Linear(nn.Module):
         return self.lin(self.norm(x)) + self.pos
 
 
+class Mixer(nn.Module):
+    """All 256 tokens in one shared space without shrinking it: per-token projection to 896 + learned position
+    embedding, then MLP-Mixer blocks (token-mixing MLP across the 16x16 grid, channel-mixing MLP per token).
+    The Linear head is kept as a skip path and the mixer output starts at zero, so training starts from Linear."""
+
+    def __init__(self, d, w=896, depth=2, tok_h=512, ch_h=1792, drop=0.1):
+        super().__init__()
+        self.skip = Linear(d)
+        self.inp = nn.Sequential(nn.LayerNorm(d), nn.Linear(d, w))
+        self.pos = nn.Parameter(torch.randn(NTOK, w) * 0.02)
+        self.blocks = nn.ModuleList(nn.ModuleList([
+            nn.LayerNorm(w), nn.Sequential(nn.Linear(NTOK, tok_h), nn.GELU(), nn.Dropout(drop), nn.Linear(tok_h, NTOK)),
+            nn.LayerNorm(w), nn.Sequential(nn.Linear(w, ch_h), nn.GELU(), nn.Dropout(drop), nn.Linear(ch_h, w))])
+            for _ in range(depth))
+        self.out = nn.Sequential(nn.LayerNorm(w), nn.Linear(w, 896))
+        nn.init.zeros_(self.out[1].weight)
+        nn.init.zeros_(self.out[1].bias)
+
+    def forward(self, x):
+        h = self.inp(x) + self.pos
+        for n1, tm, n2, cm in self.blocks:
+            h = h + tm(n1(h).transpose(1, 2)).transpose(1, 2)
+            h = h + cm(n2(h))
+        return self.skip(x) + self.out(h)
+
+
+HEADS = {"linear": Linear, "mixer": Mixer}
+
+
 def align_cmd(arm, seed=0):
     T = {s: torch.load(D2 / f"{s}_vit.pt").float() for s in ("train", "val")}
     mu, sd = T["train"].mean((0, 1)), T["train"].std((0, 1)) + 1e-6
@@ -229,7 +262,7 @@ def align_cmd(arm, seed=0):
     xm = X["train"].float().mean((0, 1))
     xs = X["train"].float().std((0, 1)) + 1e-6
     torch.manual_seed(seed)
-    model = Linear(X["train"].shape[-1]).to(dev)
+    model = HEADS[HEAD](X["train"].shape[-1]).to(dev)
     opt = torch.optim.AdamW(model.parameters(), lr=1e-3, weight_decay=0.05)
     EP, BS = 40, 32
     sched = torch.optim.lr_scheduler.CosineAnnealingLR(opt, EP)
@@ -254,7 +287,9 @@ def align_cmd(arm, seed=0):
         print(arm, ep, f"val {vl:.4f}", flush=True)
     model.load_state_dict(best_state)
     model.eval()
-    res = {"arm": arm, "view": VIEW, "best_epoch": best_ep, "val_loss": best}
+    res = {"arm": arm, "view": VIEW, "head": HEAD, "params": sum(p.numel() for p in model.parameters()),
+           "best_epoch": best_ep, "val_loss": best}
+    torch.save(best_state, D2 / f"model_{arm}_{TAG}{HSUF}.pt")
     with torch.no_grad():
         for s in ("val", "pope", "mme"):
             p = torch.cat([model(prep_x(X[s][b])).cpu() for b in torch.arange(len(X[s])).split(100)]) * sd + mu
@@ -262,7 +297,7 @@ def align_cmd(arm, seed=0):
                 res["val_token_cos"] = float(F.cosine_similarity(p, T["val"], dim=-1).mean())
             else:
                 out[s] = p.half()
-    torch.save(out, D2 / f"pred_{arm}_{TAG}.pt")
+    torch.save(out, D2 / f"pred_{arm}_{TAG}{HSUF}.pt")
     print("ALIGN", json.dumps(res), flush=True)
 
 
@@ -278,8 +313,8 @@ def eval_cmd(arm):
         preds = {s: torch.load(D2 / f"{s}_{arm}.pt") for s in ("pope", "mme")}
         name = arm
     else:
-        preds = torch.load(D2 / (f"pred_{arm}.pt" if arm == "mean" else f"pred_{arm}_{TAG}.pt"))
-        name = arm if arm == "mean" else f"{arm}_{TAG}"
+        preds = torch.load(D2 / (f"pred_{arm}.pt" if arm == "mean" else f"pred_{arm}_{TAG}{HSUF}.pt"))
+        name = arm if arm == "mean" else f"{arm}_{TAG}{HSUF}"
     emb = model.get_input_embeddings()
     res = {"arm": name}
     for s in ("pope", "mme"):
