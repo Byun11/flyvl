@@ -81,11 +81,16 @@ class GLinear(nn.Module):
         return F.linear(x, W, self.b.reshape(-1))
 
 
-class BN(nn.BatchNorm1d):
-    """Per-channel batch norm on (..., C): no statistics are shared across channels."""
+class BN(nn.GroupNorm):
+    """Norm on (B, N, C) with one group per cell type (3 channels x all nodes of one sample): no statistics are
+    shared across types or across the batch. Batch norm failed here: channels that are still ~constant (types the
+    input has not reached yet) get ~0 running variance, and at eval time tiny deviations blow up (smoke test)."""
+
+    def __init__(self, C):
+        super().__init__(C // PER, C)
 
     def forward(self, x):
-        return super().forward(x.reshape(-1, x.shape[-1])).reshape(x.shape)
+        return super().forward(x.transpose(1, 2)).transpose(1, 2)
 
 
 class Grapher(nn.Module):
