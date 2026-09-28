@@ -51,7 +51,7 @@ def _img(b):
 def prep():
     import pyarrow.parquet as pq
     z = zipfile.ZipFile(BENCH / "flickr30k" / "flickr30k-images.zip")
-    names = sorted(n for n in z.namelist() if n.endswith(".jpg"))[:NTRAIN + NVAL]
+    names = sorted(n for n in z.namelist() if n.endswith(".jpg") and not n.startswith("__MACOSX"))[:NTRAIN + NVAL]
     for name, sl in (("train", slice(0, NTRAIN)), ("val", slice(NTRAIN, NTRAIN + NVAL))):
         np.save(D2 / f"{name}_img.npy", np.stack([_img(z.read(n)) for n in names[sl]]))
     # POPE: three splits share images; keep one image per image_source
