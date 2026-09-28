@@ -11,7 +11,9 @@ scoring; the same training images, the same per-token linear adapter, the same s
   mean       mean training token (floor)
 Adapter training: Flickr30k (no COCO, so no overlap with POPE's COCO val2014 images), 5000 train / 500 val.
 Benchmarks: POPE (9000 yes/no, 500 images), MME (yes/no).
-usage: d2_bench.py prep | teacher | fly | align ARM | eval ARM
+usage: d2_bench.py prep | teacher | fly | merge | align ARM | eval ARM
+multi-GPU: D2_SHARD=k/m d2_bench.py fly on machine k, copy the .part.s{k}of{m}.npy files together, then
+D2_SHARD=0/m d2_bench.py merge. D2_FLYB=256 fits an 80 GB A100.
 """
 import io
 import json
@@ -37,6 +39,8 @@ SIZE, TILE, NTOK, NTRAIN, NVAL = 448, 28, 256, 5000, 500
 VIEW = float(os.environ.get("D2_VIEW", "1.0"))
 DT, FLYB = 0.02, int(os.environ.get("D2_FLYB", "32"))          # 64 flies ~11 GB of GPU memory
 STEPS = int(round(VIEW / DT))
+SHARD = os.environ.get("D2_SHARD", "")                                  # "k/m": this machine does the k-th of m image ranges
+SUF = f".s{SHARD.replace('/', 'of')}" if SHARD else ""
 TAG = f"v{VIEW:g}"
 SETS = ("train", "val", "pope", "mme")
 PROMPT = "\nAnswer the question using a single word or phrase."
@@ -129,16 +133,17 @@ def fly_cmd():
         if pf.exists():
             continue
         X = np.load(D2 / f"{s}_img.npy", mmap_mode="r")
-        part = D2 / f"{s}_fly_{TAG}.part.npy"
+        lo, hi = shard_range(len(X))
+        part = D2 / f"{s}_fly_{TAG}.part{SUF}.npy"
         mode = "r+" if part.exists() else "w+"                                            # resume a killed run
         fo = np.lib.format.open_memmap(part, mode, np.float16, (len(X), NTOK, DF))
-        po = np.lib.format.open_memmap(D2 / f"{s}_pix_{TAG}.part.npy", mode, np.float16, (len(X), NTOK, DP))
-        start = 0
-        while mode == "r+" and start < len(X) and np.any(fo[start, -1, :8]):
+        po = np.lib.format.open_memmap(D2 / f"{s}_pix_{TAG}.part{SUF}.npy", mode, np.float16, (len(X), NTOK, DP))
+        start = lo
+        while mode == "r+" and start < hi and np.any(fo[start, -1, :8]):
             start += 1
-        start = max(start - 1, 0)                                                         # redo the last, maybe partial, image
+        start = max(start - 1, lo)                                                        # redo the last, maybe partial, image
         t0 = time.time()
-        for i in range(start, len(X)):
+        for i in range(start, hi):
             img = torch.as_tensor(np.asarray(X[i]), device=dev).float().div(255) @ torch.tensor([0.299, 0.587, 0.114], device=dev)
             gen = torch.Generator().manual_seed(SETS.index(s) * 10**6 + i)                   # per-image jitter, resumable
             walk = torch.randn(NTOK, STEPS, 2, generator=gen).mul(0.5).cumsum(1).clamp(-3, 3).to(dev)
@@ -166,9 +171,35 @@ def fly_cmd():
                 print(s, i, len(X), f"{(time.time() - t0) / (i - start + 1):.1f} s/img", flush=True)
         fo.flush(), po.flush()
         del fo, po
+        if SHARD:
+            print(s, f"shard {SHARD} done", f"{time.time() - t0:.0f}s", flush=True)
+            continue
         for a in ("fly", "pix"):
             os.replace(D2 / f"{s}_{a}_{TAG}.part.npy", D2 / f"{s}_{a}_{TAG}.npy")
         print(s, "fly done", f"{time.time() - t0:.0f}s", flush=True)
+
+
+def shard_range(n):
+    if not SHARD:
+        return 0, n
+    k, m = map(int, SHARD.split("/"))
+    return n * k // m, n * (k + 1) // m
+
+
+def merge_cmd():
+    """Combine shard files (copied into D2 from every machine) into the final arrays."""
+    m = int(SHARD.split("/")[1])
+    for s in SETS:
+        n = len(np.load(D2 / f"{s}_img.npy", mmap_mode="r"))
+        for a in ("fly", "pix"):
+            parts = [np.load(D2 / f"{s}_{a}_{TAG}.part.s{k}of{m}.npy", mmap_mode="r") for k in range(m)]
+            out = np.lib.format.open_memmap(D2 / f"{s}_{a}_{TAG}.npy", "w+", np.float16, parts[0].shape)
+            for k, p in enumerate(parts):
+                lo, hi = n * k // m, n * (k + 1) // m
+                assert np.any(p[hi - 1, -1, :8]), f"{s} {a} shard {k} incomplete"
+                out[lo:hi] = p[lo:hi]
+            out.flush()
+            print(s, a, "merged", out.shape, flush=True)
 
 
 class Linear(nn.Module):
@@ -287,7 +318,7 @@ def eval_cmd(arm):
 
 if __name__ == "__main__":
     cmd = sys.argv[1]
-    {"prep": prep, "teacher": teacher_cmd, "fly": fly_cmd}.get(cmd, lambda: None)()
+    {"prep": prep, "teacher": teacher_cmd, "fly": fly_cmd, "merge": merge_cmd}.get(cmd, lambda: None)()
     if cmd == "align":
         align_cmd(sys.argv[2])
     if cmd == "eval":
