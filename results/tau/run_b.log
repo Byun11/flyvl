@@ -1,0 +1,5 @@
+m000 tau x1.57   flyvis  test slip 0.808 +- 0.033  (13.8 min)
+m000 tau x1.25   flyvis  test slip 0.882 +- 0.037  (13.7 min)
+m003 tau x0.64   flyvis  test slip 0.824 +- 0.032  (13.8 min)
+m003 tau x0.8   flyvis  test slip 0.772 +- 0.031  (13.8 min)
+ALL DONE
