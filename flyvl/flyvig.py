@@ -167,20 +167,25 @@ class Stem(nn.Module):
 
 
 class FlyViG(nn.Module):
-    def __init__(self, names, mode, mask=None, cin=1, H=64, n_cls=16, depth=6, k=9, hid_small=None):
+    def __init__(self, names, mode, mask=None, cin=1, H=64, n_cls=16, depth=6, k=9, hid_small=None, inp=None, space=None):
+        """inp: "r" = patch features enter the photoreceptor channels only, "all" = every channel.
+        space: "grouped" = spatial message passing per cell type, "dense" = the original ViG Grapher.
+        Defaults: vig -> all / dense, every other mode -> r / grouped (the registered D4 design, variant V1)."""
         super().__init__()
         names = list(names)
         G = len(names)
         C = G * PER
         self.mode, self.C = mode, C
-        fly = mode != "vig"
+        inp = inp or ("all" if mode == "vig" else "r")
+        space = space or ("dense" if mode == "vig" else "grouped")
+        self.r_only = inp == "r"
         r = [names.index(t) * PER + j for t in R_TYPES for j in range(PER)]
         self.register_buffer("ridx", torch.as_tensor(r))
         keep = torch.ones(C, dtype=torch.bool)
         keep[r] = False
-        self.register_buffer("readout", torch.nonzero(keep if fly else torch.ones(C, dtype=torch.bool))[:, 0])
-        self.stem = Stem(cin, len(r) if fly else C, H)
-        self.graphers = nn.ModuleList(Grapher(C, G if fly else 1, k) for _ in range(depth))
+        self.register_buffer("readout", torch.nonzero(keep if self.r_only else torch.ones(C, dtype=torch.bool))[:, 0])
+        self.stem = Stem(cin, len(r) if self.r_only else C, H)
+        self.graphers = nn.ModuleList(Grapher(C, G if space == "grouped" else 1, k) for _ in range(depth))
         if mode == "graph":
             self.ffns = nn.ModuleList(TypeFFN(mask) for _ in range(depth))
         else:
@@ -193,7 +198,7 @@ class FlyViG(nn.Module):
         """x (B, T, cin, H, W) -> logits (B, n_cls)."""
         B, T = x.shape[:2]
         z = self.stem(x.flatten(0, 1))                                                           # (B*T, 256, c)
-        if self.mode != "vig":
+        if self.r_only:
             h = z.new_zeros(z.shape[0], z.shape[1], self.C)
             h[..., self.ridx] = z
         else:

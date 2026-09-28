@@ -7,6 +7,7 @@ fresh pixel noise every 20 ms frame, averaged to 64 px, 25 frames.
 usage: d4_train.py cifar COND SEED
        d4_train.py video TASK LO,HI COND SEED NTRAIN
        d4_train.py calib TASK            (Stage 0: vig, seed 0, 2,100 videos, contrast ladder until test <= 90%)
+       d4_train.py cifar_main VARIANT COND SEED EPOCHS   (appendix F: CIFAR-100 main task, VARIANT in V1 | V2 | V3)
 COND in vig | dense | dense_small | real | rewired | random
 """
 import io
@@ -45,11 +46,21 @@ def graph_bank():
     return names, M, round(TypeFFN(M).active_params() / (2 * len(names) * 3))
 
 
-def make_model(cond, seed, cin, H, n_cls):
+VARIANTS = {"V1": ("r", "grouped"), "V2": ("all", "grouped"), "V3": ("all", "dense")}   # (input route, spatial msg)
+
+
+def make_model(cond, seed, cin, H, n_cls, variant=None):
     names, M, hs = graph_bank()
     masks = {"real": M, "rewired": rewire(M, seed), "random": random_graph(M, seed)}
     mode = "graph" if cond in masks else cond
-    return FlyViG(names, mode, masks.get(cond), cin=cin, H=H, n_cls=n_cls, hid_small=hs).to(dev)
+    kw = dict(zip(("inp", "space"), VARIANTS[variant])) if variant and cond != "vig" else {}
+    return FlyViG(names, mode, masks.get(cond), cin=cin, H=H, n_cls=n_cls, hid_small=hs, **kw).to(dev)
+
+
+def active_params(model):
+    """Parameters that can change the output (masked-out mixer weights excluded)."""
+    n = sum(p.numel() for p in model.parameters())
+    return n - sum(int(f.w1.numel() - f.m.sum()) for f in model.ffns if hasattr(f, "m"))
 
 
 # ---------------------------------------------------------------- videos
@@ -124,7 +135,7 @@ def evaluate(model, X, y, prep, bs=64):
     return torch.cat(ok)
 
 
-def fit(model, Xtr, ytr, Xval, yval, prep, steps, eval_every, lr=1e-3, augment=None):
+def fit(model, Xtr, ytr, Xval, yval, prep, steps, eval_every, lr=1e-3, augment=None, smooth=0.0):
     opt = torch.optim.AdamW(model.parameters(), lr=lr, weight_decay=0.05)
     warm = steps // 20
     sched = torch.optim.lr_scheduler.LambdaLR(
@@ -141,7 +152,7 @@ def fit(model, Xtr, ytr, Xval, yval, prep, steps, eval_every, lr=1e-3, augment=N
         if augment:
             x = augment(x)
         with torch.autocast("cuda", torch.bfloat16):
-            loss = F.cross_entropy(model(x), ytr[b].to(dev))
+            loss = F.cross_entropy(model(x), ytr[b].to(dev), label_smoothing=smooth)
         opt.zero_grad(set_to_none=True)
         loss.backward()
         torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
@@ -218,6 +229,52 @@ def run_cifar(cond, seed, epochs=int(os.environ.get("D4_CIFAR_EPOCHS", 15))):
     print(f"{name}: test {acc:.3f} ({rec['minutes']:.1f} min)", flush=True)
 
 
+CIFAR_MU, CIFAR_SD = (0.507, 0.487, 0.441), (0.267, 0.256, 0.276)
+
+
+def cifar_prep():
+    mu = torch.tensor(CIFAR_MU, device=dev).view(1, 1, 3, 1, 1)
+    sd = torch.tensor(CIFAR_SD, device=dev).view(1, 1, 3, 1, 1)
+    return lambda x: ((x.to(dev).permute(0, 3, 1, 2).float() / 255)[:, None] - mu) / sd
+
+
+def crop_flip(x):
+    """Per-sample random 32 px crop of the 4 px reflect-padded image and horizontal flip. x (B, 1, 3, 32, 32)."""
+    B = x.shape[0]
+    x = F.pad(x[:, 0], (4, 4, 4, 4), mode="reflect")
+    ar = torch.arange(32, device=dev)
+    rows = (torch.randint(0, 9, (B,), device=dev)[:, None] + ar)[:, None, :, None]
+    cols = (torch.randint(0, 9, (B,), device=dev)[:, None] + ar)[:, None, None, :]
+    x = x[torch.arange(B, device=dev)[:, None, None, None], torch.arange(3, device=dev)[None, :, None, None], rows, cols]
+    return torch.where((torch.rand(B, device=dev) < 0.5)[:, None, None, None], x.flip(-1), x)[:, None]
+
+
+def run_cifar_main(variant, cond, seed, epochs):
+    """CIFAR-100 as the main task (appendix F): 45,000 train / 5,000 validation (fixed split) / 10,000 test,
+    best validation epoch -> test, per-image test correctness saved for the paired bootstrap."""
+    global BS
+    BS = 128
+    name = f"cifar100_{variant}_{cond}_s{seed}_e{epochs}"
+    if (OUT / f"{name}.json").exists():
+        return
+    t0 = time.time()
+    (X, y), (Xte, yte) = cifar("train"), cifar("test")
+    perm = torch.randperm(len(X), generator=torch.Generator().manual_seed(12345))
+    tr, va = perm[:45000], perm[45000:]
+    prep = cifar_prep()
+    torch.manual_seed(seed)
+    model = make_model(cond, seed, 3, 32, 100, variant)
+    spe = math.ceil(45000 / BS)
+    best, curve = fit(model, X[tr], y[tr], X[va], y[va], prep, epochs * spe, spe, augment=crop_flip, smooth=0.1)
+    ok = evaluate(model, Xte, yte, prep, bs=500)
+    rec = {"task": "cifar100", "variant": variant, "cond": cond, "seed": seed, "epochs": epochs, "val_best": best,
+           "test_acc": float(ok.float().mean()), "test_ok": ok.int().tolist(), "curve": curve,
+           "params": sum(p.numel() for p in model.parameters()), "active_params": active_params(model),
+           "minutes": (time.time() - t0) / 60}
+    (OUT / f"{name}.json").write_text(json.dumps(rec))
+    print(f"{name}: val {best:.4f} test {rec['test_acc']:.4f} active params {rec['active_params']:,} ({rec['minutes']:.0f} min)", flush=True)
+
+
 def calib(task):
     res = {}
     for c in LADDER:
@@ -238,3 +295,5 @@ if __name__ == "__main__":
         run_video(sys.argv[2], sys.argv[3], sys.argv[4], int(sys.argv[5]), int(sys.argv[6]))
     elif cmd == "calib":
         calib(sys.argv[2])
+    elif cmd == "cifar_main":
+        run_cifar_main(sys.argv[2], sys.argv[3], int(sys.argv[4]), int(sys.argv[5]))
