@@ -322,11 +322,11 @@ def run(c, seed, family, only=None):
 
 
 def save(c, seed, family, name, rec, fov, w):
-    stem = OUT / f"c{c:g}_s{seed}_{family}_{name}"
+    stem = f"c{c:g}_s{seed}_{family}_{name}"                  # a string: Path.with_suffix would cut at "0.1"
     rec.update({"contrast": c, "cem_seed": seed, "family": family, "setting": name, "gens": GENS, "n_train": N_TR,
                 "noise": NOISE, "target": w["target"].tolist()})
-    np.save(f"{stem}_fov.npy", fov.cpu().numpy().astype(np.float32))
-    stem.with_suffix(".json").write_text(json.dumps(rec))
+    np.save(OUT / f"{stem}_fov.npy", fov.cpu().numpy().astype(np.float32))
+    (OUT / f"{stem}.json").write_text(json.dumps(rec))
 
 
 def read_all():
