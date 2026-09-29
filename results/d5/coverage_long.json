@@ -1,0 +1,77 @@
+{
+ "h_max": 1024,
+ "final_mass": {
+  "optic_lobe_intrinsic": 84669.10139054208,
+  "visual_projection": 9193.52964689616,
+  "central_brain_intrinsic": 32062.289344401288,
+  "readout (all non-input)": 158720.75632343115
+ },
+ "growth_last_half": {
+  "optic_lobe_intrinsic": 0.0018746270062584003,
+  "visual_projection": 0.0030155907311317787,
+  "central_brain_intrinsic": 0.01516996648621527,
+  "readout (all non-input)": 0.006926249030567044
+ },
+ "h_50": {
+  "optic_lobe_intrinsic": 7,
+  "visual_projection": 11,
+  "central_brain_intrinsic": 70,
+  "readout (all non-input)": 16
+ },
+ "h_90": {
+  "optic_lobe_intrinsic": 43,
+  "visual_projection": 84,
+  "central_brain_intrinsic": 274,
+  "readout (all non-input)": 178
+ },
+ "fraction_at": {
+  "4": {
+   "optic_lobe_intrinsic": 0.3670429658583731,
+   "visual_projection": 0.14946496016180186,
+   "central_brain_intrinsic": 0.005882257903674436,
+   "readout (all non-input)": 0.22031663878388538
+  },
+  "8": {
+   "optic_lobe_intrinsic": 0.5800100814737907,
+   "visual_projection": 0.3925058132803134,
+   "central_brain_intrinsic": 0.04549656421204239,
+   "readout (all non-input)": 0.3605942737584533
+  },
+  "16": {
+   "optic_lobe_intrinsic": 0.7707780799817473,
+   "visual_projection": 0.6545702161653194,
+   "central_brain_intrinsic": 0.15424689945680464,
+   "readout (all non-input)": 0.5105143277027882
+  },
+  "32": {
+   "optic_lobe_intrinsic": 0.8774713278395074,
+   "visual_projection": 0.8093887517910556,
+   "central_brain_intrinsic": 0.3055804109277065,
+   "readout (all non-input)": 0.633641937916856
+  },
+  "64": {
+   "optic_lobe_intrinsic": 0.9236710830314276,
+   "visual_projection": 0.8791866645248616,
+   "central_brain_intrinsic": 0.4756422420669195,
+   "readout (all non-input)": 0.7386804363912133
+  },
+  "128": {
+   "optic_lobe_intrinsic": 0.958167253282815,
+   "visual_projection": 0.9331846560927715,
+   "central_brain_intrinsic": 0.6847718076253874,
+   "readout (all non-input)": 0.8502480229471713
+  },
+  "256": {
+   "optic_lobe_intrinsic": 0.9855257076513921,
+   "visual_projection": 0.9767648474642235,
+   "central_brain_intrinsic": 0.8854484237396325,
+   "readout (all non-input)": 0.9470122902562687
+  },
+  "512": {
+   "optic_lobe_intrinsic": 0.9981288806446171,
+   "visual_projection": 0.996993475715633,
+   "central_brain_intrinsic": 0.985056722532166,
+   "readout (all non-input)": 0.9931213939082078
+  }
+ }
+}
