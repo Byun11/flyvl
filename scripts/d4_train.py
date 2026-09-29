@@ -46,7 +46,9 @@ def graph_bank():
     return names, M, round(TypeFFN(M).active_params() / (2 * len(names) * 3))
 
 
-VARIANTS = {"V1": ("r", "grouped"), "V2": ("all", "grouped"), "V3": ("all", "dense")}   # (input route, spatial msg)
+VARIANTS = {"V1": ("r", "grouped"), "V2": ("all", "grouped"), "V3": ("all", "dense"),     # (input route, spatial msg)
+            "V3W": ("all", "dense")}                         # V3 with the type mixer widened to ViG's size (appendix H)
+HID_WIDE = 139                                               # 6 x (2198 * 139 + 585) mixer params = ViG's 6 x 305,565
 
 
 def make_model(cond, seed, cin, H, n_cls, variant=None):
@@ -54,6 +56,8 @@ def make_model(cond, seed, cin, H, n_cls, variant=None):
     masks = {"real": M, "rewired": rewire(M, seed), "random": random_graph(M, seed)}
     mode = "graph" if cond in masks else cond
     kw = dict(zip(("inp", "space"), VARIANTS[variant])) if variant and cond != "vig" else {}
+    if variant == "V3W" and mode == "graph":
+        kw["hid"] = HID_WIDE
     return FlyViG(names, mode, masks.get(cond), cin=cin, H=H, n_cls=n_cls, hid_small=hs, **kw).to(dev)
 
 

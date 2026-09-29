@@ -131,15 +131,15 @@ class DenseFFN(nn.Module):
 class TypeFFN(nn.Module):
     """Type u's HID hidden units read the channels of u and of every type t with mask[u, t]; they write only u."""
 
-    def __init__(self, mask):
+    def __init__(self, mask, hid=HID):
         super().__init__()
         G = mask.shape[0]
-        m = torch.as_tensor(np.kron(mask | np.eye(G, dtype=bool), np.ones((HID, PER), bool)), dtype=torch.float32)
+        m = torch.as_tensor(np.kron(mask | np.eye(G, dtype=bool), np.ones((hid, PER), bool)), dtype=torch.float32)
         self.register_buffer("m", m)                                                            # (G*HID, G*PER)
         fan = m.sum(1, keepdim=True)
         self.w1 = nn.Parameter(torch.randn(m.shape) / fan.sqrt())
         self.b1 = nn.Parameter(torch.zeros(m.shape[0]))
-        self.l2, self.bn = GLinear(G, HID, PER), BN(G * PER)
+        self.l2, self.bn = GLinear(G, hid, PER), BN(G * PER)
 
     def forward(self, x):
         return x + self.bn(self.l2(F.gelu(F.linear(x, self.w1 * self.m, self.b1))))
@@ -167,7 +167,7 @@ class Stem(nn.Module):
 
 
 class FlyViG(nn.Module):
-    def __init__(self, names, mode, mask=None, cin=1, H=64, n_cls=16, depth=6, k=9, hid_small=None, inp=None, space=None):
+    def __init__(self, names, mode, mask=None, cin=1, H=64, n_cls=16, depth=6, k=9, hid_small=None, inp=None, space=None, hid=HID):
         """inp: "r" = patch features enter the photoreceptor channels only, "all" = every channel.
         space: "grouped" = spatial message passing per cell type, "dense" = the original ViG Grapher.
         Defaults: vig -> all / dense, every other mode -> r / grouped (the registered D4 design, variant V1)."""
@@ -187,7 +187,7 @@ class FlyViG(nn.Module):
         self.stem = Stem(cin, len(r) if self.r_only else C, H)
         self.graphers = nn.ModuleList(Grapher(C, G if space == "grouped" else 1, k) for _ in range(depth))
         if mode == "graph":
-            self.ffns = nn.ModuleList(TypeFFN(mask) for _ in range(depth))
+            self.ffns = nn.ModuleList(TypeFFN(mask, hid) for _ in range(depth))
         else:
             h = {"vig": 4 * C, "dense": 4 * C, "dense_small": hid_small}[mode]
             self.ffns = nn.ModuleList(DenseFFN(C, h) for _ in range(depth))
