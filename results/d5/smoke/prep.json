@@ -1,0 +1,76 @@
+{
+ "patches": {
+  "columns": 1764,
+  "empty_patches_before": 36,
+  "columns_moved": 36,
+  "empty_patches_after": 0,
+  "columns_per_patch_min": 1,
+  "columns_per_patch_median": 8.0,
+  "columns_per_patch_max": 12,
+  "n_inputs": 7300,
+  "inputs_per_class": {
+   "L1": 1764,
+   "L2": 1420,
+   "L3": 1488,
+   "R7": 1299,
+   "R8": 1329
+  }
+ },
+ "n_groups": 11881,
+ "grid_k": 20,
+ "readout_neurons": 159400,
+ "footprint_nonzero_fraction": 0.9976662397384644,
+ "graphs": {
+  "rewired_l": {
+   "seed": 0,
+   "blocks": 5959,
+   "changed_fraction": 0.9963517872732209,
+   "fix_iterations": 303,
+   "bad_initial": 756022,
+   "fallback_iterations": 2,
+   "edges_violating_block": 714,
+   "nnz": 25582938,
+   "in_degree_exact": true,
+   "self_loops": 0,
+   "kind": "rewired_l",
+   "tile_side": 8,
+   "out_degree_exact": true,
+   "presynaptic_sign_kept": true,
+   "minutes": 16.225130037466684
+  },
+  "rewired_m": {
+   "seed": 0,
+   "blocks": 1551,
+   "changed_fraction": 0.9980382237567866,
+   "fix_iterations": 304,
+   "bad_initial": 506276,
+   "fallback_iterations": 3,
+   "edges_violating_block": 10891,
+   "nnz": 25582938,
+   "in_degree_exact": true,
+   "self_loops": 0,
+   "kind": "rewired_m",
+   "tile_side": 8,
+   "out_degree_exact": true,
+   "presynaptic_sign_kept": true,
+   "minutes": 14.946961593627929
+  },
+  "random": {
+   "seed": 0,
+   "blocks": 1,
+   "changed_fraction": 0.999983660985302,
+   "fix_iterations": 7,
+   "bad_initial": 87601,
+   "fallback_iterations": 0,
+   "edges_violating_block": 0,
+   "nnz": 25582938,
+   "in_degree_exact": true,
+   "self_loops": 0,
+   "kind": "random",
+   "tile_side": 8,
+   "out_degree_exact": true,
+   "presynaptic_sign_kept": true,
+   "minutes": 0.5088992714881897
+  }
+ }
+}

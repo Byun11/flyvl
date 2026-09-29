@@ -1,0 +1,593 @@
+{
+ "1_loss_decreases": {
+  "real": {
+   "first10": 4.650598430633545,
+   "last50": 3.613706045150757,
+   "pass": true
+  },
+  "rewired_l": {
+   "first10": 4.648632669448853,
+   "last50": 3.5795663452148436,
+   "pass": true
+  },
+  "grid": {
+   "first10": 4.663473176956177,
+   "last50": 3.6461061573028566,
+   "pass": true
+  },
+  "bypass": {
+   "first10": 4.669138383865357,
+   "last50": 3.5930855464935303,
+   "pass": true
+  },
+  "none": {
+   "first10": 4.611729907989502,
+   "last50": 3.5766189813613893,
+   "pass": true
+  },
+  "vig": {
+   "first10": 4.6261796951293945,
+   "last50": 3.5878164768218994,
+   "pass": true
+  }
+ },
+ "2_gradients": {
+  "real": {
+   "pass": true,
+   "last": [
+    {
+     "norms": {
+      "g_pre": 0.02941504679620266,
+      "g_post": 0.028018895536661148,
+      "tau": 0.003528296248987317
+     },
+     "finite": true,
+     "nonzero_group_fraction": {
+      "OL": 1.0,
+      "VPN": 1.0,
+      "VCN": 1.0,
+      "central": 1.0,
+      "VNC": 0.9996804090763822,
+      "neck/other": 0.9991289198606271
+     }
+    },
+    {
+     "norms": {
+      "g_pre": 0.0038785526994615793,
+      "g_post": 0.012169030494987965,
+      "tau": 0.001449628034606576
+     },
+     "finite": true,
+     "nonzero_group_fraction": {
+      "OL": 1.0,
+      "VPN": 1.0,
+      "VCN": 1.0,
+      "central": 1.0,
+      "VNC": 0.9996804090763822,
+      "neck/other": 0.9991289198606271
+     }
+    },
+    {
+     "norms": {
+      "g_pre": 0.014562612399458885,
+      "g_post": 0.010933785699307919,
+      "tau": 0.001440101070329547
+     },
+     "finite": true,
+     "nonzero_group_fraction": {
+      "OL": 1.0,
+      "VPN": 1.0,
+      "VCN": 1.0,
+      "central": 1.0,
+      "VNC": 0.9996804090763822,
+      "neck/other": 0.9991289198606271
+     }
+    },
+    {
+     "norms": {
+      "g_pre": 0.002359695266932249,
+      "g_post": 0.006792433559894562,
+      "tau": 0.0007973769679665565
+     },
+     "finite": true,
+     "nonzero_group_fraction": {
+      "OL": 1.0,
+      "VPN": 1.0,
+      "VCN": 1.0,
+      "central": 1.0,
+      "VNC": 0.9996804090763822,
+      "neck/other": 0.9991289198606271
+     }
+    },
+    {
+     "norms": {
+      "g_pre": 0.007013312540948391,
+      "g_post": 0.005036782473325729,
+      "tau": 0.0007257686229422688
+     },
+     "finite": true,
+     "nonzero_group_fraction": {
+      "OL": 1.0,
+      "VPN": 1.0,
+      "VCN": 1.0,
+      "central": 1.0,
+      "VNC": 0.9996804090763822,
+      "neck/other": 0.9991289198606271
+     }
+    },
+    {
+     "norms": {
+      "g_pre": 0.002217549132183194,
+      "g_post": 0.0042191846296191216,
+      "tau": 0.0005039451643824577
+     },
+     "finite": true,
+     "nonzero_group_fraction": {
+      "OL": 1.0,
+      "VPN": 1.0,
+      "VCN": 1.0,
+      "central": 1.0,
+      "VNC": 0.9996804090763822,
+      "neck/other": 0.9991289198606271
+     }
+    }
+   ]
+  },
+  "rewired_l": {
+   "pass": true,
+   "last": [
+    {
+     "norms": {
+      "g_pre": 0.020167997106909752,
+      "g_post": 0.011452117934823036,
+      "tau": 0.0016794028924778104
+     },
+     "finite": true,
+     "nonzero_group_fraction": {
+      "OL": 1.0,
+      "VPN": 1.0,
+      "VCN": 1.0,
+      "central": 1.0,
+      "VNC": 0.9996804090763822,
+      "neck/other": 0.9991289198606271
+     }
+    },
+    {
+     "norms": {
+      "g_pre": 0.007952972315251827,
+      "g_post": 0.00598154729232192,
+      "tau": 0.0008167094201780856
+     },
+     "finite": true,
+     "nonzero_group_fraction": {
+      "OL": 1.0,
+      "VPN": 1.0,
+      "VCN": 1.0,
+      "central": 1.0,
+      "VNC": 0.9996804090763822,
+      "neck/other": 0.9991289198606271
+     }
+    },
+    {
+     "norms": {
+      "g_pre": 0.01853022165596485,
+      "g_post": 0.014567488804459572,
+      "tau": 0.0019441505428403616
+     },
+     "finite": true,
+     "nonzero_group_fraction": {
+      "OL": 1.0,
+      "VPN": 1.0,
+      "VCN": 1.0,
+      "central": 1.0,
+      "VNC": 0.9996804090763822,
+      "neck/other": 0.9991289198606271
+     }
+    },
+    {
+     "norms": {
+      "g_pre": 0.003848492866382003,
+      "g_post": 0.0057304417714476585,
+      "tau": 0.000683409278281033
+     },
+     "finite": true,
+     "nonzero_group_fraction": {
+      "OL": 1.0,
+      "VPN": 1.0,
+      "VCN": 1.0,
+      "central": 1.0,
+      "VNC": 0.9996804090763822,
+      "neck/other": 0.9991289198606271
+     }
+    },
+    {
+     "norms": {
+      "g_pre": 0.003500833408907056,
+      "g_post": 0.0025520799681544304,
+      "tau": 0.0003447583003435284
+     },
+     "finite": true,
+     "nonzero_group_fraction": {
+      "OL": 1.0,
+      "VPN": 1.0,
+      "VCN": 1.0,
+      "central": 1.0,
+      "VNC": 0.9996804090763822,
+      "neck/other": 0.9991289198606271
+     }
+    },
+    {
+     "norms": {
+      "g_pre": 0.0012753596529364586,
+      "g_post": 0.004130289424210787,
+      "tau": 0.0005028491141274571
+     },
+     "finite": true,
+     "nonzero_group_fraction": {
+      "OL": 1.0,
+      "VPN": 1.0,
+      "VCN": 1.0,
+      "central": 1.0,
+      "VNC": 0.9996804090763822,
+      "neck/other": 0.9991289198606271
+     }
+    }
+   ]
+  }
+ },
+ "3_not_constant": {
+  "real": {
+   "pass": true,
+   "init": [
+    {
+     "varying_energy_fraction": 0.4761017858982086,
+     "saturated_fraction": 0.0,
+     "mean_abs_readout": 0.004732445813715458,
+     "mean_abs_by_region": {
+      "OL": 0.008384274318814278,
+      "VPN": 0.0014001295203343034,
+      "central": 4.476862886804156e-05
+     }
+    },
+    {
+     "varying_energy_fraction": 0.39618268609046936,
+     "saturated_fraction": 0.0,
+     "mean_abs_readout": 0.00836092233657837,
+     "mean_abs_by_region": {
+      "OL": 0.014802143909037113,
+      "VPN": 0.0025464424397796392,
+      "central": 8.061021071625873e-05
+     }
+    },
+    {
+     "varying_energy_fraction": 0.37135419249534607,
+     "saturated_fraction": 0.0,
+     "mean_abs_readout": 0.013554733246564865,
+     "mean_abs_by_region": {
+      "OL": 0.024135803803801537,
+      "VPN": 0.0030596847645938396,
+      "central": 7.788630318827927e-05
+     }
+    },
+    {
+     "varying_energy_fraction": 0.2590802311897278,
+     "saturated_fraction": 0.0,
+     "mean_abs_readout": 0.014822836965322495,
+     "mean_abs_by_region": {
+      "OL": 0.026384133845567703,
+      "VPN": 0.0034150080755352974,
+      "central": 9.380316623719409e-05
+     }
+    },
+    {
+     "varying_energy_fraction": 0.354561984539032,
+     "saturated_fraction": 0.0,
+     "mean_abs_readout": 0.014446240849792957,
+     "mean_abs_by_region": {
+      "OL": 0.025683917105197906,
+      "VPN": 0.0035867374390363693,
+      "central": 9.711002348922193e-05
+     }
+    },
+    {
+     "varying_energy_fraction": 0.4375979006290436,
+     "saturated_fraction": 0.0,
+     "mean_abs_readout": 0.013700366020202637,
+     "mean_abs_by_region": {
+      "OL": 0.024293139576911926,
+      "VPN": 0.003956028260290623,
+      "central": 0.00010968622518703341
+     }
+    }
+   ],
+   "trained": [
+    {
+     "varying_energy_fraction": 0.8718053698539734,
+     "saturated_fraction": 0.0,
+     "mean_abs_readout": 0.022327572107315063,
+     "mean_abs_by_region": {
+      "OL": 0.03965252637863159,
+      "VPN": 0.005970747210085392,
+      "central": 0.00015105291095096618
+     }
+    },
+    {
+     "varying_energy_fraction": 0.8403411507606506,
+     "saturated_fraction": 0.0,
+     "mean_abs_readout": 0.02359042689204216,
+     "mean_abs_by_region": {
+      "OL": 0.04186546802520752,
+      "VPN": 0.0065532554872334,
+      "central": 0.0001635900407563895
+     }
+    },
+    {
+     "varying_energy_fraction": 0.7822323441505432,
+     "saturated_fraction": 0.0,
+     "mean_abs_readout": 0.023497452959418297,
+     "mean_abs_by_region": {
+      "OL": 0.041723448783159256,
+      "VPN": 0.006365248933434486,
+      "central": 0.00014926384028512985
+     }
+    },
+    {
+     "varying_energy_fraction": 0.9526317119598389,
+     "saturated_fraction": 0.0,
+     "mean_abs_readout": 0.023451581597328186,
+     "mean_abs_by_region": {
+      "OL": 0.04168330132961273,
+      "VPN": 0.006015282589942217,
+      "central": 0.0001373629056615755
+     }
+    },
+    {
+     "varying_energy_fraction": 0.8533481955528259,
+     "saturated_fraction": 0.0,
+     "mean_abs_readout": 0.023536324501037598,
+     "mean_abs_by_region": {
+      "OL": 0.04178323969244957,
+      "VPN": 0.006522387731820345,
+      "central": 0.00013951523578725755
+     }
+    },
+    {
+     "varying_energy_fraction": 0.8794038891792297,
+     "saturated_fraction": 0.0,
+     "mean_abs_readout": 0.022192686796188354,
+     "mean_abs_by_region": {
+      "OL": 0.03949727863073349,
+      "VPN": 0.0052619981579482555,
+      "central": 0.00011975617235293612
+     }
+    }
+   ]
+  },
+  "rewired_l": {
+   "pass": true,
+   "init": [
+    {
+     "varying_energy_fraction": 0.4497617185115814,
+     "saturated_fraction": 0.0,
+     "mean_abs_readout": 0.003497570287436247,
+     "mean_abs_by_region": {
+      "OL": 0.00621037045493722,
+      "VPN": 0.0008921939879655838,
+      "central": 3.74904993805103e-05
+     }
+    },
+    {
+     "varying_energy_fraction": 0.228321835398674,
+     "saturated_fraction": 0.0,
+     "mean_abs_readout": 0.006636634934693575,
+     "mean_abs_by_region": {
+      "OL": 0.01177134644240141,
+      "VPN": 0.0017931433394551277,
+      "central": 7.247942266985774e-05
+     }
+    },
+    {
+     "varying_energy_fraction": 0.1081564873456955,
+     "saturated_fraction": 0.0,
+     "mean_abs_readout": 0.011663527227938175,
+     "mean_abs_by_region": {
+      "OL": 0.020683255046606064,
+      "VPN": 0.0030478849075734615,
+      "central": 0.00016498559853062034
+     }
+    },
+    {
+     "varying_energy_fraction": 0.14949047565460205,
+     "saturated_fraction": 0.0,
+     "mean_abs_readout": 0.011047381907701492,
+     "mean_abs_by_region": {
+      "OL": 0.01958099938929081,
+      "VPN": 0.0030016093514859676,
+      "central": 0.00015556953439954668
+     }
+    },
+    {
+     "varying_energy_fraction": 0.2820408344268799,
+     "saturated_fraction": 0.0,
+     "mean_abs_readout": 0.010309526696801186,
+     "mean_abs_by_region": {
+      "OL": 0.01840216852724552,
+      "VPN": 0.0019261365523561835,
+      "central": 5.7558019761927426e-05
+     }
+    },
+    {
+     "varying_energy_fraction": 0.12325113266706467,
+     "saturated_fraction": 0.0,
+     "mean_abs_readout": 0.01180720329284668,
+     "mean_abs_by_region": {
+      "OL": 0.02084011770784855,
+      "VPN": 0.0038927881978452206,
+      "central": 0.00020079883688595146
+     }
+    }
+   ],
+   "trained": [
+    {
+     "varying_energy_fraction": 0.944063663482666,
+     "saturated_fraction": 0.0,
+     "mean_abs_readout": 0.016525372862815857,
+     "mean_abs_by_region": {
+      "OL": 0.029304293915629387,
+      "VPN": 0.004512690473347902,
+      "central": 0.00019547548436094075
+     }
+    },
+    {
+     "varying_energy_fraction": 0.7962548732757568,
+     "saturated_fraction": 0.0,
+     "mean_abs_readout": 0.018237747251987457,
+     "mean_abs_by_region": {
+      "OL": 0.03234409913420677,
+      "VPN": 0.005014502909034491,
+      "central": 0.00019527731637936085
+     }
+    },
+    {
+     "varying_energy_fraction": 0.943799614906311,
+     "saturated_fraction": 0.0,
+     "mean_abs_readout": 0.0174295324832201,
+     "mean_abs_by_region": {
+      "OL": 0.030925828963518143,
+      "VPN": 0.0046665240079164505,
+      "central": 0.0001848273241193965
+     }
+    },
+    {
+     "varying_energy_fraction": 0.9365476965904236,
+     "saturated_fraction": 0.0,
+     "mean_abs_readout": 0.01721222884953022,
+     "mean_abs_by_region": {
+      "OL": 0.03059215657413006,
+      "VPN": 0.004163920879364014,
+      "central": 0.00016890715050976723
+     }
+    },
+    {
+     "varying_energy_fraction": 0.9183775782585144,
+     "saturated_fraction": 0.0,
+     "mean_abs_readout": 0.017063677310943604,
+     "mean_abs_by_region": {
+      "OL": 0.030283460393548012,
+      "VPN": 0.004509517457336187,
+      "central": 0.00017879536608234048
+     }
+    },
+    {
+     "varying_energy_fraction": 0.7452889084815979,
+     "saturated_fraction": 0.0,
+     "mean_abs_readout": 0.015659749507904053,
+     "mean_abs_by_region": {
+      "OL": 0.02776777558028698,
+      "VPN": 0.004261028487235308,
+      "central": 0.0001914275053422898
+     }
+    }
+   ]
+  }
+ },
+ "4_no_bypass": {
+  "real": {
+   "brain_off_delta": 0.40898696899414055,
+   "relay_r2": [
+    0.4950227197322805,
+    0.7694801574090895,
+    0.7244288863635531,
+    0.7219618711717654,
+    0.7472162323753472,
+    0.727431795255814
+   ],
+   "pass": true
+  },
+  "rewired_l": {
+   "brain_off_delta": 0.3051098632812499,
+   "relay_r2": [
+    0.2821512990478695,
+    0.5413213175001415,
+    0.42500460483049707,
+    0.7173310735598202,
+    0.6454802413183061,
+    0.5737635181650342
+   ],
+   "pass": true
+  },
+  "bypass_last50_vs_real": {
+   "bypass": 3.5930855464935303,
+   "real": 3.613706045150757
+  }
+ },
+ "5_scaling": {
+  "K1": {
+   "ratio_to_K1": 1.0,
+   "peak_gb": 9.186017990112305
+  },
+  "K2": {
+   "ratio_to_K1": 1.973833301123452,
+   "peak_gb": 16.491244316101074
+  },
+  "K4": {
+   "ratio_to_K1": 3.9043296611708445,
+   "peak_gb": 31.143978595733643
+  },
+  "c4": {
+   "ratio_to_K1": 3.88390273054934,
+   "peak_gb": 31.128880977630615
+  },
+  "pass": true
+ },
+ "6_real_only_failure": {
+  "real_drop": 1.0368923854827883,
+  "rewired_l_drop": 1.0690663242340093,
+  "flag": false
+ },
+ "diagnostic_shuffle": {
+  "real": {
+   "val_loss_change_when_shuffled": 0.29847741699218755,
+   "output_energy": [
+    0.7964122891426086,
+    0.7898211479187012,
+    0.6337928175926208,
+    0.9299601912498474,
+    0.7648612260818481,
+    0.8612918853759766
+   ],
+   "output_energy_shuffled": [
+    0.8093913793563843,
+    0.8855316042900085,
+    0.8969476222991943,
+    0.9753679037094116,
+    0.8805672526359558,
+    0.8971478343009949
+   ]
+  },
+  "rewired_l": {
+   "val_loss_change_when_shuffled": 0.28719039916992184,
+   "output_energy": [
+    0.9098132252693176,
+    0.6840711832046509,
+    0.9418929219245911,
+    0.9453955888748169,
+    0.9006333947181702,
+    0.523777961730957
+   ],
+   "output_energy_shuffled": [
+    0.9510964751243591,
+    0.7691267132759094,
+    0.9706220030784607,
+    0.9085565805435181,
+    0.843946099281311,
+    0.5851730108261108
+   ]
+  },
+  "trained_with_shuffled_identity": {
+   "last50_shuffled": 3.612276511192322,
+   "last50_real": 3.613706045150757
+  }
+ },
+ "gate_1_to_5_pass": true
+}
