@@ -56,6 +56,7 @@ class MaleCNS:
     in_class: np.ndarray              # 0..4
     in_patch: np.ndarray              # 0..255
     n_groups: int
+    in_pos: np.ndarray = None         # (n_inputs, 2) visual position (phi, theta) in [-1, 1], used by D6's retina
     info: dict = field(default_factory=dict)
 
     @property
@@ -91,7 +92,7 @@ def assign_patches(col):
         patch[j] = p
         moved += 1
     counts = np.bincount(patch, minlength=N_PATCH)
-    info = {"columns": int(len(cols)), "empty_patches_before": empty0, "columns_moved": moved,
+    info = {"columns": int(len(cols)), "empty_patches_before": empty0, "columns_moved": moved, "pos": np.stack([phi, theta], 1),
             "empty_patches_after": int((counts == 0).sum()), "columns_per_patch_min": int(counts.min()),
             "columns_per_patch_median": float(np.median(counts)), "columns_per_patch_max": int(counts.max())}
     return patch[inv], info
@@ -114,9 +115,10 @@ def load_malecns() -> MaleCNS:
     inputs = np.flatnonzero(np.isin(ct, INPUT_TYPES) & (col[:, 0] >= 0))
     in_class = np.array([INPUT_TYPES.index(t) for t in ct[inputs]])
     in_patch, info = assign_patches(col[inputs])
+    in_pos = info.pop("pos")
     info.update(n_inputs=int(len(inputs)), inputs_per_class={t: int((in_class == i).sum()) for i, t in enumerate(INPUT_TYPES)})
     return MaleCNS(W, group.astype(np.int64), sc, scside.astype(np.int64), inputs, in_class, in_patch,
-                   int(group.max()) + 1, info)
+                   int(group.max()) + 1, info=info, in_pos=in_pos)
 
 
 def to_csr(M, device):
