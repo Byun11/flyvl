@@ -396,6 +396,256 @@ def validate():
     return rep
 
 
+# ------------------------------------------------------------------ analysis (PROTOCOL §B2)
+# verbatim from the authors' tools/gausssian_fitting.py (the module itself loads files at import time)
+def fit_func(x, A, B, C, D):
+    x = np.asarray(x) % 180
+    A = A % 180
+    dist = np.minimum(np.abs(x - A), 180 - np.abs(x - A))
+    return C * np.exp(-dist**2 / B) + D
+
+
+def objective_func(params, x, y):
+    return np.sum((y - fit_func(x, *params)) ** 2)
+
+
+def initial_para(x, y):
+    A = np.max(y) - np.min(y)
+    mu = x[np.argmax(y)]
+    sigma = (x[-1] - x[0]) / 10
+    B = np.min(y)
+    return A, mu, sigma, B
+
+
+def fit_neuron(x, y, neuron_id):
+    from scipy.optimize import minimize
+    if np.max(y) > 0:
+        y = y / np.max(y)
+    A, mu, sigma, B = initial_para(x, y)
+    initial_guess = [mu, sigma, A, B]
+    bounds = [(0, 225), (10, 4000), (0, np.inf), (0, 100)]
+    result = minimize(objective_func, initial_guess, args=(x, y), bounds=bounds, method='L-BFGS-B')
+    if result.success:
+        A_fit, B_fit, C_fit, D_fit = result.x
+        y_pred = fit_func(x, *result.x)
+        mse = result.fun
+        rss_norm = mse / np.sum(y**2) if np.sum(y**2) > 0 else np.inf
+        ss_res = np.sum((y - y_pred)**2)
+        ss_tot = np.sum((y - np.mean(y))**2)
+        r_squared = 1 - (ss_res / ss_tot) if ss_tot > 0 else -np.inf
+        fit_quality = "good" if r_squared >= 0.7 and rss_norm <= 0.4 else "poor"
+        return {"neuron_id": neuron_id, "preferred_orientation_deg": A_fit % 180, "width": B_fit, "amplitude": C_fit,
+                "baseline": D_fit, "fit_error": mse, "rss_norm": rss_norm, "r_squared": r_squared, "fit_quality": fit_quality}
+    return {"neuron_id": neuron_id, "preferred_orientation_deg": None, "width": None, "amplitude": None, "baseline": None,
+            "fit_error": np.inf, "rss_norm": np.inf, "r_squared": -np.inf, "fit_quality": np.inf}
+
+
+REF_ANGLE = {"Dm3p": 126.0, "Dm3q": 60.0, "Dm3v": 9.0, "TmY9q": 44.0, "Dm15": 97.0, "TmY9q__perp": 151.0, "Tm33": 101.0,
+             "TmY4": 95.0}
+TEXT_ANGLE = {"Dm3v": 0.0, "Dm3p": 60.0, "Dm3q": 120.0, "Dm15": 100.0}
+REF_FRAC = {"Dm3q": 0.989, "Dm3v": 0.965, "Dm3p": 0.964, "Tm33": 0.929, "Dm15": 0.925, "TmY9q": 0.884, "Dm12": 0.789,
+            "TmY10": 0.725, "Dm9": 0.719, "Tm37": 0.702, "R8": 0.694, "LC16": 0.689, "R7": 0.668, "Li01": 0.631,
+            "Pm03": 0.574, "TmY9q__perp": 0.543, "Pm02": 0.523, "Sm09": 0.458, "Tm5c": 0.455, "Pm08": 0.441, "Mi2": 0.424,
+            "MTe51": 0.420, "LC10c": 0.373, "TmY4": 0.355, "Tm5f": 0.350, "Li10": 0.348, "MLt3": 0.236, "Li05": 0.233,
+            "Mi13": 0.198, "LC10e": 0.196}
+PAPER_SET = {t for t, f in REF_FRAC.items() if f > 0.40}
+COLUMNAR = ['C2', 'C3', 'L1', 'L2', 'L3', 'L4', 'L5', 'Mi1', 'Mi4', 'Mi9', 'R7', 'R8', 'T1', 'T2', 'T2a', 'T3', 'T4a', 'T4b',
+            'T4c', 'T4d', 'T5a', 'T5b', 'T5c', 'T5d', 'Tm1', 'Tm2', 'Tm20', 'Tm21', 'Tm3', 'Tm4', 'Tm9']
+INTERESTED = ["Dm3q", "Dm3v", "Dm3p", "Tm33", "Dm15", "TmY9q", "Dm12", "TmY10", "Dm9", "Tm37", "R8", "LC16", "R7", "Li01",
+              "Pm03", "TmY9q__perp", "Pm02", 'Sm09', "Tm5c", "Pm08", "Mi2", "MTe51", "LC10c", "TmY4", "Tm5f", "Li10", "MLt3",
+              "Li05", "Mi13", "LC10e"]
+
+
+def circ_dist(a, b):
+    d = np.abs(np.asarray(a) - b) % 180
+    return np.minimum(d, 180 - d)
+
+
+def circ_median(th):
+    th = np.asarray(th, float)
+    if len(th) == 0:
+        return None
+    grid = np.arange(0, 180, 0.1)
+    return float(grid[np.argmin([circ_dist(th, m).sum() for m in grid])])
+
+
+def aggregate(name, seed):
+    r = np.load(DATA / "configs_replica.npz")
+    rates = np.load(RATES / f"{name}_s{seed}.npy")
+    assert not np.isnan(rates).any(), "simulation incomplete"
+    ang = r["angle"]
+    ua = np.unique(ang)
+    mx = np.stack([rates[:, ang == a].max(1) for a in ua], 1)
+    mn = np.stack([rates[:, ang == a].mean(1) for a in ua], 1)
+    return ua, mx, mn
+
+
+def fit_all(x, R, workers=40):
+    from multiprocessing import Pool
+    with Pool(workers) as pool:
+        return pool.starmap(fit_neuron, [(x, R[i].astype(float), i) for i in range(len(R))])
+
+
+def structural_errors(fits, types):
+    """Authors' figure3c calculate_error_difference (ellipse fit of upstream columnar inputs), quirks included."""
+    conn = pd.read_csv(RUN / "flywire" / "connections_no_threshold.csv", usecols=["pre_root_id", "post_root_id", "syn_count"])
+    cols = pd.read_csv(RUN / "flywire" / "column_assignment.csv")
+    id_to_pq = {row.column_id: (row.p, row.q) for row in cols.itertuples()}
+    root_to_col = dict(zip(cols.root_id, cols.column_id))
+    r = np.load(DATA / "configs_replica.npz")
+    out = r["out"]
+    fq = np.array([f["fit_quality"] for f in fits], object)
+    pref = np.array([f["preferred_orientation_deg"] if f["preferred_orientation_deg"] is not None else np.nan for f in fits], float)
+
+    def axial_to_xy(p, q, radius=0.5):
+        x_pos = (p - q) * 3 / 2 * radius
+        y_pos = -(p + q) * np.sqrt(3) * radius / 2
+        return (-x_pos, -y_pos)
+
+    def ellipse(points, weights):
+        points, weights = np.array(points), np.array(weights)
+        center = np.average(points, axis=0, weights=weights)
+        wc = (points - center) * np.sqrt(weights[:, None])
+        ev, evec = np.linalg.eigh(np.cov(wc.T))
+        major = evec[:, np.argsort(ev)[::-1]][:, 0]
+        return np.degrees(np.arctan2(major[0], major[1])) % 180
+    up = set(cols[cols["type"].isin(COLUMNAR)]["root_id"])
+    res = {}
+    for tp in INTERESTED:
+        m = types == tp
+        ids = set(out[m].tolist())
+        f = conn[conn.pre_root_id.isin(up) & conn.post_root_id.isin(ids) & (conn.syn_count > 1)]
+        by_root = f.groupby("pre_root_id")["syn_count"].sum()
+        errs = []
+        pos_of = {int(o): i for i, o in zip(np.flatnonzero(m), out[m])}
+        for aid in ids:
+            pre_ids = set(f[f.post_root_id == aid]["pre_root_id"])
+            c2s = {root_to_col[p]: by_root[p] for p in pre_ids if p in root_to_col}
+            if not c2s:
+                continue
+            pts = [axial_to_xy(*id_to_pq[c]) for c in c2s]
+            with np.errstate(all="ignore"):
+                ang = ellipse(pts, list(c2s.values()))
+            i = pos_of[int(aid)]
+            if fq[i] == "good" and pref[i]:
+                d = abs(ang - pref[i]) % 180
+                errs.append(min(d, 180 - d))
+        errs = [e for e in errs if not np.isnan(e)]
+        res[tp] = errs
+    return res
+
+
+def rf_centres(types):
+    """Receptive-field centre of every out neuron: synapse-weighted centroid of its upstream columnar inputs
+    (31 columnar types, syn_count > 1), in gen_config lattice coordinates x = (q - p) sqrt3/2, y = (p + q)/2."""
+    conn = pd.read_csv(RUN / "flywire" / "connections_no_threshold.csv", usecols=["pre_root_id", "post_root_id", "syn_count"])
+    cols = pd.read_csv(RUN / "flywire" / "column_assignment.csv").drop_duplicates("root_id", keep="last")
+    cols = cols[cols["type"].isin(COLUMNAR)]
+    r = np.load(DATA / "configs_replica.npz")
+    out = r["out"]
+    f = conn[conn.pre_root_id.isin(cols.root_id) & conn.post_root_id.isin(out) & (conn.syn_count > 1)]
+    f = f.groupby(["pre_root_id", "post_root_id"], as_index=False)["syn_count"].sum()
+    c = cols.set_index("root_id")
+    p, q = c.p.reindex(f.pre_root_id).values, c.q.reindex(f.pre_root_id).values
+    f = f.assign(x=(q - p) * np.sqrt(3) / 2 * f.syn_count, y=(p + q) / 2 * f.syn_count)
+    g = f.groupby("post_root_id")[["x", "y", "syn_count"]].sum()
+    cen = np.full((len(out), 2), np.nan)
+    ix = pd.Series(np.arange(len(out)), index=out)
+    cen[ix[g.index].values] = np.stack([g.x / g.syn_count, g.y / g.syn_count], 1)
+    side = pd.read_csv(RUN / "flywire" / "column_assignment.csv").drop_duplicates("root_id", keep="last").set_index("root_id")
+    return cen
+
+
+def analyze(name, seed, structural=True, figures=True):
+    z, _ = load_model()
+    r = np.load(DATA / "configs_replica.npz")
+    out = r["out"]
+    pos = pd.Series(np.arange(len(z["roots"])), index=z["roots"])
+    types = z["vtype"][pos[out].values]
+    x, R_max, R_mean = aggregate(name, seed)
+    res = {"name": name, "seed": seed, "n_out": int(len(out)), "n_angles": int(len(x))}
+    for agg, R in (("max", R_max), ("mean", R_mean)):
+        t0 = time.time()
+        fits = fit_all(x, R)
+        good = np.array([f["fit_quality"] == "good" for f in fits])
+        mod = (R.max(1) - R.min(1)) >= 0.1 * (R.max(1) + R.min(1))
+        well = good & mod
+        pref = np.array([np.nan if f["preferred_orientation_deg"] is None else f["preferred_orientation_deg"] for f in fits])
+        osi = np.abs((R * np.exp(2j * np.deg2rad(x))[None]).sum(1)) / np.maximum(R.sum(1), 1e-30)
+        table = []
+        for tp in np.unique(types):
+            m = types == tp
+            table.append({"type": tp, "total": int(m.sum()), "well_fit": int(well[m].sum()), "good": int(good[m].sum()),
+                          "pct": float(100 * well[m].mean()), "median_pref_wellfit": circ_median(pref[m & well]),
+                          "median_pref_good": circ_median(pref[m & good]), "osi_median": float(np.median(osi[m])),
+                          "mean_rate_hz": float(R_mean[m].mean()), "silent_frac": float((R.max(1)[m] == 0).mean())})
+        T = pd.DataFrame(table).set_index("type")
+        sel = set(T[(T.total >= 50) & (T.pct > 40)].index)
+        g = {}
+        for tp in ("Dm3p", "Dm3q", "Dm3v"):
+            frac = T.loc[tp, "well_fit"] / T.loc[tp, "total"]
+            med = T.loc[tp, "median_pref_wellfit"]
+            g[tp] = {"frac": float(frac), "median": med, "ref": REF_ANGLE[tp], "d_ref": None if med is None else float(circ_dist(med, REF_ANGLE[tp])),
+                     "d_text": None if med is None else float(circ_dist(med, TEXT_ANGLE[tp])),
+                     "G1": bool(frac >= 0.80), "G2": bool(med is not None and circ_dist(med, REF_ANGLE[tp]) <= 15)}
+        g3 = {}
+        for tp, fmin in (("TmY9q", 0.60), ("Dm15", 0.70)):
+            frac = T.loc[tp, "well_fit"] / T.loc[tp, "total"]
+            med = T.loc[tp, "median_pref_wellfit"]
+            g3[tp] = {"frac": float(frac), "median": med, "ref": REF_ANGLE[tp],
+                      "pass": bool(frac >= fmin and med is not None and circ_dist(med, REF_ANGLE[tp]) <= 20)}
+        jac = len(sel & PAPER_SET) / max(len(sel | PAPER_SET), 1)
+        G1 = all(g[t]["G1"] for t in g)
+        G2 = all(g[t]["G2"] for t in g)
+        G3 = all(v["pass"] for v in g3.values())
+        G4 = jac >= 0.5
+        both = sum(g[t]["G1"] and g[t]["G2"] for t in g)
+        verdict = "REPLICATED" if (G1 and G2 and G3 and G4) else ("PARTIAL REPLICATION" if both >= 2 else "FAILED REPLICATION")
+        res[agg] = {"dm3": g, "g3": g3, "selective_types": sorted(sel), "paper_set": sorted(PAPER_SET), "jaccard": jac,
+                    "G1": G1, "G2": G2, "G3": G3, "G4": G4, "verdict": verdict, "n_wellfit": int(well.sum()),
+                    "n_good": int(good.sum()), "fit_minutes": (time.time() - t0) / 60,
+                    "paper_types": {tp: {"paper_pct": 100 * f, **({k: (None if v is None or (isinstance(v, float) and np.isnan(v)) else v)
+                                                                    for k, v in T.loc[tp].to_dict().items()} if tp in T.index else {})}
+                                    for tp, f in REF_FRAC.items()},
+                    "T4T5": {k: T.loc[k].to_dict() for k in T.index if k.startswith(("T4", "T5"))}}
+        T.to_csv(DATA / f"types_{name}_s{seed}_{agg}.csv")
+        np.savez(DATA / f"fits_{name}_s{seed}_{agg}.npz", pref=pref, good=good, well=well, osi=osi,
+                 r2=np.array([f["r_squared"] for f in fits], float), types=types.astype(str))
+        print(agg, verdict, json.dumps({k: res[agg][k] for k in ("G1", "G2", "G3", "G4", "jaccard", "n_wellfit")}), flush=True)
+        if agg == "max" and structural:
+            se = structural_errors(fits, types)
+            allerr = [e for v in se.values() for e in v]
+            res["structural"] = {"mean_abs_diff_deg": float(np.mean(allerr)), "n": len(allerr), "paper": 13.7,
+                                 "per_type": {k: (float(np.mean(v)) if v else None, len(v)) for k, v in se.items()}}
+            print("structural", res["structural"]["mean_abs_diff_deg"], res["structural"]["n"], flush=True)
+        if agg == "max" and figures:
+            maps(name, seed, types, pref, well)
+    (DATA / f"analysis_{name}_s{seed}.json").write_text(json.dumps(res, indent=1, default=float))
+    return res
+
+
+def maps(name, seed, types, pref, well):
+    import matplotlib
+    matplotlib.use("Agg")
+    import matplotlib.pyplot as plt
+    cen = rf_centres(types)
+    layers = {"Dm3 (p, q, v)": lambda t: t in ("Dm3p", "Dm3q", "Dm3v"), "Dm (no Dm3, Dm15)": lambda t: t.startswith("Dm") and t not in ("Dm3p", "Dm3q", "Dm3v", "Dm15"),
+              "Dm15": lambda t: t == "Dm15", "Pm": lambda t: t.startswith("Pm"), "Sm": lambda t: t.startswith("Sm"),
+              "TmY9q / TmY9q_perp": lambda t: t in ("TmY9q", "TmY9q__perp")}
+    fig, axs = plt.subplots(2, 3, figsize=(16, 10))
+    for ax, (lab, fn) in zip(axs.ravel(), layers.items()):
+        m = np.array([fn(t) for t in types]) & well & ~np.isnan(cen[:, 0])
+        sc = ax.scatter(cen[m, 0], cen[m, 1], c=pref[m], cmap="hsv", vmin=0, vmax=180, s=10)
+        ax.set_title(f"{lab}: {int(m.sum())} well-fit")
+        ax.set_aspect("equal")
+        ax.set_xticks([])
+        ax.set_yticks([])
+    fig.colorbar(sc, ax=axs, shrink=0.6, label="preferred orientation (deg, 0 = lattice +y)")
+    fig.suptitle(f"D10-B orientation maps ({name}, seed {seed}): neurons at the centroid of their columnar inputs")
+    fig.savefig(DATA / f"maps_{name}_s{seed}.png", dpi=120, bbox_inches="tight")
+    plt.close(fig)
+
+
 if __name__ == "__main__":
     cmd = sys.argv[1]
     if cmd == "build":
@@ -412,4 +662,7 @@ if __name__ == "__main__":
             sim("val", sd, val_configs(), B=8)
     elif cmd == "validate":
         validate()
+    elif cmd == "analyze":
+        analyze(sys.argv[2], int(sys.argv[3]))
+
 
