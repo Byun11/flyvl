@@ -470,10 +470,16 @@ def circ_median(th):
 
 
 def aggregate(name, seed):
+    """Per-angle max and mean over phases, over the authors' exact 9,129 configs: the 9,118 shared with the replica
+    (simulated in rates/NAME_sSEED.npy) plus the 11 extra ones (rates/NAME_extra_sSEED.npy)."""
     r = np.load(DATA / "configs_replica.npz")
+    e = np.load(DATA / "configs_extra.npz")
     rates = np.load(RATES / f"{name}_s{seed}.npy")
+    keep = np.isin(r["names"], e["authors_names"])
+    rates = np.concatenate([rates[:, keep], np.load(RATES / f"{name}_extra_s{seed}.npy")], 1)
+    ang = np.round(np.concatenate([r["angle"][keep], e["angle"]]), 6)
+    assert rates.shape[1] == len(e["authors_names"]) == 9129
     assert not np.isnan(rates).any(), "simulation incomplete"
-    ang = r["angle"]
     ua = np.unique(ang)
     mx = np.stack([rates[:, ang == a].max(1) for a in ua], 1)
     mn = np.stack([rates[:, ang == a].mean(1) for a in ua], 1)
@@ -646,6 +652,46 @@ def maps(name, seed, types, pref, well):
     plt.close(fig)
 
 
+# ------------------------------------------------------------------ the authors' exact config set (9,129)
+def pack_extra():
+    """The authors' tools/gen_config.py (run here) wrote 9,129 configs; the replica has 9,124. 9,118 are identical config
+    by config; float arange boundaries give the authors 11 extra phases and the replica 6 others. Pack the 11 extra ones
+    (from the authors' JSON files) in the replica's cell order; the 6 replica-only configs are not analysed."""
+    r = np.load(DATA / "configs_replica.npz")
+    exps = json.loads((RUN / "exp" / "experiments.json").read_text())
+    names = [p.split("/")[-1][:-5] for p in exps]
+    extra = sorted(set(names) - set(r["names"].tolist()))
+    cell_pos = {int(c): i for i, c in enumerate(r["cells"])}
+    lev, ang, bb = [], [], []
+    for nm in extra:
+        cfg = json.loads((RUN / "exp" / "cfs" / f"{nm}.json").read_text())
+        lv = np.zeros(len(r["cells"]), np.int8)
+        for c, f in zip(cfg["stimulate_neurons"], cfg["stimulate_frates"]):
+            lv[cell_pos[int(c)]] = f
+        assert (lv > 0).all() and set(map(int, cfg["out_neurons"])) == set(r["out"].tolist())
+        a, b = nm.split("_b_")
+        lev.append(lv)
+        ang.append(float(a.replace("angle_", "")))
+        bb.append(float(b))
+    np.savez(DATA / "configs_extra.npz", names=np.array(extra), angle=np.array(ang), b=np.array(bb), levels=np.array(lev),
+             cells=r["cells"], out=r["out"], authors_names=np.array(names))
+    print(f"{len(extra)} extra configs packed; authors' set {len(names)}")
+
+
+def sim_extra(name, seed, W=None):
+    z, W0 = load_model()
+    W = W0 if W is None else W
+    e = np.load(DATA / "configs_extra.npz")
+    f = RATES / f"{name}_extra_s{seed}.npy"
+    if f.exists():
+        return
+    pos = pd.Series(np.arange(len(z["roots"])), index=z["roots"])
+    lif = LIF(W, pos[e["cells"]].values, pos[e["out"]].values)
+    cnt = lif.run(torch.as_tensor(e["levels"].T.astype(np.int64)), seed * 100_003 + 900_001)
+    np.save(f, (cnt.double() / (SIM_MS / 1000)).cpu().numpy().astype(np.float32))
+    print(f"{name} s{seed}: {len(e['names'])} extra configs done", flush=True)
+
+
 if __name__ == "__main__":
     cmd = sys.argv[1]
     if cmd == "build":
@@ -664,5 +710,10 @@ if __name__ == "__main__":
         validate()
     elif cmd == "analyze":
         analyze(sys.argv[2], int(sys.argv[3]))
+    elif cmd == "pack_extra":
+        pack_extra()
+    elif cmd == "sim_extra":
+        sim_extra(sys.argv[2], int(sys.argv[3]))
+
 
 
