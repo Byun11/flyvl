@@ -447,6 +447,7 @@ if __name__ == "__main__":
         rewired_fw(1)
     elif cmd == "bars":
         R, _ = rewired_fw(1)
+        m.sim_extra("rewired", 0, W=R)
         m.sim("rewired", 0, None, B=256, W=R)
     elif cmd == "images":
         sim_images(sys.argv[2])
