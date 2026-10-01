@@ -304,6 +304,18 @@ def null_graph(W, kind, seed, brain, S, sb, tile_info=None):
         R.sort_indices()
         return R, {"seed": seed, "neurons_permuted": int(len(has)), "sign_changed_neurons": int((s_new[has] != s[has]).sum()),
                    "inhibitory_edge_fraction_real": float((W.data < 0).mean()), "inhibitory_edge_fraction_new": float((R.data < 0).mean())}
+    if kind in ("deg_sign_loc_pt", "type_loc_pt", "col_sign"):         # appendix A (exploratory)
+        tile_pt = tile.copy()
+        is_in = np.isin(S, brain.inputs)
+        pp = brain.in_patch[np.searchsorted(brain.inputs, S[is_in])]
+        tile_pt[is_in] = (pp // 16 // 2) * 8 + (pp % 16 // 2)
+        if kind == "deg_sign_loc_pt":
+            return rewire(W, key_block(sign * n_t + tile_pt), seed)
+        if kind == "type_loc_pt":
+            return rewire(W, key_block(typ.astype(np.int64) * n_t + tile_pt), seed)
+        col = np.load(fg.D5 / "input_columns.npy")[_order_d5()][S]
+        _, cid = np.unique(col, axis=0, return_inverse=True)
+        return rewire(W, key_block(sign * (int(cid.max()) + 1) + cid.ravel().astype(np.int64)), seed)
     if kind in ("no_longrange", "rand_edges"):
         coo = W.tocoo()
         local = (tile < 64)
@@ -368,6 +380,22 @@ def rewire_mcmc(W, cls_fn, rel_fn, seed, target=5.0, max_rounds=600):
     return R, {"seed": seed, "method": "mcmc double swaps", "accepted_swaps": int(accepted), "rounds": rounds,
                "swaps_per_connection": accepted / E, "changed_fraction": float((post != post0).mean()), "nnz": int(R.nnz),
                "duplicates": int(E - len(np.unique(pre * n + post)))}
+
+
+_O = {}
+
+
+def _order_d5():
+    """flygrapher.load_malecns neuron order (to index brain.npz-ordered arrays)."""
+    if "o" not in _O:
+        meta = np.load(fg.SRC / "brain.npz")
+        ct, sc = meta["cell_type"].astype(str), meta["superclass"].astype(str)
+        col = np.load(fg.D5 / "input_columns.npy")
+        key = np.where(ct == "", np.char.add("untyped:", sc), ct)
+        _, group = np.unique(key, return_inverse=True)
+        _, sid = np.unique(sc, return_inverse=True)
+        _O["o"] = np.lexsort((group, col[:, 2], col[:, 1], col[:, 0], sid))
+    return _O["o"]
 
 
 def save_graph(f, R, info):
@@ -529,6 +557,9 @@ def queue(part):
         for task, abls in (("M", ("T4T5", "MED", "LPVPN")), ("L", ("LC4", "LPLC2", "GF", "T4T5"))):
             c = f"{task}0"
             names += [f"a3-{task}-{c}-real-{x}{a}-s{s}" for a in abls for x in ("", "rand_") for s in SEEDS]
+    elif part == "a2s":                                                # appendix A supplement
+        names += [f"a2s-M-M6-{k}-s{s}" for k in ("deg_sign_loc_pt", "type_loc_pt", "col_sign") for s in SEEDS]
+        names += [f"a2s-M-M0-{g}-no_inin-s{s}" for g in ("real", "rewired_l") for s in SEEDS]
     elif part == "a4":
         for task in ("M", "L"):
             names += [f"a4-{task}-{task}0-{g}-{v}-s{s}" for v in VARIANTS for g in ("real", "rewired_l") for s in SEEDS]
@@ -571,7 +602,7 @@ def run(name, brain, data_cache):
     t0 = time.time()
     part, task, circ, graph = name.split("-")[:4]
     seed = int(name.split("-s")[-1])
-    extra = name.split("-")[4] if part in ("a3", "a4") else None
+    extra = name.split("-")[4] if part in ("a3", "a4") or (part == "a2s" and circ == "M0") else None
     z = circuit_arrays()
     S, ro = z[f"{circ}_S"], z[f"{circ}_ro"]
     W, ginfo = graph_for(brain, circ, graph, seed)
@@ -581,6 +612,13 @@ def run(name, brain, data_cache):
         X = z[f"abl_{abl}"] if not extra.startswith("rand_") else z[f"rand_{abl}_{seed}"]
         W = ablate(W, X)
         ginfo = {**ginfo, "ablated": int(len(X))}
+    if part == "a2s" and extra == "no_inin":
+        coo = W.tocoo()
+        isin = np.zeros(W.shape[0], bool)
+        isin[brain.inputs] = True
+        keep = ~(isin[coo.row] & isin[coo.col])
+        W = sparse.csr_matrix((coo.data[keep], (coo.row[keep], coo.col[keep])), shape=W.shape, dtype=np.float32)
+        ginfo = {**ginfo, "removed_input_input": int((~keep).sum())}
     if part == "a4":
         W = dynamics_graph(W, extra, brain)
         alpha = 1.0 if extra == "reset" else 0.5
@@ -672,18 +710,18 @@ def build():
     print(f"build done {(time.time() - t0) / 60:.1f} min", flush=True)
 
 
-def build_a2():
+def build_a2(supplement=False):
     brain = fg.load_malecns()
     labels(brain)
     sel = json.loads((OUT / "verdict_a1.json").read_text())["selected"]
     z = circuit_arrays()
-    for task in ("M", "L"):
-        c = sel[task]
+    for task in (("M",) if supplement else ("M", "L")):
+        c = "M6" if supplement else sel[task]
         S = z[f"{c}_S"]
         Wc = brain.W if len(S) == brain.n else sub(brain.W, S)
         sb = sub_brain(brain, S)
         ti = tiles(Wc, sb)
-        for kind in NULLS:
+        for kind in (("deg_sign_loc_pt", "type_loc_pt", "col_sign") if supplement else NULLS):
             for s in SEEDS:
                 f = GRAPHS / f"{ALIAS.get(c, c)}_{kind}_s{s}.npz"
                 if f.exists():
@@ -890,6 +928,8 @@ if __name__ == "__main__":
         build()
     elif cmd == "build_a2":
         build_a2()
+    elif cmd == "build_a2s":
+        build_a2(supplement=True)
     elif cmd == "queue":
         print("\n".join(queue(sys.argv[2])))
     elif cmd == "worker":
