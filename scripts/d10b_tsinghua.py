@@ -699,6 +699,8 @@ if __name__ == "__main__":
         build_configs()
     elif cmd == "build_connectome":
         build_connectome()
+    elif cmd == "replica":
+        replica_configs()
     elif cmd == "sim":
         sim(sys.argv[2], int(sys.argv[3]), [int(x) for x in sys.argv[4:]] or None)
     elif cmd == "val_jsons":
