@@ -1,0 +1,12 @@
+# Python 3.10. Install torch for the server's CUDA first. Local versions: torch 2.14 cu130, transformers 5.17.
+torch
+flyvis==1.2.0
+datamate==1.0.0
+h5py
+numpy
+scipy
+pandas
+pillow
+pyarrow
+transformers
+huggingface_hub
