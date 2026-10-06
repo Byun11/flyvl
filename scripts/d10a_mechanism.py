@@ -557,6 +557,10 @@ def queue(part):
         for task, abls in (("M", ("T4T5", "MED", "LPVPN")), ("L", ("LC4", "LPLC2", "GF", "T4T5"))):
             c = f"{task}0"
             names += [f"a3-{task}-{c}-real-{x}{a}-s{s}" for a in abls for x in ("", "rand_") for s in SEEDS]
+    elif part in ("a2m", "a2l"):                                       # the registered A2 for one task
+        task = part[-1].upper()
+        c = json.loads((OUT / "verdict_a1.json").read_text())["selected"][task]
+        names += [f"a2-{task}-{c}-{k}-s{s}" for k in NULLS for s in SEEDS]
     elif part == "a2s":                                                # appendix A supplement
         names += [f"a2s-M-M6-{k}-s{s}" for k in ("deg_sign_loc_pt", "type_loc_pt", "col_sign") for s in SEEDS]
         names += [f"a2s-M-M0-{g}-no_inin-s{s}" for g in ("real", "rewired_l") for s in SEEDS]
@@ -710,12 +714,12 @@ def build():
     print(f"build done {(time.time() - t0) / 60:.1f} min", flush=True)
 
 
-def build_a2(supplement=False):
+def build_a2(supplement=False, tasks=("M", "L")):
     brain = fg.load_malecns()
     labels(brain)
     sel = json.loads((OUT / "verdict_a1.json").read_text())["selected"]
     z = circuit_arrays()
-    for task in (("M",) if supplement else ("M", "L")):
+    for task in (("M",) if supplement else tasks):
         c = "M6" if supplement else sel[task]
         S = z[f"{c}_S"]
         Wc = brain.W if len(S) == brain.n else sub(brain.W, S)
@@ -930,6 +934,8 @@ if __name__ == "__main__":
         build_a2()
     elif cmd == "build_a2s":
         build_a2(supplement=True)
+    elif cmd == "build_a2_task":
+        build_a2(tasks=(sys.argv[2],))
     elif cmd == "queue":
         print("\n".join(queue(sys.argv[2])))
     elif cmd == "worker":

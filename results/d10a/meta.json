@@ -1,0 +1,425 @@
+{
+ "sets": {
+  "U1": [
+   "C3",
+   "CT1",
+   "LT33",
+   "Li14",
+   "Mi1",
+   "Mi4",
+   "Mi9",
+   "Tm1",
+   "Tm2",
+   "Tm3",
+   "Tm4",
+   "Tm9",
+   "TmY15",
+   "Y11"
+  ],
+  "U2": [
+   "Dm12",
+   "Dm13",
+   "Dm4",
+   "L1",
+   "L2",
+   "L3",
+   "L4",
+   "L5",
+   "Mi13",
+   "Pm03",
+   "Pm08",
+   "Tm16",
+   "TmY16"
+  ],
+  "D1": [
+   "Am1",
+   "CT1",
+   "DCH",
+   "H1",
+   "H2",
+   "HSE",
+   "HSN",
+   "HSS",
+   "LLPC1",
+   "LLPC2",
+   "LLPC3",
+   "LOP_LO_unclear",
+   "LOP_ME_unclear",
+   "LOP_unclear",
+   "LPC1",
+   "LPC2",
+   "LPC_unclear",
+   "LPLC1",
+   "LPLC2",
+   "LPLC_unclear",
+   "LPT04_HST",
+   "LPT21",
+   "LPT22",
+   "LPT23",
+   "LPT26",
+   "LPT27",
+   "LPT28",
+   "LPT29",
+   "LPT30",
+   "LPT31",
+   "LPT42_Nod4",
+   "LPT45_dCal1",
+   "LPT47_vCal2",
+   "LPT48_vCal3",
+   "LPT49",
+   "LPT50",
+   "LPTe01",
+   "LPTe02",
+   "LPi01",
+   "LPi02",
+   "LPi03",
+   "LPi04",
+   "LPi05",
+   "LPi06",
+   "LPi07",
+   "LPi08",
+   "LPi09",
+   "LPi10",
+   "LPi11",
+   "LPi12",
+   "LPi13",
+   "LPi14",
+   "LPi15",
+   "LT33",
+   "Li14",
+   "LopVC_unclear",
+   "LpMe_unclear",
+   "MeTu4_unclear",
+   "Nod1",
+   "Nod2",
+   "Nod3",
+   "Nod5",
+   "Tlp1",
+   "Tlp14",
+   "Tlp4",
+   "Tlp5",
+   "TmY14",
+   "TmY15",
+   "TmY16",
+   "TmY20",
+   "TmY4",
+   "TmY9q__perp",
+   "VCH",
+   "VS1,VS2,VS3,VS4,VS5,VS6,VS7,VS8",
+   "VST1",
+   "VST2",
+   "VSm",
+   "Y1",
+   "Y11",
+   "Y12",
+   "Y_unclear",
+   "cLLPM01",
+   "cLPL01",
+   "cML02",
+   "untyped:visual_centrifugal",
+   "vCal1"
+  ],
+  "V1": [
+   "H2",
+   "HSE",
+   "HSN",
+   "HSS",
+   "LLPC1",
+   "LLPC2",
+   "LLPC3",
+   "LPC1",
+   "LPC2",
+   "LPC_unclear",
+   "LPLC1",
+   "LPLC2",
+   "LPLC_unclear",
+   "LPT04_HST",
+   "LPT21",
+   "LPT22",
+   "LPT23",
+   "LPT26",
+   "LPT27",
+   "LPT28",
+   "LPT29",
+   "LPT30",
+   "LPT31",
+   "LPT42_Nod4",
+   "LPT47_vCal2",
+   "LPT48_vCal3",
+   "LPT49",
+   "LPT50",
+   "LPTe01",
+   "LPTe02",
+   "MeTu4_unclear",
+   "Nod1",
+   "Nod2",
+   "Nod3",
+   "Nod5",
+   "TmY14",
+   "VS1,VS2,VS3,VS4,VS5,VS6,VS7,VS8",
+   "VST1",
+   "VST2",
+   "VSm",
+   "vCal1"
+  ],
+  "LOOM_UP": [
+   "LMa2",
+   "Li22",
+   "PVLP011",
+   "T2",
+   "T4a",
+   "T4b",
+   "T4c",
+   "T4d",
+   "T5a",
+   "T5b",
+   "T5c",
+   "T5d",
+   "Tm2",
+   "Tm20",
+   "Tm3",
+   "Tm4",
+   "Tm5e",
+   "Tm5f",
+   "TmY3",
+   "TmY5a",
+   "Y3"
+  ],
+  "DN_LOOM": [
+   "DNg40",
+   "DNp01",
+   "DNp02",
+   "DNp03",
+   "DNp04",
+   "DNp05",
+   "DNp06",
+   "DNp103",
+   "DNp11",
+   "DNp35",
+   "DNp71",
+   "DNpe025",
+   "DNpe056"
+  ],
+  "T4T5": [
+   "T4_unclear",
+   "T4a",
+   "T4b",
+   "T4c",
+   "T4d",
+   "T5a",
+   "T5a_unclear",
+   "T5b",
+   "T5c",
+   "T5d"
+  ],
+  "MED": [
+   "C3",
+   "CT1",
+   "Mi1",
+   "Mi4",
+   "Mi9",
+   "Tm1",
+   "Tm2",
+   "Tm3",
+   "Tm4",
+   "Tm9",
+   "TmY15"
+  ]
+ },
+ "circuits": {
+  "M0": {
+   "desc": "whole CNS",
+   "neurons": 166700,
+   "edges": 25582938,
+   "readout": 9203,
+   "types": 11881
+  },
+  "M1": {
+   "desc": "visual system (optic lobe + VPN + VCN)",
+   "neurons": 105267,
+   "edges": 12490508,
+   "readout": 9203,
+   "types": 703
+  },
+  "M2": {
+   "desc": "motion pathway: lamina/medulla upstream + T4/T5 inputs + T4/T5 + lobula-plate targets",
+   "neurons": 48876,
+   "edges": 2729930,
+   "readout": 2078,
+   "types": 119
+  },
+  "M3": {
+   "desc": "T4/T5 core: direct inputs + T4/T5 + VPN targets of T4/T5",
+   "neurons": 39498,
+   "edges": 1410641,
+   "readout": 2078,
+   "types": 70
+  },
+  "M4": {
+   "desc": "T4/T5 readout: direct inputs + T4/T5",
+   "neurons": 37420,
+   "edges": 1030023,
+   "readout": 13584,
+   "types": 29
+  },
+  "M5": {
+   "desc": "medulla only: direct inputs of T4/T5 (no T4/T5)",
+   "neurons": 23836,
+   "edges": 336505,
+   "readout": 16536,
+   "types": 19
+  },
+  "M6": {
+   "desc": "input neurons only",
+   "neurons": 7300,
+   "edges": 12461,
+   "readout": 7300,
+   "types": 5
+  },
+  "L0": {
+   "desc": "whole CNS",
+   "neurons": 166700,
+   "edges": 25582938,
+   "readout": 1314,
+   "types": 11881
+  },
+  "L1": {
+   "desc": "visual system + DNs (central brain removed)",
+   "neurons": 106583,
+   "edges": 12622370,
+   "readout": 1314,
+   "types": 1167
+  },
+  "L2": {
+   "desc": "looming pathway: motion upstream + LPLC2/LC4 inputs + LPLC2 + LC4 + their DN targets",
+   "neurons": 51940,
+   "edges": 2290819,
+   "readout": 26,
+   "types": 64
+  },
+  "L3": {
+   "desc": "giant-fiber pathway: as L2, DN = DNp01 only",
+   "neurons": 51916,
+   "edges": 2287312,
+   "readout": 2,
+   "types": 52
+  },
+  "L4": {
+   "desc": "LPLC2/LC4 readout: as L2 without DNs",
+   "neurons": 51914,
+   "edges": 2286957,
+   "readout": 311,
+   "types": 51
+  },
+  "L5": {
+   "desc": "motion upstream, T4/T5 readout",
+   "neurons": 37420,
+   "edges": 1030023,
+   "readout": 13584,
+   "types": 29
+  }
+ },
+ "ablation_sizes": {
+  "T4T5": 13584,
+  "MED": 16348,
+  "LPVPN": 2078,
+  "LC4": 126,
+  "LPLC2": 185,
+  "GF": 2
+ },
+ "stage_counts": {
+  "input": 7300,
+  "lamina": 8515,
+  "medulla": 60964,
+  "T4T5": 13584,
+  "lobula_lp": 5082,
+  "vpn": 9203,
+  "vcn": 563,
+  "central": 37279,
+  "dn": 1332,
+  "vnc": 22822,
+  "ol_other": 56
+ },
+ "random_sets": {
+  "T4T5|1": {
+   "n": 13584,
+   "edges_touched": 1676110
+  },
+  "T4T5|2": {
+   "n": 13584,
+   "edges_touched": 1676802
+  },
+  "T4T5|3": {
+   "n": 13584,
+   "edges_touched": 1675306
+  },
+  "MED|1": {
+   "n": 16348,
+   "edges_touched": 3011878
+  },
+  "MED|2": {
+   "n": 16348,
+   "edges_touched": 3040889
+  },
+  "MED|3": {
+   "n": 16348,
+   "edges_touched": 3031382
+  },
+  "LPVPN|1": {
+   "n": 2078,
+   "edges_touched": 1003090
+  },
+  "LPVPN|2": {
+   "n": 2078,
+   "edges_touched": 1041547
+  },
+  "LPVPN|3": {
+   "n": 2078,
+   "edges_touched": 1023125
+  },
+  "LC4|1": {
+   "n": 126,
+   "edges_touched": 87593
+  },
+  "LC4|2": {
+   "n": 126,
+   "edges_touched": 92698
+  },
+  "LC4|3": {
+   "n": 126,
+   "edges_touched": 89388
+  },
+  "LPLC2|1": {
+   "n": 185,
+   "edges_touched": 179996
+  },
+  "LPLC2|2": {
+   "n": 185,
+   "edges_touched": 174480
+  },
+  "LPLC2|3": {
+   "n": 185,
+   "edges_touched": 198300
+  },
+  "GF|1": {
+   "n": 2,
+   "edges_touched": 1850
+  },
+  "GF|2": {
+   "n": 2,
+   "edges_touched": 2112
+  },
+  "GF|3": {
+   "n": 2,
+   "edges_touched": 1949
+  }
+ },
+ "target_edges_touched": {
+  "T4T5": 1600925,
+  "MED": 3081445,
+  "LPVPN": 948126,
+  "LC4": 83458,
+  "LPLC2": 131351,
+  "GF": 2107
+ }
+}
