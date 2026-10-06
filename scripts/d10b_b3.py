@@ -362,6 +362,8 @@ def measures():
     rows, cols = rows[keep], cols[keep]                                          # one evaluation point per column
     cen, _ = columnar_centres()
     cen_out = cen[pos[r["out"]].values]
+    # columnar_centres works on raw (p, q); the eye frame below uses gen_config's (p + 19, q + 17): same frame here
+    cen_out = cen_out + np.array([(17 - 19) * np.sqrt(3) / 2, (19 + 17) / 2])
     lo_x = None
     # same lattice -> image transform as eye_frame (recomputed from the driven cells)
     cells = r["cells"]
