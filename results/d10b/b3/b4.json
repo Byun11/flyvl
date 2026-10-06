@@ -1,0 +1,12 @@
+{
+ "c1_replicated": true,
+ "c2_stable": true,
+ "c3": {
+  "a": true,
+  "b": true,
+  "c": false
+ },
+ "c4_not_gabor_sobel": true,
+ "beyond_gabor": false,
+ "decision": "BIOLOGICAL ORIENTATION FILTERING (no large FlyVL encoder)"
+}
