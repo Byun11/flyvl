@@ -12,7 +12,7 @@
 
 | 브랜치 | 실험 | 상태 |
 |---|---|---|
-| `exp/e7-duration` | E7 폐루프 에피소드 1초 → 3·5초 | 중단(D2에 GPU를 넘김). 코드는 master에 있음 |
+| `exp/e7-duration` | E7 폐루프 에피소드 1초 → 3·5초 | 중단 (HR만 측정: 3초 최선 0.823, 초파리 미측정). GPU를 D2에 넘김 |
 
 ## 끝난 실험 (`archive/*` 태그, 오래된 순)
 2026-09-28 이전에는 브랜치를 앞 브랜치에서 이어 따서 한 줄로 이어져 있다. 각 태그는 그 실험이 끝난 시점이다.
@@ -32,7 +32,7 @@
 | `archive/fly-nonstat` | 09-28 | G2 기각 + **E5g 확정**: 저대비(0.03·0.05) 폐루프에서 초파리 003 > 조정 HR, 대비 0.1에선 HR 승 |
 | `archive/fly-tau` | 09-28 | E6: 이긴 이유는 긴 시간 적분 — 시간상수를 늘리면 모든 모델이 좋아짐 |
 | `archive/fly-duration`, `archive/fly-distill` | 09-28 | 정리 시점 표시용 (진행 중 실험은 위 `exp/*`) |
-| `archive/d2-distill` | 09-28 | D2 초파리 256마리 → InternVL3-1B 토큰: 초파리 = 픽셀 = 평균 토큰 = 바닥, 판별 불가 (결과 16) |
+| `archive/d2-distill` | 09-28 | D2 초파리 256마리 → InternVL3-1B 토큰: 최종 토큰은 판별 불가(fly = pix = 바닥), 층별로는 fly ≈ 고전 V1 에너지 뱅크 (결과 16) |
 | `archive/d3-swarm` | 09-28 | D3 능동 추적 → VLM 읽기: 모든 눈이 가만히 있는 수준, 판별 불가 (결과 17) |
 | `archive/d4-flyvig` | 09-29 | D4 FlyViG: 질문이 바뀌어(FFN 마스크) 사용자 요청으로 중단 (결과 18) |
 | `archive/d5-flygrapher` | 09-29 | D5 whole MaleCNS × K를 Grapher로: smoke Case 1(Real ≈ Rewired-L ≈ Grid, Bypass 최선) (결과 18) |

@@ -1,0 +1,7 @@
+InternViT patch embedding: cumulative variance PC5 0.057 PC10 0.108 PC28 0.269
+ViT token linear RF: cumulative variance PC5 0.313 PC10 0.433 PC28 0.619
+fly feature linear RF: cumulative variance PC5 0.294 PC10 0.526 PC28 0.912
+tok linear R2 on held-out images: mean 0.002 median 0.001 frac>0.5 0.000
+fly linear R2 on held-out images: mean 0.917 median 0.986 frac>0.5 0.950
+fly centre-region R2 top: L1 1.00, L2 1.00, Am 1.00, R6 1.00, R5 1.00, R4 1.00, R1 1.00, R2 1.00
+fly centre-region R2 bottom: T4b 0.75, TmY4 0.70, Tm20 0.65, T5d 0.63, T5c 0.62, Mi2 0.42, TmY5a 0.20, Tm4 0.05
