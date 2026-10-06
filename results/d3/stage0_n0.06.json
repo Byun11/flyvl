@@ -1,0 +1,43 @@
+{
+ "noise": 0.06,
+ "c0.3_oracle": {
+  "read_acc": 1.0,
+  "track_err": 0.0
+ },
+ "c0.3_static": {
+  "read_acc": 0.046875,
+  "track_err": 41.538875579833984
+ },
+ "c0.1_oracle": {
+  "read_acc": 1.0,
+  "track_err": 0.0
+ },
+ "c0.1_static": {
+  "read_acc": 0.0546875,
+  "track_err": 41.538875579833984
+ },
+ "c0.05_oracle": {
+  "read_acc": 0.9765625,
+  "track_err": 0.0
+ },
+ "c0.05_static": {
+  "read_acc": 0.0625,
+  "track_err": 41.538875579833984
+ },
+ "c0.03_oracle": {
+  "read_acc": 0.4296875,
+  "track_err": 0.0
+ },
+ "c0.03_static": {
+  "read_acc": 0.0546875,
+  "track_err": 41.538875579833984
+ },
+ "c0.02_oracle": {
+  "read_acc": 0.1875,
+  "track_err": 0.0
+ },
+ "c0.02_static": {
+  "read_acc": 0.046875,
+  "track_err": 41.538875579833984
+ }
+}

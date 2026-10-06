@@ -11,8 +11,8 @@
 | 브랜치 | 실험 | 상태 |
 |---|---|---|
 | `exp/e7-duration` | E7 폐루프 에피소드 1초 → 3·5초 (초파리가 "찰나"만 봤다는 문제) | 3초 진행 중 |
-| `exp/d2-distill` | D2 초파리 256마리 → InternVL3-1B 토큰 대체, POPE·MME | 최종 토큰은 판별 불가(fly = pix = 바닥), 층별로는 fly ≈ 고전 V1 뱅크 (결과 16) |
-| `exp/d3-swarm` | D3 움직이며 보는 초파리: 저대비 표적 추적 → VLM 읽기 | Stage 1 실행 중 |
+| `exp/d2-distill` | D2 초파리 256마리 → InternVL3-1B 토큰 대체, POPE·MME | 선형·Mixer 모두 바닥 (POPE 58~59 vs ViT 87.9), fly = pix |
+| `exp/d3-swarm` | D3 움직이며 보는 초파리: 저대비 표적 추적 → VLM 읽기 (`PROTOCOL_D3_swarm.md`) | 판별 불가: 모든 눈이 가만히 있는 수준 (결과 17) |
 | `exp/d4-flyvig` | D4 FlyViG: 동적 KNN(ViG) + 초파리 세포 유형 채널 그래프 + 유형별 시간 상태 (`PROTOCOL_D4_flyvig.md`) | 등록, Stage 0 준비 |
 
 ## 끝난 실험 (`archive/*` 태그, 오래된 순)
